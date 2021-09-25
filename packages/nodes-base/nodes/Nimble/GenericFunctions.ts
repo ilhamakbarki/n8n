@@ -36,15 +36,13 @@ import {
 
  	const options: OptionsWithUri = {
  		method,
- 		multipart: {
- 			data: [{
- 				'content-type': 'application/json',
- 				body: JSON.stringify(body)
- 			}]
- 		},
+ 		body,
  		qs: query,
  		uri: `https://api.nimble.com/${endpoint}`,
  		json: true,
+ 		headers : {
+ 			'Content-type' : 'application/json'
+ 		},
  	};
 
  	options.auth = {

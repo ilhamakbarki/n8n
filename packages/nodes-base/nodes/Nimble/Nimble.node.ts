@@ -228,7 +228,7 @@ export class Nimble implements INodeType {
             type: 'string',
             default: '',
             placeholder: 'customers,best,other',
-            required: false,
+            required: true,
             displayOptions: {
                 show: {
                     resource: [
@@ -284,7 +284,13 @@ export class Nimble implements INodeType {
                     body['record_type'] = this.getNodeParameter('record_type', i) as string;
                     body['tags'] = this.getNodeParameter('tags', i) as string;
                     body['avatar_url'] = this.getNodeParameter('avatar_url', i) as string;
-
+                    
+                    let parent_company = this.getNodeParameter('parent_company',i) as string || "[]"
+                    let description = this.getNodeParameter('description',i) as string || "[]"
+                    let email = this.getNodeParameter('email',i) as string || "[]"
+                    let address = this.getNodeParameter('address',i) as string || "[]"
+                    let source = this.getNodeParameter('source',i) as string || "[]"
+                    let url = this.getNodeParameter('url',i) as string || "[]"
                     body['fields'] = {
                         "first name":[
                         {
@@ -296,28 +302,24 @@ export class Nimble implements INodeType {
                             "value" : this.getNodeParameter('last_name', i) as string,
                             "modifier" : "",
                         }],
-                        "phone" : JSON.parse(this.getNodeParameter('phone',i) as string)
+                        "phone" : JSON.parse(this.getNodeParameter('phone',i) as string),
+                        "parent company" : JSON.parse(parent_company),
+                        "description" : JSON.parse(description),
+                        "email" : JSON.parse(email),
+                        "address" : JSON.parse(address),
+                        "source" : JSON.parse(source),
+                        "URL" : JSON.parse(url),
                     };
 
-                    // let parent_company = this.getNodeParameter('parent_company',i) as string || "[]"
-                    // let description = this.getNodeParameter('description',i) as string || "[]"
-                    // let email = this.getNodeParameter('email',i) as string || "[]"
-                    // let address = this.getNodeParameter('address',i) as string || "[]"
-                    // let source = this.getNodeParameter('source',i) as string || "[]"
-                    // let url = this.getNodeParameter('url',i) as string || "[]"
                     
-                    // if(parent_company.length>1)
-                    //     body['fields']["parent company"] = JSON.parse(parent_company)
-                    // if(description.length>1)
-                    //     body['fields']["description"] = JSON.parse(description)
-                    // if(email.length>1)
-                    //     body['fields']["email"] = JSON.parse(email)
-                    // if(address.length>1)
-                    //     body['fields']["address"] = JSON.parse(address)
-                    // if(source.length>1)
-                    //     body['fields']["source"] = JSON.parse(source)
-                    // if(url.length>1)
-                    //     body['fields']["URL"] = JSON.parse(url)
+                    // if(parent_company.length>5)
+                    //     delete body['fields']["parent company"]
+                    // if(description.length>2)
+                    //     delete body.fields["description"]
+                    // if(email.length>2)
+                    // if(address.length>2)
+                    // if(source.length>2)
+                    // if(url.length>2)
 
                 }else if(resource=="lookup"){
                     requestMethod = 'GET';
