@@ -54,6 +54,54 @@ export class Nimble implements INodeType {
             description: 'The resource to operate on.',
         },
         {
+            displayName: 'Query Search',
+            name: 'query',
+            type: 'string' ,
+            default: '',
+            placeholder: '{"and":[{"last name":{"is":"Ferrara"}},{"first name":{"is":"Jon"}}]}',
+            required: true,
+            displayOptions: {
+                show: {
+                    resource: [
+                    'lookup',
+                    ],
+                },
+            },
+            description: 'Query Search from Nimble',
+        },
+        {
+            displayName: 'Per Page',
+            name: 'per_page',
+            type: 'number' ,
+            default: 30,
+            placeholder: '30',
+            required: false,
+            displayOptions: {
+                show: {
+                    resource: [
+                    'lookup',
+                    ],
+                },
+            },
+            description: 'Result per page',
+        },
+        {
+            displayName: 'Page',
+            name: 'page',
+            type: 'number' ,
+            default: 1,
+            placeholder: '1',
+            required: false,
+            displayOptions: {
+                show: {
+                    resource: [
+                    'lookup',
+                    ],
+                },
+            },
+            description: 'Page',
+        },
+        {
             displayName: 'Record Type',
             name: 'record_type',
             type: 'options' ,
@@ -159,22 +207,6 @@ export class Nimble implements INodeType {
             description: 'Source your contact must JSON Array Format',
         },
         {
-            displayName: 'Address',
-            name: 'address',
-            type: 'string',
-            default: '',
-            placeholder: '[{"modifier": "other","value": "Earth", "label":"address"}]',
-            required: false,
-            displayOptions: {
-                show: {
-                    resource: [
-                    'create_contact',
-                    ],
-                },
-            },
-            description: 'Address your contact must JSON Array Format',
-        },
-        {
             displayName: 'Email',
             name: 'email',
             type: 'string',
@@ -266,7 +298,6 @@ export class Nimble implements INodeType {
         // For Query string
         let qs: IDataObject;
 
-
         let requestMethod: string;
         let resource: string;
         let endpoint: string;
@@ -285,45 +316,45 @@ export class Nimble implements INodeType {
                     body['tags'] = this.getNodeParameter('tags', i) as string;
                     body['avatar_url'] = this.getNodeParameter('avatar_url', i) as string;
                     
-                    let parent_company = this.getNodeParameter('parent_company',i) as string || "[]"
-                    let description = this.getNodeParameter('description',i) as string || "[]"
-                    let email = this.getNodeParameter('email',i) as string || "[]"
-                    let address = this.getNodeParameter('address',i) as string || "[]"
-                    let source = this.getNodeParameter('source',i) as string || "[]"
-                    let url = this.getNodeParameter('url',i) as string || "[]"
-                    body['fields'] = {
-                        "first name":[
-                        {
-                            "value" : this.getNodeParameter('first_name', i) as string,
-                            "modifier" : "",
-                        }],
-                        "last name":[
-                        {
-                            "value" : this.getNodeParameter('last_name', i) as string,
-                            "modifier" : "",
-                        }],
-                        "phone" : JSON.parse(this.getNodeParameter('phone',i) as string),
-                        "parent company" : JSON.parse(parent_company),
-                        "description" : JSON.parse(description),
-                        "email" : JSON.parse(email),
-                        "address" : JSON.parse(address),
-                        "source" : JSON.parse(source),
-                        "URL" : JSON.parse(url),
-                    };
-
+                    let parent_company = this.getNodeParameter('parent_company',i) as string || ""
+                    let description = this.getNodeParameter('description',i) as string || ""
+                    let email = this.getNodeParameter('email',i) as string || ""
+                    let source = this.getNodeParameter('source',i) as string || ""
+                    let url = this.getNodeParameter('url',i) as string || ""
+                    //let address = this.getNodeParameter('address',i) as string || ""
                     
-                    // if(parent_company.length>5)
-                    //     delete body['fields']["parent company"]
-                    // if(description.length>2)
-                    //     delete body.fields["description"]
-                    // if(email.length>2)
-                    // if(address.length>2)
-                    // if(source.length>2)
-                    // if(url.length>2)
-
+                    var fields: {[k: string]: any} = {}
+                    fields["first name"] = [{
+                        "value" : this.getNodeParameter('first_name', i) as string,
+                        "modifier" : "",
+                    }]
+                    fields["last name"] = [
+                    {
+                        "value" : this.getNodeParameter('last_name', i) as string,
+                        "modifier" : "",
+                    }]
+                    fields["phone"] = JSON.parse(this.getNodeParameter('phone',i) as string)                    
+                    if(parent_company.length>5)
+                        fields["parent company"] = JSON.parse(parent_company)
+                    if(description.length>5)
+                        fields["description"] = JSON.parse(description)
+                    if(email.length>5)
+                        fields["email"] = JSON.parse(email)
+                    // if(address.length>5)
+                    //     fields["address"] = JSON.parse(address)
+                    if(source.length>5)
+                        fields["source"] = JSON.parse(source)
+                    if(url.length>5)
+                        fields["URL"] = JSON.parse(url)
+                    body['fields'] = fields
                 }else if(resource=="lookup"){
                     requestMethod = 'GET';
-                    endpoint = 'api/v1/contact';
+                    let query = convertQS({
+                        query : this.getNodeParameter('query',i) as string,
+                        per_page : this.getNodeParameter('per_page',i) as number || 30,
+                        page : this.getNodeParameter('page',i) as number || 1
+                    })
+                    endpoint = `api/v1/contacts?${query}`;
                 }else{
                     throw new NodeOperationError(this.getNode(), `The resource "${resource}" is not known!`);
                 }
@@ -339,4 +370,13 @@ export class Nimble implements INodeType {
         }
         return [this.helpers.returnJsonArray(returnData)];
     }
+}
+
+function convertQS(obj : {[k: string]: any}) {
+  var str = [];
+  for (var p in obj)
+    if (obj.hasOwnProperty(p)) {
+      str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+    }
+  return str.join("&");
 }
