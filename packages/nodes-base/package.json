@@ -623,7 +623,7 @@
       "dist/nodes/Zoho/ZohoCrm.node.js",
       "dist/nodes/Zoom/Zoom.node.js",
       "dist/nodes/Zulip/Zulip.node.js",
-      "dist/nodes/Nimble.node.js"
+      "dist/nodes/Nimble/Nimble.node.js"
     ]
   },
   "devDependencies": {
