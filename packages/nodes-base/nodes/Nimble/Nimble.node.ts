@@ -321,9 +321,8 @@ export class Nimble implements INodeType {
                     let email = this.getNodeParameter('email',i) as string || ""
                     let source = this.getNodeParameter('source',i) as string || ""
                     let url = this.getNodeParameter('url',i) as string || ""
-                    //let address = this.getNodeParameter('address',i) as string || ""
                     
-                    var fields: {[k: string]: any} = {}
+                    let fields: {[k: string]: any} = {}
                     fields["first name"] = [{
                         "value" : this.getNodeParameter('first_name', i) as string,
                         "modifier" : "",
@@ -340,8 +339,6 @@ export class Nimble implements INodeType {
                         fields["description"] = JSON.parse(description)
                     if(email.length>5)
                         fields["email"] = JSON.parse(email)
-                    // if(address.length>5)
-                    //     fields["address"] = JSON.parse(address)
                     if(source.length>5)
                         fields["source"] = JSON.parse(source)
                     if(url.length>5)
