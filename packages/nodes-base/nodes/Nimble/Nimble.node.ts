@@ -148,7 +148,7 @@ export class Nimble implements INodeType {
             type: 'string',
             default: '',
             placeholder: 'Sulaiman',
-            required: true,
+            required: false,
             displayOptions: {
                 show: {
                     resource: [
@@ -173,6 +173,22 @@ export class Nimble implements INodeType {
                 },
             },
             description: 'Phone number your contact must JSON Array Format',
+        },
+        {
+            displayName: 'Twitter',
+            name: 'twitter',
+            type: 'string',
+            default: '',
+            placeholder: '[{"avatar_url": "http://graph.facebook.com/210857648102/picture","group": "Contact Info","user_id": "210857648102", "user_name": "Nimble", "modifier": "", "field_id":"4eabb2494fb88d3352011a82", "value": "http://www.facebook.com/nimble", "label": "facebook"}]',
+            required: false,
+            displayOptions: {
+                show: {
+                    resource: [
+                    'create_contact',
+                    ],
+                },
+            },
+            description: 'Twitter must JSON Array Format',
         },
         {
             displayName: 'URL',
@@ -321,18 +337,23 @@ export class Nimble implements INodeType {
                     let email = this.getNodeParameter('email',i) as string || ""
                     let source = this.getNodeParameter('source',i) as string || ""
                     let url = this.getNodeParameter('url',i) as string || ""
-                    
+                    let last_name = this.getNodeParameter('last_name', i) as string || ""
+                    let twitter = this.getNodeParameter('twitter', i) as string || ""
                     let fields: {[k: string]: any} = {}
                     fields["first name"] = [{
                         "value" : this.getNodeParameter('first_name', i) as string,
                         "modifier" : "",
                     }]
-                    fields["last name"] = [
-                    {
-                        "value" : this.getNodeParameter('last_name', i) as string,
-                        "modifier" : "",
-                    }]
                     fields["phone"] = JSON.parse(this.getNodeParameter('phone',i) as string)                    
+                    if(last_name.length>5){
+                        fields["last name"] = [
+                        {
+                            "value" : last_name,
+                            "modifier" : "",
+                        }]
+                    }
+                    if(twitter.length>5)
+                        fields["twitter"] = JSON.parse(twitter)
                     if(parent_company.length>5)
                         fields["parent company"] = JSON.parse(parent_company)
                     if(description.length>5)
@@ -370,10 +391,10 @@ export class Nimble implements INodeType {
 }
 
 function convertQS(obj : {[k: string]: any}) {
-  var str = [];
-  for (var p in obj)
-    if (obj.hasOwnProperty(p)) {
-      str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+    var str = [];
+    for (var p in obj)
+        if (obj.hasOwnProperty(p)) {
+            str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+        }
+        return str.join("&");
     }
-  return str.join("&");
-}
