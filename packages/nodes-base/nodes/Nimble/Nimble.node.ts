@@ -143,43 +143,11 @@ export class Nimble implements INodeType {
             description: 'The first name of your contact',
         },
         {
-            displayName: 'Last Name',
-            name: 'last_name',
-            type: 'string',
-            default: '',
-            placeholder: 'Sulaiman',
-            required: false,
-            displayOptions: {
-                show: {
-                    resource: [
-                    'create_contact',
-                    ],
-                },
-            },
-            description: 'The last name of your contact',
-        },
-        {
-            displayName: 'Phone',
-            name: 'phone',
-            type: 'string',
-            default: '',
-            placeholder: '[{"modifier": "work","value": "123123123"}]',
-            required: true,
-            displayOptions: {
-                show: {
-                    resource: [
-                    'create_contact',
-                    ],
-                },
-            },
-            description: 'Phone number your contact must JSON Array Format',
-        },
-        {
             displayName: 'Twitter',
             name: 'twitter',
             type: 'string',
             default: '',
-            placeholder: '[{"avatar_url": "http://graph.facebook.com/210857648102/picture","group": "Contact Info","user_id": "210857648102", "user_name": "Nimble", "modifier": "", "field_id":"4eabb2494fb88d3352011a82", "value": "http://www.facebook.com/nimble", "label": "facebook"}]',
+            placeholder: 'jibril',
             required: false,
             displayOptions: {
                 show: {
@@ -188,14 +156,14 @@ export class Nimble implements INodeType {
                     ],
                 },
             },
-            description: 'Twitter must JSON Array Format',
+            description: 'Your Contact Twitter',
         },
         {
             displayName: 'URL',
             name: 'url',
             type: 'string',
             default: '',
-            placeholder: '[{"modifier": "other","value": "https://nimble.com/", "label":"nimble"}]',
+            placeholder: 'http://nimble.com',
             required: false,
             displayOptions: {
                 show: {
@@ -204,46 +172,14 @@ export class Nimble implements INodeType {
                     ],
                 },
             },
-            description: 'URL your contact must JSON Array Format',
-        },
-        {
-            displayName: 'Source',
-            name: 'source',
-            type: 'string',
-            default: '',
-            placeholder: '[{"modifier": "","value": "csv", "label":"source"}]',
-            required: false,
-            displayOptions: {
-                show: {
-                    resource: [
-                    'create_contact',
-                    ],
-                },
-            },
-            description: 'Source your contact must JSON Array Format',
-        },
-        {
-            displayName: 'Email',
-            name: 'email',
-            type: 'string',
-            default: '',
-            placeholder: '[{"modifier": "","value": "ilhamakbarki@nimble.com", "label":"email"}]',
-            required: false,
-            displayOptions: {
-                show: {
-                    resource: [
-                    'create_contact',
-                    ],
-                },
-            },
-            description: 'Email your contact must JSON Array Format',
+            description: 'URL your contact',
         },
         {
             displayName: 'Description',
             name: 'description',
             type: 'string',
             default: '',
-            placeholder: '[{"modifier": "other","value": "description", "label":"description"}]',
+            placeholder: 'Description',
             required: false,
             displayOptions: {
                 show: {
@@ -252,23 +188,7 @@ export class Nimble implements INodeType {
                     ],
                 },
             },
-            description: 'Description your contact must JSON Array Format',
-        },
-        {
-            displayName: 'Parent Company',
-            name: 'parent_company',
-            type: 'string',
-            default: '',
-            placeholder: '[{"modifier": "other", "extra_value":"5c459c56ceee1868ee3ab468", "value": "nimble", "label":"parent company"}]',
-            required: false,
-            displayOptions: {
-                show: {
-                    resource: [
-                    'create_contact',
-                    ],
-                },
-            },
-            description: 'Parent Company your contact must JSON Array Format',
+            description: 'Description your contact',
         },
         {
             displayName: 'Tags',
@@ -285,23 +205,7 @@ export class Nimble implements INodeType {
                 },
             },
             description: 'Maximum 5 tags are allowed in this list during contact creation.',
-        },
-        {
-            displayName: 'Avatar URL',
-            name: 'avatar_url',
-            type: 'string',
-            default: '',
-            placeholder: 'https://example.com/image.png',
-            required: false,
-            displayOptions: {
-                show: {
-                    resource: [
-                    'create_contact',
-                    ],
-                },
-            },
-            description: 'Avatar of your contact.',
-        },
+        }
         ],
     };
 
@@ -330,41 +234,42 @@ export class Nimble implements INodeType {
                     requestMethod = 'POST';
                     body['record_type'] = this.getNodeParameter('record_type', i) as string;
                     body['tags'] = this.getNodeParameter('tags', i) as string;
-                    body['avatar_url'] = this.getNodeParameter('avatar_url', i) as string;
-                    
-                    let parent_company = this.getNodeParameter('parent_company',i) as string || ""
+
                     let description = this.getNodeParameter('description',i) as string || ""
-                    let email = this.getNodeParameter('email',i) as string || ""
-                    let source = this.getNodeParameter('source',i) as string || ""
                     let url = this.getNodeParameter('url',i) as string || ""
-                    let last_name = this.getNodeParameter('last_name', i) as string || ""
                     let twitter = this.getNodeParameter('twitter', i) as string || ""
                     let fields: {[k: string]: any} = {}
+                    
                     fields["first name"] = [{
                         "value" : this.getNodeParameter('first_name', i) as string,
                         "modifier" : "",
                     }]
-                    fields["phone"] = JSON.parse(this.getNodeParameter('phone',i) as string)                    
-                    if(last_name.length>5){
-                        fields["last name"] = [
-                        {
-                            "value" : last_name,
-                            "modifier" : "",
+
+                    if(twitter.length>1){
+                        fields["twitter"] = [{
+                            "modifier": "", 
+                            "field_id":"", 
+                            "value": twitter, 
+                            "label": "twitter"
                         }]
                     }
-                    if(twitter.length>5)
-                        fields["twitter"] = JSON.parse(twitter)
-                    if(parent_company.length>5)
-                        fields["parent company"] = JSON.parse(parent_company)
-                    if(description.length>5)
-                        fields["description"] = JSON.parse(description)
-                    if(email.length>5)
-                        fields["email"] = JSON.parse(email)
-                    if(source.length>5)
-                        fields["source"] = JSON.parse(source)
-                    if(url.length>5)
-                        fields["URL"] = JSON.parse(url)
+
+                    if(description.length>1){
+                        fields["description"] = [{
+                            "modifier":"other",
+                            "value":description,
+                            "label":"description"
+                        }]
+                    }
+                    if(url.length>1){
+                        fields["URL"] = [{
+                            "modifier": "work",
+                            "value": url, 
+                            "label": "URL"
+                        }]
+                    }
                     body['fields'] = fields
+
                 }else if(resource=="lookup"){
                     requestMethod = 'GET';
                     let query = convertQS({
