@@ -113,7 +113,7 @@ export class MonkeyLearn implements INodeType {
                 if(resource=="clasify"){
                     let temp = this.getNodeParameter('data',i) as string || "[]"
                     let model_id = this.getNodeParameter('model_id', i) as string;
-                    data = JSON.parse(JSON.stringify(temp))
+                    data = JSON.parse(temp)
                     responseData = await monkeyLearnClassifyApiRequest.call(this, model_id, data);
                 }else{
                     throw new NodeOperationError(this.getNode(), `The resource "${resource}" is not known!`);
