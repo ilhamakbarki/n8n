@@ -259,6 +259,10 @@ async function parseRequestObject(requestObject: IDataObject) {
 		axiosConfig.paramsSerializer = (params) => {
 			return stringify(params, { arrayFormat: 'repeat' });
 		};
+	} else if (requestObject.useQuerystring === false) {
+		axiosConfig.paramsSerializer = (params) => {
+			return stringify(params, { arrayFormat: 'indices' });
+		};
 	}
 
 	// @ts-ignore
@@ -438,6 +442,10 @@ async function proxyRequestToAxios(
 						statusCode: error.response.status,
 						statusMessage: error.response.statusText,
 					});
+					return;
+				}
+				if (configObject.simple === false && error.response) {
+					resolve(error.response.data);
 					return;
 				}
 
