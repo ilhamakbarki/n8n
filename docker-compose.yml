@@ -1,0 +1,34 @@
+version: '3.9'
+
+services:
+  n8n:
+    build : './docker/images/n8n-custom/Dockerfile'
+    restart: always
+    environment:
+      #- DB_TYPE=postgresdb
+      #- DB_POSTGRESDB_HOST=postgres
+      #- DB_POSTGRESDB_PORT=5432
+      #- DB_POSTGRESDB_DATABASE=${POSTGRES_DB}
+      #- DB_POSTGRESDB_USER=${POSTGRES_NON_ROOT_USER}
+      #- DB_POSTGRESDB_PASSWORD=${POSTGRES_NON_ROOT_PASSWORD}
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER
+      - N8N_BASIC_AUTH_PASSWORD
+      - N8N_HOST=${SUBDOMAIN}.${DOMAIN_NAME}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - NODE_ENV=production
+      - EXECUTIONS_PROCESS=main
+      - EXECUTIONS_TIMEOUT=60
+      - EXECUTIONS_TIMEOUT_MAX=120
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+      - EXECUTIONS_DATA_PRUNE=true
+      - EXECUTIONS_DATA_MAX_AGE=168
+      - WEBHOOK_TUNNEL_URL=https://${SUBDOMAIN}.${DOMAIN_NAME}/
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
+    ports:
+      - 5678:5678
+    volumes:
+      - ~/.n8n:/home/node/.n8n
+
+    command: /bin/sh -c "sleep 5; n8n start"
