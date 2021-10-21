@@ -303,9 +303,7 @@
       "dist/credentials/ZohoOAuth2Api.credentials.js",
       "dist/credentials/ZoomApi.credentials.js",
       "dist/credentials/ZoomOAuth2Api.credentials.js",
-      "dist/credentials/ZulipApi.credentials.js",
-      "dist/credentials/NimbleApi.credentials.js",
-      "dist/credentials/MonkeyLearnApi.credentials.js"
+      "dist/credentials/ZulipApi.credentials.js"
     ],
     "nodes": [
       "dist/nodes/ActionNetwork/ActionNetwork.node.js",
@@ -633,9 +631,7 @@
       "dist/nodes/Zendesk/ZendeskTrigger.node.js",
       "dist/nodes/Zoho/ZohoCrm.node.js",
       "dist/nodes/Zoom/Zoom.node.js",
-      "dist/nodes/Zulip/Zulip.node.js",
-      "dist/nodes/Nimble/Nimble.node.js",
-      "dist/nodes/MonkeyLearn/MonkeyLearn.node.js"
+      "dist/nodes/Zulip/Zulip.node.js"
     ]
   },
   "devDependencies": {
