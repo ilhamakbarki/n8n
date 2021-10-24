@@ -26,6 +26,7 @@
   },
   "postcss": {},
   "dependencies": {
+    "image-to-base64": "^2.2.0",
     "monkeylearn": "^3.4.0"
   }
 }
