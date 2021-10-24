@@ -54,7 +54,6 @@ import {
 
 import {
 	ICredentialsDecrypted,
-	ICredentialsEncrypted,
 	ICredentialType,
 	IDataObject,
 	INodeCredentials,
@@ -67,12 +66,12 @@ import {
 	INodeVersionedType,
 	ITelemetrySettings,
 	IWorkflowBase,
-	IWorkflowCredentials,
 	LoggerProxy,
 	NodeCredentialTestRequest,
 	NodeCredentialTestResult,
 	NodeHelpers,
 	Workflow,
+	ICredentialsEncrypted,
 	WorkflowExecuteMode,
 } from 'n8n-workflow';
 
@@ -312,8 +311,6 @@ class App {
 
 		this.frontendSettings.personalizationSurvey =
 			await PersonalizationSurvey.preparePersonalizationSurvey();
-
-		InternalHooksManager.init(this.frontendSettings.instanceId);
 
 		await this.externalHooks.run('frontend.settings', [this.frontendSettings]);
 
@@ -1820,12 +1817,6 @@ class App {
 						return ResponseHelper.sendErrorResponse(res, errorResponse);
 					}
 
-					// Decrypt the currently saved credentials
-					const workflowCredentials: IWorkflowCredentials = {
-						[result.type]: {
-							[result.id.toString()]: result as ICredentialsEncrypted,
-						},
-					};
 					const mode: WorkflowExecuteMode = 'internal';
 					const credentialsHelper = new CredentialsHelper(encryptionKey);
 					const decryptedDataOriginal = await credentialsHelper.getDecrypted(
@@ -2043,13 +2034,6 @@ class App {
 						);
 						return ResponseHelper.sendErrorResponse(res, errorResponse);
 					}
-
-					// Decrypt the currently saved credentials
-					const workflowCredentials: IWorkflowCredentials = {
-						[result.type]: {
-							[result.id.toString()]: result as ICredentialsEncrypted,
-						},
-					};
 
 					const mode: WorkflowExecuteMode = 'internal';
 					const credentialsHelper = new CredentialsHelper(encryptionKey);
