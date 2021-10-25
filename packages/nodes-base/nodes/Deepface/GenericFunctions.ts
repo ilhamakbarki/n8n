@@ -25,6 +25,7 @@ const imageToBase64 = require('image-to-base64');
  export async function uploadApi(this: IHookFunctions | IExecuteFunctions, url_api: string, body: IDataObject) : Promise<any> {
  	try {
  		let url = `https://deepface.nclzn.co/${url_api}`
+ 		//let url = `http://deepface.ilhamnofita.com/${url_api}`
  		const options: OptionsWithUri = {
  			method:"POST",
  			body,

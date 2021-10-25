@@ -41,6 +41,10 @@ export class Deepface implements INodeType {
                 name: 'Face recognition - VGG',
                 value: 'vgg',
             },
+            {
+                name: 'Facial Attribute Analysis',
+                value: 'analysis',
+            },
             ],
             default: 'vgg',
             description: 'The resource to operate on.',
@@ -55,7 +59,8 @@ export class Deepface implements INodeType {
             displayOptions: {
                 show: {
                     resource: [
-                    'vgg'
+                    'vgg',
+                    'analysis'
                     ],
                 },
             },
@@ -90,16 +95,24 @@ export class Deepface implements INodeType {
                 let data : IDataObject[]
                 let responseData : IDataObject
 
-                if(resource=="vgg"){
+                if(resource=="analysis"){
+                    let image1 = this.getNodeParameter('image1', i) as string
+                    let body : IDataObject = {
+                        img : [
+                            await get_base64Image.call(this, image1)
+                        ]
+                    }
+                    responseData = await uploadApi.call(this, "analyze", body);
+                }else if(resource=="vgg"){
                     let image1 = this.getNodeParameter('image1', i) as string
                     let image2 = this.getNodeParameter('image2', i) as string
                     let body : IDataObject = {
                         model_name:"VGG-Face",
                         img : [
-                            {
-                                img1 : await get_base64Image.call(this, image1),
-                                img2 : await get_base64Image.call(this, image2),
-                            }
+                        {
+                            img1 : await get_base64Image.call(this, image1),
+                            img2 : await get_base64Image.call(this, image2),
+                        }
                         ]
                     }
                     responseData = await uploadApi.call(this, "verify", body);
