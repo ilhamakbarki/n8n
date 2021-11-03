@@ -68,6 +68,11 @@ export class AwsComprehend implements INodeType {
 						value: 'detectSentiment',
 						description: 'Analyse the sentiment of the text',
 					},
+					{
+						name: 'Classify Document',
+						value: 'classifyDocument',
+						description: 'Creates a new document classification request to analyze a single document in real-time, using a previously created and trained custom model and an endpoint.',
+					},
 				],
 				default: 'detectDominantLanguage',
 				description: 'The operation to perform.',
@@ -175,6 +180,24 @@ export class AwsComprehend implements INodeType {
 				description: 'Return a simplified version of the response instead of the raw data.',
 			},
 			{
+				displayName: 'Endpoint Arn',
+				name: 'endpointArn',
+				type: 'string',
+				displayOptions: {
+					show: {
+						resource: [
+							'text',
+						],
+						operation: [
+							'classifyDocument',
+						],
+					},
+				},
+				default: '',
+				required:true,
+				description: 'The Amazon Resource Name of an endpoint that is associated with a custom entity recognition model.',
+			},
+			{
 				displayName: 'Additional Fields',
 				name: 'additionalFields',
 				type: 'collection',
@@ -264,6 +287,20 @@ export class AwsComprehend implements INodeType {
 
 						responseData = await awsApiRequestREST.call(this, 'comprehend', 'POST', '', JSON.stringify(body), { 'x-amz-target': action, 'Content-Type': 'application/x-amz-json-1.1' });
 						responseData = responseData.Entities;
+					}
+
+					//https://docs.aws.amazon.com/comprehend/latest/dg/API_ClassifyDocument.html
+					if (operation === 'classifyDocument') {
+						const action = 'Comprehend_20171127.ClassifyDocument';
+						const text = this.getNodeParameter('text', i) as string;
+						const EndpointArn = this.getNodeParameter('endpointArn', i) as string;
+
+						const body: IDataObject = {
+							Text: text,
+							EndpointArn,
+						};
+						responseData = await awsApiRequestREST.call(this, 'comprehend', 'POST', '', JSON.stringify(body), { 'x-amz-target': action, 'Content-Type': 'application/x-amz-json-1.1' });
+						responseData = responseData.Classes;
 					}
 				}
 
