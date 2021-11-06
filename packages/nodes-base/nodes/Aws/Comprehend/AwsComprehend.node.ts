@@ -299,8 +299,19 @@ export class AwsComprehend implements INodeType {
 							Text: text,
 							EndpointArn,
 						};
-						responseData = await awsApiRequestREST.call(this, 'comprehend', 'POST', '', JSON.stringify(body), { 'x-amz-target': action, 'Content-Type': 'application/x-amz-json-1.1' });
-						responseData = responseData.Classes;
+						let response = await awsApiRequestREST.call(this, 'comprehend', 'POST', '', JSON.stringify(body), { 'x-amz-target': action, 'Content-Type': 'application/x-amz-json-1.1' });
+						response = response.Classes;
+						let scoreHigh=0, name = ""
+						response.forEach((r:any) => {
+							if(scoreHigh<r.Score){
+								name = r.Name
+								scoreHigh = r.Score
+							}
+						});
+						responseData = {
+							Name : name,
+							Score : scoreHigh
+						}
 					}
 				}
 
