@@ -169,13 +169,6 @@ export class GoogleCloudNaturalLanguage implements INodeType {
 						default: '',
 						description: 'The Modal ID.',
 						required: true,
-						displayOptions: {
-							show: {
-								operation: [
-									'classifyText',
-								],
-							},
-						},
 					},
 					{
 						displayName: 'Document Type',
