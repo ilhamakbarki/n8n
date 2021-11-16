@@ -295,13 +295,11 @@ export class GoogleCloudNaturalLanguage implements INodeType {
 				const source = this.getNodeParameter('source', i) as string;
 				const options = this.getNodeParameter('options', i) as IDataObject;
 				const documentType = (options.documentType as string | undefined) || 'PLAIN_TEXT';
-				const encodingType = (options.encodingType as string | undefined) || 'UTF16';
 
 				const body: IData = {
 					document: {
 						type: documentType,
-					},
-					encodingType
+					}
 				};
 
 				if (source === 'content') {
@@ -317,6 +315,8 @@ export class GoogleCloudNaturalLanguage implements INodeType {
 				}
 
 				if (operation === 'analyzeSentiment') {
+					const encodingType = (options.encodingType as string | undefined) || 'UTF16';
+					body.encodingType = encodingType
 					const response = await googleApiRequest.call(this, 'POST', `/v1/documents:analyzeSentiment`, body);
 					responseData.push(response);
 				} else if (operation === 'classifyText') {
