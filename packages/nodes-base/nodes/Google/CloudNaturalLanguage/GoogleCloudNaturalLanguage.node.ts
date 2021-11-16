@@ -163,6 +163,21 @@ export class GoogleCloudNaturalLanguage implements INodeType {
 				placeholder: 'Add Option',
 				options: [
 					{
+						displayName: 'Model ID',
+						name: 'modelId',
+						type: 'string',
+						default: '',
+						description: 'The Modal ID.',
+						required: true,
+						displayOptions: {
+							show: {
+								operation: [
+									'classifyText',
+								],
+							},
+						},
+					},
+					{
 						displayName: 'Document Type',
 						name: 'documentType',
 						type: 'options',
@@ -320,7 +335,27 @@ export class GoogleCloudNaturalLanguage implements INodeType {
 					const response = await googleApiRequest.call(this, 'POST', `/v1/documents:analyzeSentiment`, body);
 					responseData.push(response);
 				} else if (operation === 'classifyText') {
-					const response = await googleApiRequest.call(this, 'POST', `/v1/documents:classifyText`, body);
+					if (options.modelId) {
+						body.document.input_config = {
+							"gcs_source": {
+								"input_uris": options.modelId
+							}
+						}
+					}
+					let response = await googleApiRequest.call(this, 'POST', `/v1/documents:classifyText`, body);
+					response = response.categories
+					let scoreHigh = 0, name = ""
+					response.forEach((r: any) => {
+						if (scoreHigh < r.confidence) {
+							name = r.name
+							scoreHigh = r.confidence
+						}
+					});
+
+					// responseData.push({
+					// 	name: name,
+					// 	confidence: scoreHigh
+					// });
 					responseData.push(response);
 				}
 			}
