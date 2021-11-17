@@ -354,7 +354,7 @@ export class GoogleCloudNaturalLanguage implements INodeType {
 				const source = this.getNodeParameter('source', i) as string;
 				const options = this.getNodeParameter('options', i) as IDataObject;
 				const documentType = (options.documentType as string | undefined) || 'PLAIN_TEXT';
-				const gcsContentUri = this.getNodeParameter('gcsContentUri', i) as string;
+				const gcsContentUri = this.getNodeParameter('gcsContentUri', i) as string || undefined;
 				const content = this.getNodeParameter('content', i) as string;
 
 				if (operation === 'analyzeSentiment') {
@@ -381,21 +381,21 @@ export class GoogleCloudNaturalLanguage implements INodeType {
 				} else if (operation === 'classifyText') {
 					const onlyHight = this.getNodeParameter('onlyHighest', i) as boolean || false;
 					const modelId = this.getNodeParameter('modelId', i) as string;
-					const body : IPayload = {}
+					const body: IPayload = {}
 					const documentType = (options.documentType as string | undefined) || 'text/plain';
 
 					if (source === 'content') {
 						const content = this.getNodeParameter('content', i) as string;
-						const textSnippet : TextSnippet = {
-							mime_type  : 	documentType,
-							content : content
+						const textSnippet: TextSnippet = {
+							mime_type: documentType,
+							content: content
 						}
 						body.textSnippet = textSnippet;
 					} else {
-						const document : IDocument = {}
+						const document: IDocument = {}
 						document.input_config = {
-							"gcs_source" : {
-								"input_uris" : gcsContentUri
+							"gcs_source": {
+								"input_uris": gcsContentUri
 							}
 						}
 						body.document = document
@@ -417,7 +417,7 @@ export class GoogleCloudNaturalLanguage implements INodeType {
 							name: name,
 							confidence: scoreHigh
 						});
-					}else{
+					} else {
 						responseData.push(response);
 					}
 				}
