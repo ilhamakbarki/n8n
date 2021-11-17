@@ -128,6 +128,25 @@ export class GoogleCloudNaturalLanguage implements INodeType {
 				},
 			},
 			{
+				displayName: 'Google Cloud Storage URI',
+				name: 'gcsContentUri',
+				type: 'string',
+				default: '',
+				description: 'The Google Cloud Storage URI where the file content is located. This URI must be of the form: gs://bucket_name/object_name.<br/> For more details, see https://cloud.google.com/storage/docs/reference-uris.',
+				required: true,
+				displayOptions: {
+					show: {
+						operation: [
+							'analyzeSentiment',
+							'classifyText'
+						],
+						source: [
+							'gcsContentUri'
+						]
+					},
+				},
+			},
+			{
 				displayName: 'Model ID',
 				name: 'modelId',
 				type: 'string',
@@ -169,22 +188,6 @@ export class GoogleCloudNaturalLanguage implements INodeType {
 						operation: [
 							'classifyText',
 						],
-					},
-				},
-			},
-			{
-				displayName: 'Google Cloud Storage URI',
-				name: 'gcsContentUri',
-				type: 'string',
-				default: '',
-				description: 'The Google Cloud Storage URI where the file content is located. This URI must be of the form: gs://bucket_name/object_name.<br/> For more details, see https://cloud.google.com/storage/docs/reference-uris.',
-				required: true,
-				displayOptions: {
-					show: {
-						operation: [
-							'analyzeSentiment',
-							'classifyText'
-						]
 					},
 				},
 			},
