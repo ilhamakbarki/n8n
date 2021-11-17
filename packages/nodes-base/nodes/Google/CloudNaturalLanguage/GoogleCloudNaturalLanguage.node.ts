@@ -354,8 +354,6 @@ export class GoogleCloudNaturalLanguage implements INodeType {
 				const source = this.getNodeParameter('source', i) as string;
 				const options = this.getNodeParameter('options', i) as IDataObject;
 				const documentType = (options.documentType as string | undefined) || 'PLAIN_TEXT';
-				const gcsContentUri = this.getNodeParameter('gcsContentUri', i) as string || undefined;
-				const content = this.getNodeParameter('content', i) as string;
 
 				if (operation === 'analyzeSentiment') {
 					const body: IData = {
@@ -365,9 +363,9 @@ export class GoogleCloudNaturalLanguage implements INodeType {
 					};
 
 					if (source === 'content') {
-						body.document.content = content;
+						body.document.content = this.getNodeParameter('content', i) as string
 					} else {
-						body.document.gcsContentUri = gcsContentUri;
+						body.document.gcsContentUri = this.getNodeParameter('gcsContentUri', i) as string
 					}
 
 					if (options.language) {
@@ -385,7 +383,7 @@ export class GoogleCloudNaturalLanguage implements INodeType {
 					const documentType = (options.documentType as string | undefined) || 'text/plain';
 
 					if (source === 'content') {
-						const content = this.getNodeParameter('content', i) as string;
+						const content = this.getNodeParameter('content', i) as string
 						const textSnippet: TextSnippet = {
 							mime_type: documentType,
 							content: content
@@ -395,7 +393,7 @@ export class GoogleCloudNaturalLanguage implements INodeType {
 						const document: IDocument = {}
 						document.input_config = {
 							"gcs_source": {
-								"input_uris": gcsContentUri
+								"input_uris": this.getNodeParameter('gcsContentUri', i) as string
 							}
 						}
 						body.document = document
