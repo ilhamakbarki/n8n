@@ -184,10 +184,7 @@ export class GoogleCloudNaturalLanguage implements INodeType {
 						operation: [
 							'analyzeSentiment',
 							'classifyText'
-						],
-						source: [
-							'gcsContentUri',
-						],
+						]
 					},
 				},
 			},
