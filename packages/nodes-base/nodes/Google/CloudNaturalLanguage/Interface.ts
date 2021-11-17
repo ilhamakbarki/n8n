@@ -6,9 +6,19 @@ export interface IData {
 }
 
 export interface IDocument {
-	type: string;
+	type?: string;
 	language?: string;
 	content?: string;
 	gcsContentUri?: string;
 	input_config?: IDataObject
+}
+
+export interface IPayload {
+	textSnippet?:TextSnippet,
+	document?:IDocument,
+}
+
+export interface TextSnippet {
+	content : string,
+	mime_type : string
 }

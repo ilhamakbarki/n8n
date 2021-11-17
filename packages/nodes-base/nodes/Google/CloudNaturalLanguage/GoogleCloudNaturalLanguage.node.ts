@@ -11,7 +11,7 @@ import {
 } from 'n8n-workflow';
 
 import {
-	IData,
+	IData, IDocument, IPayload, TextSnippet
 } from './Interface';
 
 import {
@@ -128,6 +128,51 @@ export class GoogleCloudNaturalLanguage implements INodeType {
 				},
 			},
 			{
+				displayName: 'Model ID',
+				name: 'modelId',
+				type: 'string',
+				default: '',
+				description: 'Model Id',
+				required: true,
+				displayOptions: {
+					show: {
+						operation: [
+							'classifyText',
+						],
+					},
+				},
+			},
+			{
+				displayName: 'Project',
+				name: 'project',
+				type: 'string',
+				default: '',
+				description: 'Project ID',
+				required: true,
+				displayOptions: {
+					show: {
+						operation: [
+							'classifyText',
+						],
+					},
+				},
+			},
+			{
+				displayName: 'Server Location',
+				name: 'server',
+				type: 'string',
+				default: '',
+				description: 'Server Location',
+				required: true,
+				displayOptions: {
+					show: {
+						operation: [
+							'classifyText',
+						],
+					},
+				},
+			},
+			{
 				displayName: 'Google Cloud Storage URI',
 				name: 'gcsContentUri',
 				type: 'string',
@@ -138,10 +183,24 @@ export class GoogleCloudNaturalLanguage implements INodeType {
 					show: {
 						operation: [
 							'analyzeSentiment',
-							'classifyText',
+							'classifyText'
 						],
 						source: [
 							'gcsContentUri',
+						],
+					},
+				},
+			},
+			{
+				displayName: 'Show Only Highest',
+				name: 'onlyHighest',
+				type: 'boolean',
+				default: false,
+				description: 'Reponse Only Hight.',
+				displayOptions: {
+					show: {
+						operation: [
+							'classifyText',
 						],
 					},
 				},
@@ -162,13 +221,6 @@ export class GoogleCloudNaturalLanguage implements INodeType {
 				description: '',
 				placeholder: 'Add Option',
 				options: [
-					{
-						displayName: 'Model ID',
-						name: 'modelId',
-						type: 'string',
-						default: '',
-						description: 'The Model ID.'
-					},
 					{
 						displayName: 'Document Type',
 						name: 'documentType',
@@ -302,53 +354,72 @@ export class GoogleCloudNaturalLanguage implements INodeType {
 				const source = this.getNodeParameter('source', i) as string;
 				const options = this.getNodeParameter('options', i) as IDataObject;
 				const documentType = (options.documentType as string | undefined) || 'PLAIN_TEXT';
-
-				const body: IData = {
-					document: {
-						type: documentType,
-					}
-				};
-
-				if (source === 'content') {
-					const content = this.getNodeParameter('content', i) as string;
-					body.document.content = content;
-				} else {
-					const gcsContentUri = this.getNodeParameter('gcsContentUri', i) as string;
-					body.document.gcsContentUri = gcsContentUri;
-				}
-
-				if (options.language) {
-					body.document.language = options.language as string;
-				}
+				const gcsContentUri = this.getNodeParameter('gcsContentUri', i) as string;
+				const content = this.getNodeParameter('content', i) as string;
 
 				if (operation === 'analyzeSentiment') {
+					const body: IData = {
+						document: {
+							type: documentType,
+						}
+					};
+
+					if (source === 'content') {
+						body.document.content = content;
+					} else {
+						body.document.gcsContentUri = gcsContentUri;
+					}
+
+					if (options.language) {
+						body.document.language = options.language as string;
+					}
+
 					const encodingType = (options.encodingType as string | undefined) || 'UTF16';
 					body.encodingType = encodingType
 					const response = await googleApiRequest.call(this, 'POST', `/v1/documents:analyzeSentiment`, body);
 					responseData.push(response);
 				} else if (operation === 'classifyText') {
-					if (options.modelId) {
-						body.document.input_config = {
-							"gcs_source": {
-								"input_uris": options.modelId
+					const onlyHight = this.getNodeParameter('onlyHighest', i) as boolean || false;
+					const modelId = this.getNodeParameter('modelId', i) as string;
+					const body : IPayload = {}
+					const documentType = (options.documentType as string | undefined) || 'text/plain';
+
+					if (source === 'content') {
+						const content = this.getNodeParameter('content', i) as string;
+						const textSnippet : TextSnippet = {
+							mime_type  : 	documentType,
+							content : content
+						}
+						body.textSnippet = textSnippet;
+					} else {
+						const document : IDocument = {}
+						document.input_config = {
+							"gcs_source" : {
+								"input_uris" : gcsContentUri
 							}
 						}
+						body.document = document
 					}
-					let response = await googleApiRequest.call(this, 'POST', `/v1/documents:classifyText`, body);
+					const project = this.getNodeParameter('project', i) as string
+					const server = this.getNodeParameter('server', i) as string
+					let url = `https://automl.googleapis.com/v1/projects/${project}/${server}/models/${modelId}:predict`
+					let response = await googleApiRequest.call(this, 'POST', ``, body, {}, url);
 					response = response.categories
-					let scoreHigh = 0, name = ""
-					response.forEach((r: any) => {
-						if (scoreHigh < r.confidence) {
-							name = r.name
-							scoreHigh = r.confidence
-						}
-					});
-
-					// responseData.push({
-					// 	name: name,
-					// 	confidence: scoreHigh
-					// });
-					responseData.push(response);
+					if (onlyHight) {
+						let scoreHigh = 0, name = ""
+						response.forEach((r: any) => {
+							if (scoreHigh < r.confidence) {
+								name = r.name
+								scoreHigh = r.confidence
+							}
+						});
+						responseData.push({
+							name: name,
+							confidence: scoreHigh
+						});
+					}else{
+						responseData.push(response);
+					}
 				}
 			}
 		}
