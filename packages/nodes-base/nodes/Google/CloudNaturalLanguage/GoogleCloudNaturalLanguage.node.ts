@@ -403,18 +403,20 @@ export class GoogleCloudNaturalLanguage implements INodeType {
 
 					let url = `https://automl.googleapis.com/v1/projects/${project}/locations/${server}/models/${modelId}:predict`
 					let response = await googleApiRequest.call(this, 'POST', ``, { "payload": body }, {}, url);
-					//response = response.categories
+					response = response.payload
 					if (onlyHight) {
-						let scoreHigh = 0, name = ""
+						let scoreHigh = 0, name = "", annotationSpecId = ""
 						response.forEach((r: any) => {
-							if (scoreHigh < r.confidence) {
-								name = r.name
-								scoreHigh = r.confidence
+							if (scoreHigh < r.classification.score) {
+								name = r.displayName
+								annotationSpecId = r.annotationSpecId
+								scoreHigh = r.classification.score
 							}
 						});
 						responseData.push({
-							name: name,
-							confidence: scoreHigh
+							annotationSpecId,
+							name,
+							score: scoreHigh
 						});
 					} else {
 						responseData.push(response);
