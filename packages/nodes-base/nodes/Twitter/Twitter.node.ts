@@ -23,6 +23,11 @@ import {
 } from './TweetDescription';
 
 import {
+	spacesOptions,
+	spacesOperations,
+} from './SpacesDescription';
+
+import {
 	twitterApiRequest,
 	twitterApiRequestAllItems,
 	uploadAttachments,
@@ -31,6 +36,7 @@ import {
 import {
 	ITweet,
 } from './TweetInterface';
+import { ISpaces } from './SpacesInterface';
 
 const ISO6391 = require('iso-639-1');
 
@@ -69,6 +75,10 @@ export class Twitter implements INodeType {
 						name: 'Tweet',
 						value: 'tweet',
 					},
+					{
+						name: 'Spaces',
+						value: 'spaces'
+					}
 				],
 				default: 'tweet',
 				description: 'The resource to operate on.',
@@ -79,6 +89,9 @@ export class Twitter implements INodeType {
 			// TWEET
 			...tweetOperations,
 			...tweetFields,
+			//Spaces
+			...spacesOperations,
+			...spacesOptions,
 		],
 	};
 
@@ -274,6 +287,26 @@ export class Twitter implements INodeType {
 						}
 
 						responseData = await twitterApiRequest.call(this, 'POST', `/statuses/retweet/${tweetId}.json`, {}, qs);
+					}
+				}
+				if (resource === 'spaces') {
+					if (operation === 'lookup_spaces_id') {
+						const spaces_id = this.getNodeParameter('spaces_id', i) as string;
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						const qs: ISpaces = {}
+						if (additionalFields.expansions) {
+							qs.expansions = additionalFields.expansions as string
+						}
+						if (additionalFields.space_fields) {
+							qs['space.fields'] = additionalFields.space_fields as string
+						}
+						if (additionalFields.topic_fields) {
+							qs['topic.fields'] = additionalFields.topic_fields as string
+						}
+						if (additionalFields.user_fields) {
+							qs['user.fields'] = additionalFields.user_fields as string
+						}
+						responseData = await twitterApiRequest.call(this, 'GET', '', {}, qs as IDataObject, `https://api.twitter.com/2/spaces/${spaces_id}`);
 					}
 				}
 				if (Array.isArray(responseData)) {
