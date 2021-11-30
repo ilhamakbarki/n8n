@@ -1,6 +1,9 @@
 export interface ISpaces {
-	'space.fields'?: string,
-	'expansions'?: string,
-	'user.fields'?: string,
+	'space.fields'?: string
+	'expansions'?: string
+	'user.fields'?: string
 	'topic.fields'?: string
+	'user_ids'?: string
+	'query'?: string
+	'state'?: string
 }

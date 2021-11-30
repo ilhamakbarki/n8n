@@ -42,6 +42,43 @@ export async function twitterApiRequest(this: IExecuteFunctions | IExecuteSingle
 	}
 }
 
+export async function twitterApiRequest2(this: IExecuteFunctions | IExecuteSingleFunctions | ILoadOptionsFunctions | IHookFunctions, method: string, resource: string, body: any = {}, qs: IDataObject = {}, uri?: string, option: IDataObject = {}): Promise<any> { // tslint:disable-line:no-any
+	let options: OptionsWithUrl = {
+		method,
+		body,
+		qs,
+		url: uri || `https://api.twitter.com/1.1${resource}`,
+		json: true
+	};
+	try {
+		const credentials = await this.getCredentials('twitterBearerToken') as {
+			token: string;
+		};
+
+		if (credentials === undefined) {
+			throw new NodeOperationError(this.getNode(), 'No credentials got returned!');
+		}
+		options.auth = {
+			bearer: credentials.token
+		};
+
+		if (Object.keys(option).length !== 0) {
+			options = Object.assign({}, options, option);
+		}
+		if (Object.keys(body).length === 0) {
+			delete options.body;
+		}
+		if (Object.keys(qs).length === 0) {
+			delete options.qs;
+		}
+		//@ts-ignore
+		return await await this.helpers.request(options);
+	} catch (error) {
+		throw new NodeApiError(this.getNode(), error);
+	}
+}
+
+
 export async function twitterApiRequestAllItems(this: IExecuteFunctions | ILoadOptionsFunctions, propertyName: string, method: string, endpoint: string, body: any = {}, query: IDataObject = {}): Promise<any> { // tslint:disable-line:no-any
 
 	const returnData: IDataObject[] = [];

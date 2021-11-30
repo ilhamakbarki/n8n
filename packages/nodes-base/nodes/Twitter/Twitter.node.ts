@@ -28,7 +28,13 @@ import {
 } from './SpacesDescription';
 
 import {
+	usersOptions,
+	usersOperations,
+} from './UsersDescription';
+
+import {
 	twitterApiRequest,
+	twitterApiRequest2,
 	twitterApiRequestAllItems,
 	uploadAttachments,
 } from './GenericFunctions';
@@ -37,6 +43,7 @@ import {
 	ITweet,
 } from './TweetInterface';
 import { ISpaces } from './SpacesInterface';
+import { IUsers } from './UsersInterface';
 
 const ISO6391 = require('iso-639-1');
 
@@ -59,6 +66,26 @@ export class Twitter implements INodeType {
 			{
 				name: 'twitterOAuth1Api',
 				required: true,
+				displayOptions: {
+					show: {
+						resource: [
+							'directMessage',
+							'tweet'
+						],
+					},
+				},
+			},
+			{
+				name: 'twitterBearerToken',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: [
+							'spaces',
+							'users'
+						],
+					},
+				},
 			},
 		],
 		properties: [
@@ -78,7 +105,11 @@ export class Twitter implements INodeType {
 					{
 						name: 'Spaces',
 						value: 'spaces'
-					}
+					},
+					{
+						name: 'Users',
+						value: 'users'
+					},
 				],
 				default: 'tweet',
 				description: 'The resource to operate on.',
@@ -92,6 +123,9 @@ export class Twitter implements INodeType {
 			//Spaces
 			...spacesOperations,
 			...spacesOptions,
+			//Users
+			...usersOperations,
+			...usersOptions,
 		],
 	};
 
@@ -290,24 +324,60 @@ export class Twitter implements INodeType {
 					}
 				}
 				if (resource === 'spaces') {
-					if (operation === 'lookup_spaces_id') {
-						const spaces_id = this.getNodeParameter('spaces_id', i) as string;
-						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
-						const qs: ISpaces = {}
-						if (additionalFields.expansions) {
-							qs.expansions = additionalFields.expansions as string
-						}
-						if (additionalFields.space_fields) {
-							qs['space.fields'] = additionalFields.space_fields as string
-						}
-						if (additionalFields.topic_fields) {
-							qs['topic.fields'] = additionalFields.topic_fields as string
-						}
-						if (additionalFields.user_fields) {
-							qs['user.fields'] = additionalFields.user_fields as string
-						}
-						responseData = await twitterApiRequest.call(this, 'GET', '', {}, qs as IDataObject, `https://api.twitter.com/2/spaces/${spaces_id}`);
+					const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+					const qs: ISpaces = {}
+					if (additionalFields.expansions) {
+						qs.expansions = additionalFields.expansions as string
 					}
+					if (additionalFields.space_fields) {
+						qs['space.fields'] = additionalFields.space_fields as string
+					}
+					if (additionalFields.topic_fields) {
+						qs['topic.fields'] = additionalFields.topic_fields as string
+					}
+					if (additionalFields.user_fields) {
+						qs['user.fields'] = additionalFields.user_fields as string
+					}
+
+					if (operation === 'lookup_spaces_id') {
+						const spaces_id = this.getNodeParameter('spaces_id', i) as string
+						responseData = await twitterApiRequest2.call(this, 'GET', '', {}, qs as IDataObject, `https://api.twitter.com/2/spaces/${spaces_id}`);
+					} else if (operation === 'lookup_creator_id') {
+						qs.user_ids = this.getNodeParameter('user_ids', i) as string
+						responseData = await twitterApiRequest2.call(this, 'GET', '', {}, qs as IDataObject, `https://api.twitter.com/2/spaces/by/creator_ids`);
+					} else if (operation === 'search_spaces_keyword') {
+						qs.query = this.getNodeParameter('query', i) as string
+						if (additionalFields.state) {
+							qs.state = additionalFields.state as string
+						}
+						responseData = await twitterApiRequest2.call(this, 'GET', '', {}, qs as IDataObject, `https://api.twitter.com/2/spaces/search`);
+					}
+
+				}
+				if (resource === 'users') {
+					const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+					const qs: IUsers = {}
+					if (additionalFields.expansions) {
+						qs.expansions = additionalFields.expansions as string
+					}
+					if (additionalFields.max_results) {
+						qs.max_results = additionalFields.max_results as number
+					}
+					if (additionalFields.pagination_token) {
+						qs.pagination_token = additionalFields.pagination_token as string
+					}
+					if (additionalFields.tweet_fields) {
+						qs['tweet.fields'] = additionalFields.tweet_fields as string
+					}
+					if (additionalFields.user_fields) {
+						qs['user.fields'] = additionalFields.user_fields as string
+					}
+
+					if (operation === 'users_following') {
+						const user_id = this.getNodeParameter('user_id', i) as string
+						responseData = await twitterApiRequest2.call(this, 'GET', '', {}, qs as IDataObject, `https://api.twitter.com/2/users/${user_id}/following`);
+					}
+
 				}
 				if (Array.isArray(responseData)) {
 					returnData.push.apply(returnData, responseData as IDataObject[]);

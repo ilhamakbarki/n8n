@@ -61,6 +61,57 @@ export const spacesOptions = [
 		},
 		description: 'The ID of the Spaces to lookup.',
 	},
+	/* -------------------------------------------------------------------------- */
+	/*                           spaces:lookup_creator_id                         */
+	/* -------------------------------------------------------------------------- */
+	{
+		displayName: 'The User ID.',
+		name: 'user_ids',
+		type: 'string',
+		typeOptions: {
+			alwaysOpenEditWindow: true,
+		},
+		required: true,
+		default: '',
+		displayOptions: {
+			show: {
+				operation: [
+					'lookup_creator_id',
+				],
+				resource: [
+					'spaces',
+				],
+			},
+		},
+		description: 'The User ID',
+	},
+	/* -------------------------------------------------------------------------- */
+	/*                       spaces:search_spaces_keyword                         */
+	/* -------------------------------------------------------------------------- */
+	{
+		displayName: 'Query for Search.',
+		name: 'query',
+		type: 'string',
+		typeOptions: {
+			alwaysOpenEditWindow: true,
+		},
+		required: true,
+		default: '',
+		displayOptions: {
+			show: {
+				operation: [
+					'search_spaces_keyword',
+				],
+				resource: [
+					'spaces',
+				],
+			},
+		},
+		description: 'Your search term. This can be any text (including mentions and Hashtags) present in the title of the Space.',
+	},
+	/* -------------------------------------------------------------------------- */
+	/*                           spaces:Options Fields                            */
+	/* -------------------------------------------------------------------------- */
 	{
 		displayName: 'Additional Fields',
 		name: 'additionalFields',
@@ -71,6 +122,8 @@ export const spacesOptions = [
 			show: {
 				operation: [
 					'lookup_spaces_id',
+					'lookup_creator_id',
+					'search_spaces_keyword'
 				],
 				resource: [
 					'spaces',
@@ -83,28 +136,35 @@ export const spacesOptions = [
 				name: 'expansions',
 				type: 'string',
 				default: '',
-				description: 'Expansions enable you to request additional data objects that relate to the originally returned Space. Submit a list of desired expansions in a comma-separated list. Available (invited_user_ids, speaker_ids, creator_id, host_ids)',
+				description: 'Expansions enable you to request additional data objects that relate to the originally returned Space. Submit a list of desired expansions in a comma-separated list. Available (invited_user_ids,speaker_ids,creator_id,host_ids)',
 			},
 			{
 				displayName: 'Space Fields',
 				name: 'space_fields',
 				type: 'string',
 				default: 'id,state',
-				description: 'This fields parameter enables you to select which specific Space fields will deliver in each returned Space. Available (host_ids, created_at, creator_id, id, lang, invited_user_ids, participant_count, speaker_ids, started_at, ended_at, topic_ids, state, title, updated_at, scheduled_start, is_ticketed',
+				description: 'This fields parameter enables you to select which specific Space fields will deliver in each returned Space. Available (host_ids,created_at,creator_id,id,lang,invited_user_ids,participant_count,speaker_ids,started_at,ended_at,topic_ids,state,title,updated_at,scheduled_start,is_ticketed)',
 			},
 			{
 				displayName: 'Topic Fields',
 				name: 'topic_fields',
 				type: 'string',
 				default: '',
-				description: 'This fields parameter enables you to select which specific topic metadata in each returned Space topic object Available (id, name, description)',
+				description: 'This fields parameter enables you to select which specific topic metadata in each returned Space topic object Available (id,name,description)',
 			},
 			{
 				displayName: 'User Fields',
 				name: 'user_fields',
 				type: 'string',
 				default: '',
-				description: 'This fields parameter enables you to select which specific user fields will deliver in each returned Space. Available (created_at, description, entities, id, location, name, pinned_tweet_id, profile_image_url, protected, public_metrics, url, username, verified, withheld)',
+				description: 'This fields parameter enables you to select which specific user fields will deliver in each returned Space. Available (created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld)',
+			},
+			{
+				displayName: 'State',
+				name: 'state',
+				type: 'string',
+				default: '',
+				description: 'Determines the type of results to return. This endpoint returns all Spaces by default. Available (all,live,scheduled)',
 			},
 		],
 	}

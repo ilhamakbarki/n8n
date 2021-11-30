@@ -21,37 +21,37 @@ import {
  * @returns {Promise<any>}
  */
 
- export async function nimbleApiRequest(this: IHookFunctions | IExecuteFunctions, method: string, endpoint: string, body: IDataObject, query?: IDataObject): Promise<any> { // tslint:disable-line:no-any
- 	const credentials = await this.getCredentials('nimbleApi') as {
- 		apiKey: string;
- 	};
+export async function nimbleApiRequest(this: IHookFunctions | IExecuteFunctions, method: string, endpoint: string, body: IDataObject, query?: IDataObject): Promise<any> { // tslint:disable-line:no-any
+	const credentials = await this.getCredentials('nimbleApi') as {
+		apiKey: string;
+	};
 
- 	if (credentials === undefined) {
- 		throw new NodeOperationError(this.getNode(), 'No credentials got returned!');
- 	}
+	if (credentials === undefined) {
+		throw new NodeOperationError(this.getNode(), 'No credentials got returned!');
+	}
 
- 	if (query === undefined) {
- 		query = {};
- 	}
+	if (query === undefined) {
+		query = {};
+	}
 
- 	const options: OptionsWithUri = {
- 		method,
- 		body,
- 		qs: query,
- 		uri: `https://api.nimble.com/${endpoint}`,
- 		json: true,
- 		headers : {
- 			'Content-type' : 'application/json'
- 		},
- 	};
+	const options: OptionsWithUri = {
+		method,
+		body,
+		qs: query,
+		uri: `https://api.nimble.com/${endpoint}`,
+		json: true,
+		headers: {
+			'Content-type': 'application/json'
+		},
+	};
 
- 	options.auth = {
- 		bearer : credentials.apiKey
- 	};
+	options.auth = {
+		bearer: credentials.apiKey
+	};
 
- 	try {
- 		return await this.helpers.request(options);
- 	} catch (error) {
- 		throw new NodeApiError(this.getNode(), error);
- 	}
- }
+	try {
+		return await this.helpers.request(options);
+	} catch (error) {
+		throw new NodeApiError(this.getNode(), error);
+	}
+}
