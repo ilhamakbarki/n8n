@@ -40,10 +40,16 @@ import {
 } from './GenericFunctions';
 
 import {
+	usersLookupOptions
+} from './UsersLookupOptions'
+
+import {
 	ITweet,
 } from './TweetInterface';
 import { ISpaces } from './SpacesInterface';
 import { IUsers } from './UsersInterface';
+import { response } from 'express';
+import { usersTweetsOptions } from './UsersTweetsOptions';
 
 const ISO6391 = require('iso-639-1');
 
@@ -126,6 +132,8 @@ export class Twitter implements INodeType {
 			//Users
 			...usersOperations,
 			...usersOptions,
+			...usersLookupOptions,
+			...usersTweetsOptions
 		],
 	};
 
@@ -360,22 +368,58 @@ export class Twitter implements INodeType {
 					if (additionalFields.expansions) {
 						qs.expansions = additionalFields.expansions as string
 					}
-					if (additionalFields.max_results) {
-						qs.max_results = additionalFields.max_results as number
-					}
-					if (additionalFields.pagination_token) {
-						qs.pagination_token = additionalFields.pagination_token as string
-					}
 					if (additionalFields.tweet_fields) {
 						qs['tweet.fields'] = additionalFields.tweet_fields as string
 					}
 					if (additionalFields.user_fields) {
 						qs['user.fields'] = additionalFields.user_fields as string
 					}
+					const user_id = this.getNodeParameter('user_id', i) as string
 
 					if (operation === 'users_following') {
-						const user_id = this.getNodeParameter('user_id', i) as string
+						if (additionalFields.max_results) {
+							qs.max_results = additionalFields.max_results as number
+						}
+						if (additionalFields.pagination_token) {
+							qs.pagination_token = additionalFields.pagination_token as string
+						}
 						responseData = await twitterApiRequest2.call(this, 'GET', '', {}, qs as IDataObject, `https://api.twitter.com/2/users/${user_id}/following`);
+					} else if (operation === 'users_lookup') {
+						responseData = await twitterApiRequest2.call(this, 'GET', '', {}, qs as IDataObject, `https://api.twitter.com/2/users/${user_id}`);
+						responseData = responseData.data
+					} else if (operation === 'users_tweets') {
+						if (additionalFields.end_time) {
+							qs.end_time = additionalFields.end_time as string
+						}
+						if (additionalFields.start_time) {
+							qs.start_time = additionalFields.start_time as string
+						}
+						if (additionalFields.exclude) {
+							qs.exclude = additionalFields.exclude as string
+						}
+						if (additionalFields.max_results) {
+							qs.max_results = additionalFields.max_results as number
+						}
+						if (additionalFields.media_fields) {
+							qs['media.fields'] = additionalFields.media_fields as string
+						}
+						if (additionalFields.pagination_token) {
+							qs.pagination_token = additionalFields.pagination_token as string
+						}
+						if (additionalFields.place_fields) {
+							qs['place.fields'] = additionalFields.place_fields as string
+						}
+						if (additionalFields.poll_fields) {
+							qs["poll.fields"] = additionalFields.poll_fields as string
+						}
+						if (additionalFields.since_id) {
+							qs.since_id = additionalFields.since_id as string
+						}
+						if (additionalFields.until_id) {
+							qs.until_id = additionalFields.until_id as string
+						}
+
+						responseData = await twitterApiRequest2.call(this, 'GET', '', {}, qs as IDataObject, `https://api.twitter.com/2/users/${user_id}/tweets`);
 					}
 
 				}

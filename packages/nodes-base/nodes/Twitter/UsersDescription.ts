@@ -20,6 +20,17 @@ export const usersOperations = [
 				value: 'users_following',
 				description: 'Returns a list of users the specified user ID is following.',
 			},
+			{
+				name: 'Lookup',
+				value: 'users_lookup',
+				description: 'Returns a variety of information about a single user specified by the requested ID.',
+			},
+			{
+				name: `User's Tweets`,
+				value: 'users_tweets',
+				description: 'Returns Tweets composed by a single user, specified by the requested user ID.',
+			},
+
 		],
 		default: 'users_following',
 		description: 'The operation to perform.',
@@ -43,6 +54,8 @@ export const usersOptions = [
 			show: {
 				operation: [
 					'users_following',
+					'users_lookup',
+					'users_tweets',
 				],
 				resource: [
 					'users',
