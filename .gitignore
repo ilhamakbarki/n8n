@@ -16,3 +16,4 @@ vetur.config.js
 nodelinter.config.json
 packages/*/package-lock.json
 n8n.config.js
+package-lock.json
