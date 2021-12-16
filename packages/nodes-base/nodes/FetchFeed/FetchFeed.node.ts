@@ -10,6 +10,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { Headers } from 'request';
+import { URL } from 'url';
 
 import {
 	fetchData,
@@ -69,42 +70,85 @@ export class FetchFeed implements INodeType {
 
 		let requestMethod: string;
 		let resource: string;
-		let endpoint: string;
+		let endpoint: any;
 
 		for (let i = 0; i < items.length; i++) {
 			try {
 				resource = this.getNodeParameter('resource', i) as string;
 
 				if (resource == "fetch_data") {
-					endpoint = decodeURIComponent(this.getNodeParameter('url', i) as string)
+					const url = new URL(this.getNodeParameter('url', i) as string);
+					const params = url.searchParams;
+
+					//Get Website
+					let website = params.get('website')
+					if (website === null) {
+						throw new NodeOperationError(this.getNode(), `The Query Website not Found on "${url}"`);
+					}
+					website = decodeURIComponent(website)
+					endpoint = `https://${website}/`
 					requestMethod = 'GET';
 					let headers: Headers = {
 						"Accept": "text/html"
 					}
-					const website = await fetchData.call(this, requestMethod, endpoint, headers, false, {}, {})
-					var matches = website.match(/<meta property="algolia_app_id" content="([A-Z0-9]+)">/);
-					if (matches[1]===null) {
+					const r = await fetchData.call(this, requestMethod, endpoint, headers, false, {}, {})
+
+					//Get algolia_app_id
+					var matches = r.match(/<meta property="algolia_app_id" content="([A-Z0-9]+)">/);
+					if (matches===null) {
 						throw new NodeOperationError(this.getNode(), `No algolia_app_id Found on this website "${endpoint}"`);
 					}
 					let algolia_app_id = matches[1];
 					console.log(`Alogolia APP ID ${algolia_app_id}`)
-					matches = website.match(/<meta property="algolia_api_key" content="([a-z0-9]+)">/);
-					if (matches[1]===null) {
+
+					//Get algolia_api_key
+					matches = r.match(/<meta property="algolia_api_key" content="([a-z0-9]+)">/);
+					if (matches===null) {
 						throw new NodeOperationError(this.getNode(), `No algolia_api_key Found on this website "${endpoint}"`);
 					}
 					let algolia_api_key = matches[1];
 					console.log(`Alogolia Key ${algolia_api_key}`)
 
-					endpoint = `https://${endpoint}/api/v1/collections/`
+					//Get Collections Website ID
+					endpoint = `https://${website}/api/v1/collections/`
 					headers["Accept"] = "application/json"
 					const collections = await fetchData.call(this, requestMethod, endpoint, headers, true, {}, {})
-					console.log(collections)
-
+					if(collections["collection"]===null){
+						throw new NodeOperationError(this.getNode(), `No Collections Found on this website "${endpoint}"`);
+					}
+					if(collections["collection"]["id"]===null){
+						throw new NodeOperationError(this.getNode(), `No Collections ID Found on this website "${endpoint}"`);
+					}
+					let website_id = collections["collection"]["id"]
+					let company_id = params.get('company_id')
+					if (company_id === null) {
+						throw new NodeOperationError(this.getNode(), `No Query String company_id Found this "${url}"`);
+					}
+					endpoint = `https://${website}/api/v1/organizations/${company_id}?collection_id=${website_id}`
+					const organization = await fetchData.call(this, requestMethod, endpoint, headers, true, {}, {})
+					if(organization["error"]){
+						throw new NodeOperationError(this.getNode(), `The Organization Error "${organization["error"]}"`);
+					}
+					if(organization["id"]===null){
+						throw new NodeOperationError(this.getNode(), `No Organization ID found on "${endpoint}"`);
+					}
+					let post_url = `https://su5v69fjoj-dsn.algolia.net/1/indexes/Job_${website_id}_production/query`
+					let qs = {
+						"x-algolia-agent":"Algolia for JavaScript (3.35.1); Browser (lite)",
+						"x-algolia-application-id":algolia_app_id,
+						"x-algolia-api-key":algolia_api_key
+					}
+					let body = {
+						params:`page=0&hitsPerPage=20&filters=(organization.id:"${organization["id"]}")&attributesToRetrieve=["title","organization.name","organization.logo_url","organization.slug","organization.id","locations","url","created_at","slug","source"]&removeStopWords=["en"]`
+					}
+					requestMethod = "POST"
+					headers["Content-Type"] = "application/json"
+					const algolia = await fetchData.call(this, requestMethod, post_url, headers, true, body, qs)
+					returnData.push(algolia as IDataObject);
 				} else {
 					throw new NodeOperationError(this.getNode(), `The resource "${resource}" is not known!`);
 				}
 
-				//returnData.push(responseData as IDataObject);
 			} catch (error) {
 				if (this.continueOnFail()) {
 					returnData.push({ error: error.message });

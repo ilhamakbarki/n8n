@@ -27,7 +27,7 @@ import {
  * @returns {Promise<any>}
  */
 
- export async function fetchData(this: IExecuteFunctions | IExecuteSingleFunctions, method: string, uri: string, headers : Headers, json?: boolean, body: any = {}, qs: IDataObject = {},  option: IDataObject = {}): Promise<any> {
+ export async function fetchData(this: IExecuteFunctions | IExecuteSingleFunctions, method: string, uri: string, headers : Headers, json?: boolean, body: IDataObject = {}, qs: IDataObject = {},  option: IDataObject = {}): Promise<any> {
 	 // tslint:disable-line:no-any
 	let options: OptionsWithUrl = {
 		method,
