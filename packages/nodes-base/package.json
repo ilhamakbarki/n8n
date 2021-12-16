@@ -654,7 +654,8 @@
       "dist/nodes/Zulip/Zulip.node.js",
       "dist/nodes/Nimble/Nimble.node.js",
       "dist/nodes/MonkeyLearn/MonkeyLearn.node.js",
-      "dist/nodes/Deepface/Deepface.node.js"
+      "dist/nodes/Deepface/Deepface.node.js",
+      "dist/nodes/FetchFeed/FetchFeed.node.js"
     ]
   },
   "devDependencies": {
