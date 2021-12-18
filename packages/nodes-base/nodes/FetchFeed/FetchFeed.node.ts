@@ -145,6 +145,11 @@ export class FetchFeed implements INodeType {
 					limit_page = additionalFields.limit_page as number
 				}
 
+				let filters = ""
+				if (additionalFields.organization_id) {
+					filters = `(objectID:"${additionalFields.organization_id as string}")`
+				}
+
 				let page: number = 0
 				if (!all_page) {
 					if (additionalFields.page) {
@@ -153,7 +158,7 @@ export class FetchFeed implements INodeType {
 				}
 
 				let organizations = []
-				let org = await get_organization(this, page, limit_page, algolia_api_key, algolia_app_id, company_id)
+				let org = await get_organization(this, page, limit_page, algolia_api_key, algolia_app_id, company_id, filters)
 				if (!org["results"]) {
 					throw new NodeOperationError(this.getNode(), `No Organizations Found on this website`);
 				}
@@ -161,17 +166,17 @@ export class FetchFeed implements INodeType {
 				for (let data of org["results"][0]["hits"]) {
 					organizations.push({
 						"name": data["name"],
-						"organization_id": data["objectID"]
+						"organization_id": data["objectID"],
 					})
 				}
 
 				if (all_page) {
 					for (page = 1; page < total_page; page++) {
-						let org = await get_organization(this, page, limit_page, algolia_api_key, algolia_app_id, company_id)
+						let org = await get_organization(this, page, limit_page, algolia_api_key, algolia_app_id, company_id, filters)
 						for (let data of org["results"][0]["hits"]) {
 							organizations.push({
 								"name": data["name"],
-								"organization_id": data["objectID"]
+								"organization_id": data["objectID"],
 							})
 						}
 					}
@@ -201,9 +206,10 @@ export class FetchFeed implements INodeType {
 						}
 					}
 					returnData.push({
-						"organization_id":data["organization_id"],
-						"organization_name":data["name"],
-						"jobs":jobs
+						"company_id":company_id,
+						"organization_id": data["organization_id"],
+						"organization_name": data["name"],
+						"jobs": jobs
 					})
 				}
 			} catch (error) {
@@ -251,11 +257,11 @@ async function get_jobs(data: any, page: number, algolia_api_key: string, algoli
 	return await fetchData.call(data, "POST", endpoint, header, true, body, qs, {})
 }
 
-async function get_organization(data: any, page: number, limit_page:number, algolia_api_key: string, algolia_app_id: string, company_id: string) {
+async function get_organization(data: any, page: number, limit_page: number, algolia_api_key: string, algolia_app_id: string, company_id: string, filters?: string) {
 	let req = {
 		page,
 		hitsPerPage: limit_page,
-		filters: "",
+		filters: filters,
 		attributesToRetrieve: `["name"]`,
 		removeStopWords: `["en"]`
 	}
@@ -268,7 +274,7 @@ async function get_organization(data: any, page: number, limit_page:number, algo
 			}
 		]
 	}
-
+	//console.log(body)
 	let qs = {
 		"x-algolia-agent": "Algolia for JavaScript (4.11.0); Browser"
 	}
@@ -282,7 +288,6 @@ async function get_organization(data: any, page: number, limit_page:number, algo
 	}
 
 	return await fetchData.call(data, "POST", endpoint, header, true, body, qs, {})
-	//console.log(collections)
 }
 
 function convertQS(obj: { [k: string]: any }) {

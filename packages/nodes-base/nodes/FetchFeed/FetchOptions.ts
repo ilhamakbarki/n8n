@@ -44,6 +44,13 @@ export const FetchOptions = [
 				default: false,
 				description: 'All Page',
 			},
+			{
+				displayName: 'Organization ID',
+				name: 'organization_id',
+				type: 'string',
+				default: '',
+				description: 'Organization ID',
+			},
 		],
 	}
 ] as INodeProperties[];
