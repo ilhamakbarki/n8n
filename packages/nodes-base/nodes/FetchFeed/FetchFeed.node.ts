@@ -10,6 +10,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { Headers } from 'request';
+import { FetchJobsOptions } from './FetchJobsOptions';
 import { FetchOptions } from './FetchOptions';
 
 import {
@@ -39,12 +40,16 @@ export class FetchFeed implements INodeType {
 				required: true,
 				options: [
 					{
-						name: 'Get Data from URL',
+						name: 'Get Organization from URL',
 						value: 'fetch_data',
 					},
 					{
-						name: 'Get Data from Company ID',
+						name: 'Get Organization from Company ID',
 						value: 'fetch_company',
+					},
+					{
+						name: 'Get Jobs from Organization',
+						value: 'fetch_jobs',
 					},
 				],
 				default: 'fetch_data',
@@ -69,7 +74,7 @@ export class FetchFeed implements INodeType {
 			{
 				displayName: 'Company ID',
 				name: 'company_id',
-				type: 'number',
+				type: 'string',
 				default: '',
 				placeholder: '165',
 				required: true,
@@ -77,12 +82,15 @@ export class FetchFeed implements INodeType {
 					show: {
 						resource: [
 							'fetch_company',
+							'fetch_jobs',
 						],
 					},
 				},
 				description: 'Fetch data from Company ID',
 			},
-			...FetchOptions],
+			...FetchOptions,
+			...FetchJobsOptions
+		],
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
@@ -96,7 +104,7 @@ export class FetchFeed implements INodeType {
 		for (let i = 0; i < items.length; i++) {
 			try {
 				resource = this.getNodeParameter('resource', i) as string;
-				let algolia_app_id = "SU5V69FJOJ", algolia_api_key = "a4971670ebc5d269725bb3d7639f9c3d", company_id
+				let algolia_app_id = "SU5V69FJOJ", algolia_api_key = "a4971670ebc5d269725bb3d7639f9c3d", company_id, organization_id = ""
 				if (resource == "fetch_data") {
 					const url = this.getNodeParameter('url', i) as string
 					endpoint = url
@@ -129,8 +137,12 @@ export class FetchFeed implements INodeType {
 						throw new NodeOperationError(this.getNode(), `No Algio API Found on this website "${endpoint}"`);
 					}
 				} else if (resource == "fetch_company") {
-					company_id = this.getNodeParameter('company_id', i) as number
-				} else {
+					company_id = this.getNodeParameter('company_id', i) as string
+				} else if (resource == "fetch_jobs") {
+					company_id = this.getNodeParameter('company_id', i) as string
+					organization_id = this.getNodeParameter('organization_id', i) as string
+				}
+				else {
 					throw new NodeOperationError(this.getNode(), `The resource "${resource}" is not known!`);
 				}
 
@@ -145,72 +157,64 @@ export class FetchFeed implements INodeType {
 					limit_page = additionalFields.limit_page as number
 				}
 
-				let filters = ""
-				if (additionalFields.organization_id) {
-					filters = `(objectID:"${additionalFields.organization_id as string}")`
+				if(all_page){
+					limit_page = 100
 				}
 
 				let page: number = 0
-				if (!all_page) {
-					if (additionalFields.page) {
-						page = additionalFields.page as number
+				if (!all_page && additionalFields.page) {
+					page = additionalFields.page as number
+				}
+
+				if (resource == "fetch_data" || resource == "fetch_company") {
+					let filters = ""
+					if (additionalFields.organization_id) {
+						filters = `(objectID:"${additionalFields.organization_id as string}")`
 					}
-				}
 
-				let organizations = []
-				let org = await get_organization(this, page, limit_page, algolia_api_key, algolia_app_id, company_id, filters)
-				if (!org["results"]) {
-					throw new NodeOperationError(this.getNode(), `No Organizations Found on this website`);
-				}
-				let total_page = org["results"][0]["nbPages"]
-				for (let data of org["results"][0]["hits"]) {
-					organizations.push({
-						"name": data["name"],
-						"organization_id": data["objectID"],
-					})
-				}
+					let org = await get_organization(this, page, limit_page, algolia_api_key, algolia_app_id, company_id, filters)
+					if (!org["results"]) {
+						throw new NodeOperationError(this.getNode(), `No Organizations Found on this website`);
+					}
+					let total_page = org["results"][0]["nbPages"]
+					for (let data of org["results"][0]["hits"]) {
+						data["company_id"] = company_id
+						returnData.push(data)
+					}
 
-				if (all_page) {
-					for (page = 1; page < total_page; page++) {
-						let org = await get_organization(this, page, limit_page, algolia_api_key, algolia_app_id, company_id, filters)
-						for (let data of org["results"][0]["hits"]) {
-							organizations.push({
-								"name": data["name"],
-								"organization_id": data["objectID"],
-							})
+					if (all_page) {
+						for (page = 1; page < total_page; page++) {
+							let org = await get_organization(this, page, limit_page, algolia_api_key, algolia_app_id, company_id, filters)
+							for (let data of org["results"][0]["hits"]) {
+								data["company_id"] = company_id
+								returnData.push(data)
+							}
 						}
 					}
-				}
-
-				for (let data of organizations) {
-					page = 0
+				} else {
 					let jobs = []
-					let job = await get_jobs(this, page, algolia_api_key, algolia_app_id, company_id, data["organization_id"])
+					let job = await get_jobs(this, page, limit_page, algolia_api_key, algolia_app_id, company_id, organization_id)
 					if (!job["results"]) {
 						continue
 					}
 					let total_page = job["results"][0]["nbPages"]
 					for (let data2 of job["results"][0]["hits"]) {
 						delete data2["_highlightResult"]
-						jobs.push(data2)
+						returnData.push(data2)
 					}
 
-					for (page = 1; page < total_page; page++) {
-						let job = await get_jobs(this, page, algolia_api_key, algolia_app_id, company_id, data["organization_id"])
-						if (!job["results"]) {
-							continue
-						}
-						for (let data2 of job["results"][0]["hits"]) {
-							delete data2["_highlightResult"]
-							jobs.push(data2)
+					if (all_page) {
+						for (page = 1; page < total_page; page++) {
+							let job = await get_jobs(this, page, limit_page, algolia_api_key, algolia_app_id, company_id, organization_id)
+							if (!job["results"]) {
+								continue
+							}
+							for (let data2 of job["results"][0]["hits"]) {
+								delete data2["_highlightResult"]
+								returnData.push(data2)
+							}
 						}
 					}
-					returnData.push({
-						"company_id":company_id,
-						"organization_id": data["organization_id"],
-						"organization_name": data["name"],
-						"jobs": jobs
-					})
 				}
 			} catch (error) {
 				if (this.continueOnFail()) {
@@ -224,10 +228,10 @@ export class FetchFeed implements INodeType {
 	}
 }
 
-async function get_jobs(data: any, page: number, algolia_api_key: string, algolia_app_id: string, company_id: string, organization_id: string) {
+async function get_jobs(data: any, page: number, limit_page: number, algolia_api_key: string, algolia_app_id: string, company_id: string, organization_id: string) {
 	let req = {
 		page,
-		hitsPerPage: 100,
+		hitsPerPage: limit_page,
 		filters: `(organization.id:"${organization_id}")`,
 		attributesToRetrieve: `["title","organization.name","organization.logo_url","organization.slug","organization.id","locations","url","created_at","slug","source"]`,
 		removeStopWords: `["en"]`

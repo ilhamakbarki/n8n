@@ -2,10 +2,26 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export const FetchOptions = [
+export const FetchJobsOptions = [
 	/* -------------------------------------------------------------------------- */
 	/*                           spaces:Options Fields                            */
 	/* -------------------------------------------------------------------------- */
+	{
+		displayName: 'Organization ID',
+		name: 'organization_id',
+		type: 'string',
+		default: '',
+		placeholder: '165',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: [
+					'fetch_jobs',
+				],
+			},
+		},
+		description: 'Organization ID',
+	},
 	{
 		displayName: 'Additional Fields',
 		name: 'additionalFields',
@@ -15,8 +31,7 @@ export const FetchOptions = [
 		displayOptions: {
 			show: {
 				resource: [
-					'fetch_data',
-					'fetch_company'
+					'fetch_jobs',
 				],
 			},
 		},
@@ -43,13 +58,6 @@ export const FetchOptions = [
 				type: 'boolean',
 				default: false,
 				description: 'All Page',
-			},
-			{
-				displayName: 'Organization ID',
-				name: 'organization_id',
-				type: 'string',
-				default: '',
-				description: 'Organization ID',
 			},
 		],
 	}
