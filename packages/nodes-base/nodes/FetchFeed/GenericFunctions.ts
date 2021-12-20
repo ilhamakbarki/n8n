@@ -55,3 +55,77 @@ import {
 	}
 }
 
+export async function get_jobs(data: any, page: number, limit_page: number, algolia_api_key: string, algolia_app_id: string, company_id: string, organization_id: string) {
+	let req = {
+		page,
+		hitsPerPage: limit_page,
+		filters: `(organization.id:"${organization_id}")`,
+		attributesToRetrieve: `["title","organization.name","organization.logo_url","organization.slug","organization.id","locations","url","created_at","slug","source"]`,
+		removeStopWords: `["en"]`
+	}
+
+	let body = {
+		"requests": [
+			{
+				"indexName": `Job_${company_id}_production`,
+				"params": convertQS(req)
+			}
+		]
+	}
+
+	let qs = {
+		"x-algolia-agent": "Algolia for JavaScript (4.11.0); Browser"
+	}
+
+	//Get Collections Website ID
+	let endpoint = `https://su5v69fjoj-dsn.algolia.net/1/indexes/*/queries`
+	let header: Headers = {
+		"Accept": "application/json",
+		"x-algolia-api-key": algolia_api_key,
+		"x-algolia-application-id": algolia_app_id
+	}
+
+	return await fetchData.call(data, "POST", endpoint, header, true, body, qs, {})
+}
+
+export async function get_organization(data: any, page: number, limit_page: number, algolia_api_key: string, algolia_app_id: string, company_id: string, filters?: string) {
+	let req = {
+		page,
+		hitsPerPage: limit_page,
+		filters: filters,
+		attributesToRetrieve: `["name"]`,
+		removeStopWords: `["en"]`
+	}
+
+	let body = {
+		"requests": [
+			{
+				"indexName": `Organization_${company_id}_production`,
+				"params": convertQS(req)
+			}
+		]
+	}
+	//console.log(body)
+	let qs = {
+		"x-algolia-agent": "Algolia for JavaScript (4.11.0); Browser"
+	}
+
+	//Get Collections Website ID
+	let endpoint = `https://su5v69fjoj-dsn.algolia.net/1/indexes/*/queries`
+	let header: Headers = {
+		"Accept": "application/json",
+		"x-algolia-api-key": algolia_api_key,
+		"x-algolia-application-id": algolia_app_id
+	}
+
+	return await fetchData.call(data, "POST", endpoint, header, true, body, qs, {})
+}
+
+function convertQS(obj: { [k: string]: any }) {
+	var str = [];
+	for (var p in obj)
+		if (obj.hasOwnProperty(p)) {
+			str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+		}
+	return str.join("&");
+}

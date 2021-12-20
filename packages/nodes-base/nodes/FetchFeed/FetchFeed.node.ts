@@ -15,6 +15,8 @@ import { FetchOptions } from './FetchOptions';
 
 import {
 	fetchData,
+	get_organization,
+	get_jobs,
 } from './GenericFunctions';
 
 export class FetchFeed implements INodeType {
@@ -40,6 +42,10 @@ export class FetchFeed implements INodeType {
 				required: true,
 				options: [
 					{
+						name: 'Get Organization & Jobs from URL',
+						value: 'fetch_all_data',
+					},
+					{
 						name: 'Get Organization from URL',
 						value: 'fetch_data',
 					},
@@ -52,7 +58,7 @@ export class FetchFeed implements INodeType {
 						value: 'fetch_jobs',
 					},
 				],
-				default: 'fetch_data',
+				default: 'fetch_all_data',
 				description: 'The resource to operate on.',
 			},
 			{
@@ -66,6 +72,7 @@ export class FetchFeed implements INodeType {
 					show: {
 						resource: [
 							'fetch_data',
+							'fetch_all_data'
 						],
 					},
 				},
@@ -104,8 +111,8 @@ export class FetchFeed implements INodeType {
 		for (let i = 0; i < items.length; i++) {
 			try {
 				resource = this.getNodeParameter('resource', i) as string;
-				let algolia_app_id = "SU5V69FJOJ", algolia_api_key = "a4971670ebc5d269725bb3d7639f9c3d", company_id, organization_id = ""
-				if (resource == "fetch_data") {
+				let algolia_app_id = "SU5V69FJOJ", algolia_api_key = "a4971670ebc5d269725bb3d7639f9c3d", company_id:string, organization_id = ""
+				if (resource == "fetch_data" || resource == "fetch_all_data") {
 					const url = this.getNodeParameter('url', i) as string
 					endpoint = url
 					requestMethod = 'GET';
@@ -129,7 +136,7 @@ export class FetchFeed implements INodeType {
 							}
 						}
 						if (script["props"] && script["props"]["initialProps"] && script["props"]["initialProps"]["network"] && script["props"]["initialProps"]["network"]["id"]) {
-							company_id = script["props"]["initialProps"]["network"]["id"]
+							company_id = script["props"]["initialProps"]["network"]["id"] as string
 						} else {
 							throw new NodeOperationError(this.getNode(), `No Company ID Found on this website "${endpoint}"`);
 						}
@@ -157,7 +164,7 @@ export class FetchFeed implements INodeType {
 					limit_page = additionalFields.limit_page as number
 				}
 
-				if(all_page){
+				if (all_page) {
 					limit_page = 100
 				}
 
@@ -166,12 +173,12 @@ export class FetchFeed implements INodeType {
 					page = additionalFields.page as number
 				}
 
-				if (resource == "fetch_data" || resource == "fetch_company") {
-					let filters = ""
-					if (additionalFields.organization_id) {
-						filters = `(objectID:"${additionalFields.organization_id as string}")`
-					}
+				let filters = ""
+				if (additionalFields.organization_id) {
+					filters = `(objectID:"${additionalFields.organization_id as string}")`
+				}
 
+				if (resource == "fetch_data" || resource == "fetch_company") {
 					let org = await get_organization(this, page, limit_page, algolia_api_key, algolia_app_id, company_id, filters)
 					if (!org["results"]) {
 						throw new NodeOperationError(this.getNode(), `No Organizations Found on this website`);
@@ -190,6 +197,55 @@ export class FetchFeed implements INodeType {
 								returnData.push(data)
 							}
 						}
+					}
+				} else if (resource == "fetch_all_data") {
+					//GET ORGANIZATIONS
+					let organizations = []
+					let org = await get_organization(this, page, limit_page, algolia_api_key, algolia_app_id, company_id, filters)
+					if (!org["results"]) {
+						throw new NodeOperationError(this.getNode(), `No Organizations Found on this website`);
+					}
+					let total_page = org["results"][0]["nbPages"]
+					for (let data of org["results"][0]["hits"]) {
+						data["company_id"] = company_id
+						organizations.push(data)
+					}
+
+					if (all_page) {
+						for (page = 1; page < total_page; page++) {
+							let org = await get_organization(this, page, limit_page, algolia_api_key, algolia_app_id, company_id, filters)
+							for (let data of org["results"][0]["hits"]) {
+								data["company_id"] = company_id
+								organizations.push(data)
+							}
+						}
+					}
+
+					for (let data of organizations) {
+						page = 0
+						let jobs = []
+						let job = await get_jobs(this, page, 100, algolia_api_key, algolia_app_id, company_id, data["objectID"])
+						if (!job["results"]) {
+							continue
+						}
+						let total_page = job["results"][0]["nbPages"]
+						for (let data2 of job["results"][0]["hits"]) {
+							delete data2["_highlightResult"]
+							jobs.push(data2)
+						}
+
+						for (page = 1; page < total_page; page++) {
+							let job = await get_jobs(this, page, 100, algolia_api_key, algolia_app_id, company_id, data["objectID"])
+							if (!job["results"]) {
+								continue
+							}
+							for (let data2 of job["results"][0]["hits"]) {
+								delete data2["_highlightResult"]
+								jobs.push(data2)
+							}
+						}
+						data["jobs"] = jobs
+						returnData.push(data)
 					}
 				} else {
 					let jobs = []
@@ -226,79 +282,4 @@ export class FetchFeed implements INodeType {
 		}
 		return [this.helpers.returnJsonArray(returnData)];
 	}
-}
-
-async function get_jobs(data: any, page: number, limit_page: number, algolia_api_key: string, algolia_app_id: string, company_id: string, organization_id: string) {
-	let req = {
-		page,
-		hitsPerPage: limit_page,
-		filters: `(organization.id:"${organization_id}")`,
-		attributesToRetrieve: `["title","organization.name","organization.logo_url","organization.slug","organization.id","locations","url","created_at","slug","source"]`,
-		removeStopWords: `["en"]`
-	}
-
-	let body = {
-		"requests": [
-			{
-				"indexName": `Job_${company_id}_production`,
-				"params": convertQS(req)
-			}
-		]
-	}
-
-	let qs = {
-		"x-algolia-agent": "Algolia for JavaScript (4.11.0); Browser"
-	}
-
-	//Get Collections Website ID
-	let endpoint = `https://su5v69fjoj-dsn.algolia.net/1/indexes/*/queries`
-	let header: Headers = {
-		"Accept": "application/json",
-		"x-algolia-api-key": algolia_api_key,
-		"x-algolia-application-id": algolia_app_id
-	}
-
-	return await fetchData.call(data, "POST", endpoint, header, true, body, qs, {})
-}
-
-async function get_organization(data: any, page: number, limit_page: number, algolia_api_key: string, algolia_app_id: string, company_id: string, filters?: string) {
-	let req = {
-		page,
-		hitsPerPage: limit_page,
-		filters: filters,
-		attributesToRetrieve: `["name"]`,
-		removeStopWords: `["en"]`
-	}
-
-	let body = {
-		"requests": [
-			{
-				"indexName": `Organization_${company_id}_production`,
-				"params": convertQS(req)
-			}
-		]
-	}
-	//console.log(body)
-	let qs = {
-		"x-algolia-agent": "Algolia for JavaScript (4.11.0); Browser"
-	}
-
-	//Get Collections Website ID
-	let endpoint = `https://su5v69fjoj-dsn.algolia.net/1/indexes/*/queries`
-	let header: Headers = {
-		"Accept": "application/json",
-		"x-algolia-api-key": algolia_api_key,
-		"x-algolia-application-id": algolia_app_id
-	}
-
-	return await fetchData.call(data, "POST", endpoint, header, true, body, qs, {})
-}
-
-function convertQS(obj: { [k: string]: any }) {
-	var str = [];
-	for (var p in obj)
-		if (obj.hasOwnProperty(p)) {
-			str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
-		}
-	return str.join("&");
 }
