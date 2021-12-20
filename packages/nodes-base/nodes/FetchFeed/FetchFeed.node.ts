@@ -17,6 +17,7 @@ import {
 	fetchData,
 	get_organization,
 	get_jobs,
+	get_detail_organization,
 } from './GenericFunctions';
 
 export class FetchFeed implements INodeType {
@@ -116,7 +117,7 @@ export class FetchFeed implements INodeType {
 		for (let i = 0; i < items.length; i++) {
 			try {
 				resource = this.getNodeParameter('resource', i) as string;
-				let algolia_app_id = "SU5V69FJOJ", algolia_api_key = "a4971670ebc5d269725bb3d7639f9c3d", company_id:string, organization_id = ""
+				let algolia_app_id = "SU5V69FJOJ", algolia_api_key = "a4971670ebc5d269725bb3d7639f9c3d", company_id: string, organization_id = ""
 				if (resource == "fetch_data" || resource == "fetch_all_data") {
 					const url = this.getNodeParameter('url', i) as string
 					endpoint = url
@@ -191,6 +192,7 @@ export class FetchFeed implements INodeType {
 					let total_page = org["results"][0]["nbPages"]
 					for (let data of org["results"][0]["hits"]) {
 						data["company_id"] = company_id
+						data["detail"] = await get_detail_organization(this, company_id, data["objectID"])
 						returnData.push(data)
 					}
 
@@ -199,6 +201,7 @@ export class FetchFeed implements INodeType {
 							let org = await get_organization(this, page, limit_page, algolia_api_key, algolia_app_id, company_id, filters)
 							for (let data of org["results"][0]["hits"]) {
 								data["company_id"] = company_id
+								data["detail"] = await get_detail_organization(this, company_id, data["objectID"])
 								returnData.push(data)
 							}
 						}
@@ -213,6 +216,7 @@ export class FetchFeed implements INodeType {
 					let total_page = org["results"][0]["nbPages"]
 					for (let data of org["results"][0]["hits"]) {
 						data["company_id"] = company_id
+						data["detail"] = await get_detail_organization(this, company_id, data["objectID"])
 						organizations.push(data)
 					}
 
@@ -221,6 +225,7 @@ export class FetchFeed implements INodeType {
 							let org = await get_organization(this, page, limit_page, algolia_api_key, algolia_app_id, company_id, filters)
 							for (let data of org["results"][0]["hits"]) {
 								data["company_id"] = company_id
+								data["detail"] = await get_detail_organization(this, company_id, data["objectID"])
 								organizations.push(data)
 							}
 						}
