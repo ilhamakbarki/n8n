@@ -46,6 +46,10 @@ export class FetchFeed implements INodeType {
 						value: 'fetch_all_data',
 					},
 					{
+						name: 'Get Organization & Jobs from Company ID',
+						value: 'fetch_all_data_by_id',
+					},
+					{
 						name: 'Get Organization from URL',
 						value: 'fetch_data',
 					},
@@ -90,6 +94,7 @@ export class FetchFeed implements INodeType {
 						resource: [
 							'fetch_company',
 							'fetch_jobs',
+							'fetch_all_data_by_id'
 						],
 					},
 				},
@@ -143,7 +148,7 @@ export class FetchFeed implements INodeType {
 					} else {
 						throw new NodeOperationError(this.getNode(), `No Algio API Found on this website "${endpoint}"`);
 					}
-				} else if (resource == "fetch_company") {
+				} else if (resource == "fetch_company" || resource == "fetch_all_data_by_id") {
 					company_id = this.getNodeParameter('company_id', i) as string
 				} else if (resource == "fetch_jobs") {
 					company_id = this.getNodeParameter('company_id', i) as string
@@ -198,7 +203,7 @@ export class FetchFeed implements INodeType {
 							}
 						}
 					}
-				} else if (resource == "fetch_all_data") {
+				} else if (resource == "fetch_all_data" || resource == "fetch_all_data_by_id") {
 					//GET ORGANIZATIONS
 					let organizations = []
 					let org = await get_organization(this, page, limit_page, algolia_api_key, algolia_app_id, company_id, filters)

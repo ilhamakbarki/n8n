@@ -17,7 +17,8 @@ export const FetchOptions = [
 				resource: [
 					'fetch_data',
 					'fetch_company',
-					'fetch_all_data'
+					'fetch_all_data',
+					'fetch_all_data_by_id',
 				],
 			},
 		},
