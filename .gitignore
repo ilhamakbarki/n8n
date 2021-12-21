@@ -20,3 +20,7 @@ packages/**/.turbo
 cypress/videos/*
 cypress/screenshots/*
 *.swp
+docker-compose.yml
+Dockerfile
+!*/Dockerfile
+!*/docker-compose.yml
