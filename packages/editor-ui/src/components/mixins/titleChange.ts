@@ -20,11 +20,11 @@ export const titleChange = Vue.extend({
 				icon = '▶️';
 			}
 
-			window.document.title = `socal-bot.io - ${icon} ${workflow}`;
+			window.document.title = `social-bot.io - ${icon} ${workflow}`;
 		},
 
 		$titleReset() {
-			document.title = `socal-bot.io - Workflow Automation`;
+			document.title = `social-bot.io - Workflow Automation`;
 		},
 
 	},

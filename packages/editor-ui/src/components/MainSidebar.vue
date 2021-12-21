@@ -19,7 +19,7 @@
 			<template #header>
 				<div :class="$style.logo">
 					<img
-						:src="basePath + (isCollapsed ? 'n8n-logo-collapsed.svg' : 'n8n-logo-expanded.svg')"
+						:src="basePath + (isCollapsed ? 'n8n-icon-small.png' : 'n8n-icon-small.png')"
 						:class="$style.icon"
 						alt="n8n"
 					/>
