@@ -16,3 +16,7 @@ nodelinter.config.json
 packages/*/package-lock.json
 n8n.config.js
 package-lock.json
+docker-compose.yml
+Dockerfile
+!*/Dockerfile
+!*/docker-compose.yml
