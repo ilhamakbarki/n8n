@@ -59,6 +59,27 @@ export const FetchJobsOptions = [
 				default: false,
 				description: 'All Page',
 			},
+			{
+				displayName: 'Start Time',
+				name: 'start_time',
+				type: 'number',
+				default: '',
+				description: 'Start time with format Epoch'
+			},
+			{
+				displayName: 'End Time',
+				name: 'end_time',
+				type: 'number',
+				default: '',
+				description: 'End time with format Epoch'
+			},
+			{
+				displayName: 'Locations',
+				name: 'locations',
+				type: 'string',
+				default: '',
+				description: 'Searchable Locations, separator pipe(|) for many locations'
+			},
 		],
 	}
 ] as INodeProperties[];

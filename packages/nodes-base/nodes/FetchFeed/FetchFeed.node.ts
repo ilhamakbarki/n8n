@@ -1,3 +1,5 @@
+import e = require('express');
+import { filter } from 'lodash';
 import {
 	IExecuteFunctions,
 } from 'n8n-core';
@@ -184,6 +186,23 @@ export class FetchFeed implements INodeType {
 					filters = `(objectID:"${additionalFields.organization_id as string}")`
 				}
 
+				let locations=""
+				if (additionalFields.locations) {
+					console.log(additionalFields.locations)
+					let s = additionalFields.locations as string
+					let s_s = s.split("|")
+					let key = ""
+					for(let d of s_s){
+						key += `searchable_locations:"${d.trim()}" OR `
+					}
+					key = key.substring(0, key.length-4)
+					if(filters==""){
+						filters = `(${key})`
+					}else{
+						filters += `AND (${key})`
+					}
+				}
+
 				if (resource == "fetch_data" || resource == "fetch_company") {
 					let org = await get_organization(this, page, limit_page, algolia_api_key, algolia_app_id, company_id, filters)
 					if (!org["results"]) {
@@ -231,10 +250,19 @@ export class FetchFeed implements INodeType {
 						}
 					}
 
+					let start_time = ""
+					if (additionalFields.start_time) {
+						start_time = `AND created_at >=${additionalFields.start_time as number}`
+					}
+					let end_time = ""
+					if (additionalFields.end_time) {
+						end_time = `AND created_at <=${additionalFields.end_time as number}`
+					}
 					for (let data of organizations) {
 						page = 0
 						let jobs = []
-						let job = await get_jobs(this, page, 100, algolia_api_key, algolia_app_id, company_id, data["objectID"])
+						let filters = `organization.id:"${data["objectID"]}" ${start_time} ${end_time} ${locations}`
+						let job = await get_jobs(this, page, 100, algolia_api_key, algolia_app_id, company_id, filters)
 						if (!job["results"]) {
 							continue
 						}
@@ -245,7 +273,7 @@ export class FetchFeed implements INodeType {
 						}
 
 						for (page = 1; page < total_page; page++) {
-							let job = await get_jobs(this, page, 100, algolia_api_key, algolia_app_id, company_id, data["objectID"])
+							let job = await get_jobs(this, page, 100, algolia_api_key, algolia_app_id, company_id, filters)
 							if (!job["results"]) {
 								continue
 							}
@@ -258,8 +286,16 @@ export class FetchFeed implements INodeType {
 						returnData.push(data)
 					}
 				} else {
-					let jobs = []
-					let job = await get_jobs(this, page, limit_page, algolia_api_key, algolia_app_id, company_id, organization_id)
+					let start_time = ""
+					if (additionalFields.start_time) {
+						start_time = `AND created_at >=${additionalFields.start_time as number}`
+					}
+					let end_time = ""
+					if (additionalFields.end_time) {
+						end_time = `AND created_at <=${additionalFields.end_time as number}`
+					}
+					let filters = `organization.id:"${organization_id}" ${start_time} ${end_time} ${locations}`
+					let job = await get_jobs(this, page, limit_page, algolia_api_key, algolia_app_id, company_id, filters)
 					if (!job["results"]) {
 						continue
 					}
@@ -271,7 +307,7 @@ export class FetchFeed implements INodeType {
 
 					if (all_page) {
 						for (page = 1; page < total_page; page++) {
-							let job = await get_jobs(this, page, limit_page, algolia_api_key, algolia_app_id, company_id, organization_id)
+							let job = await get_jobs(this, page, limit_page, algolia_api_key, algolia_app_id, company_id, filters)
 							if (!job["results"]) {
 								continue
 							}

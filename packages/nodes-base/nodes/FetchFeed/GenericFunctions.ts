@@ -55,12 +55,12 @@ export async function fetchData(this: IExecuteFunctions | IExecuteSingleFunction
 	}
 }
 
-export async function get_jobs(data: any, page: number, limit_page: number, algolia_api_key: string, algolia_app_id: string, company_id: string, organization_id: string) {
+export async function get_jobs(data: any, page: number, limit_page: number, algolia_api_key: string, algolia_app_id: string, company_id: string, filters: string) {
 	let req = {
 		page,
 		hitsPerPage: limit_page,
-		filters: `(organization.id:"${organization_id}")`,
-		attributesToRetrieve: `["title","organization.name","organization.logo_url","organization.slug","organization.id","locations","url","created_at","slug","source"]`,
+		filters:filters.trim(),
+		attributesToRetrieve: `["*"]`,
 		removeStopWords: `["en"]`
 	}
 
@@ -95,7 +95,7 @@ export async function get_detail_organization(data: any, company_id: string, org
 	}
 
 	let qs = {
-		collection_id : company_id
+		collection_id: company_id
 	}
 
 	return await fetchData.call(data, "GET", endpoint, header, true, {}, qs, {})
@@ -105,8 +105,8 @@ export async function get_organization(data: any, page: number, limit_page: numb
 	let req = {
 		page,
 		hitsPerPage: limit_page,
-		filters: filters,
-		attributesToRetrieve: `["name",""]`,
+		filters: filters?.trim(),
+		attributesToRetrieve: `["*"]`,
 		removeStopWords: `["en"]`
 	}
 
