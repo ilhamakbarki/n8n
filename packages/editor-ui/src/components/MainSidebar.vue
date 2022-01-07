@@ -11,9 +11,9 @@
 			<n8n-menu default-active="workflow" @select="handleSelect" :collapse="isCollapsed">
 
 				<n8n-menu-item index="logo" class="logo-item">
-					<a href="https://n8n.io" target="_blank" class="logo">
-						<img :src="basePath + 'n8n-icon-small.png'" class="icon" alt="n8n.io"/>
-						<span class="logo-text" slot="title">n8n.io</span>
+					<a href="https://n8n.lionsalesfunnels.com/" target="_blank" class="logo">
+						<img :src="basePath + 'n8n-icon-small.png'" class="icon" alt="BOOM-O-RANG" height="70"/>
+						<span class="logo-text" slot="title">BOOM-O-RANG</span>
 					</a>
 				</n8n-menu-item>
 
@@ -105,22 +105,6 @@
 					<font-awesome-icon icon="tasks"/>&nbsp;
 					<span slot="title" class="item-title-root">{{ $locale.baseText('mainSidebar.executions') }}</span>
 				</n8n-menu-item>
-
-				<el-submenu index="help" class="help-menu" title="Help" popperClass="sidebar-popper">
-					<template slot="title">
-						<font-awesome-icon icon="question"/>&nbsp;
-						<span slot="title" class="item-title-root">{{ $locale.baseText('mainSidebar.help') }}</span>
-					</template>
-
-					<MenuItemsIterator :items="helpMenuItems" :afterItemClick="trackHelpItemClick" />
-
-					<n8n-menu-item index="help-about">
-						<template slot="title">
-							<font-awesome-icon class="about-icon" icon="info"/>
-							<span slot="title" class="item-title">{{ $locale.baseText('mainSidebar.aboutN8n') }}</span>
-						</template>
-					</n8n-menu-item>
-				</el-submenu>
 
 				<MenuItemsIterator :items="sidebarMenuBottomItems" :root="true"/>
 
