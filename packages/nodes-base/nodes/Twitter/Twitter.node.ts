@@ -51,7 +51,7 @@ import { IUsers } from './UsersInterface';
 import { response } from 'express';
 import { usersTweetsOptions } from './UsersTweetsOptions';
 import { friendShipsOperations, friendShipsOptions } from './FriendshipsOptions';
-import { addAdditionalFields } from '../Telegram/GenericFunctions';
+import { eventOperations, eventOptions } from './EventOptions';
 
 const ISO6391 = require('iso-639-1');
 
@@ -90,7 +90,8 @@ export class Twitter implements INodeType {
 					show: {
 						resource: [
 							'spaces',
-							'users'
+							'users',
+							'event'
 						],
 					},
 				},
@@ -122,6 +123,10 @@ export class Twitter implements INodeType {
 						name: 'Friendship',
 						value: 'friendship'
 					},
+					{
+						name:"Event",
+						value:"event"
+					}
 				],
 				default: 'tweet',
 				description: 'The resource to operate on.',
@@ -141,7 +146,9 @@ export class Twitter implements INodeType {
 			...usersLookupOptions,
 			...usersTweetsOptions,
 			...friendShipsOperations,
-			...friendShipsOptions
+			...friendShipsOptions,
+			...eventOperations,
+			...eventOptions
 		],
 	};
 
@@ -431,7 +438,7 @@ export class Twitter implements INodeType {
 					}
 
 				}
-				if (resource === 'friendships'){
+				if (resource === 'friendship'){
 					const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 					let qs : IDataObject = {}
 					if (operation === 'create') {
@@ -445,6 +452,17 @@ export class Twitter implements INodeType {
 							qs["follow"] = additionalFields.follow as boolean
 						}
 						responseData = await twitterApiRequest.call(this, 'POST', `/friendships/create.json`, {}, qs);
+					}
+				}
+				if (resource === "event"){
+					if (operation === 'listen') {
+						let body : IDataObject = {}
+						const value = this.getNodeParameter('value', i) as string;
+						body["add"] = [{
+							value
+						}]
+						responseData = await twitterApiRequest2.call(this, 'POST', ``, body, {}, `https://api.twitter.com/2/tweets/search/stream/rules`);
+
 					}
 				}
 				if (Array.isArray(responseData)) {
