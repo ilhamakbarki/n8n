@@ -319,7 +319,8 @@
       "dist/credentials/ZulipApi.credentials.js",
       "dist/credentials/NimbleApi.credentials.js",
       "dist/credentials/MonkeyLearnApi.credentials.js",
-      "dist/credentials/DlvritApi.credentials.js"
+      "dist/credentials/DlvritApi.credentials.js",
+      "dist/credentials/TweetpikApi.credentials.js"
     ],
     "nodes": [
       "dist/nodes/ActionNetwork/ActionNetwork.node.js",
@@ -666,7 +667,8 @@
       "dist/nodes/MonkeyLearn/MonkeyLearn.node.js",
       "dist/nodes/Deepface/Deepface.node.js",
       "dist/nodes/FetchFeed/FetchFeed.node.js",
-      "dist/nodes/Dlvrit/Dlvrit.node.js"
+      "dist/nodes/Dlvrit/Dlvrit.node.js",
+      "dist/nodes/Tweetpik/TweetPik.node.js"
     ]
   },
   "devDependencies": {
