@@ -462,7 +462,8 @@ export class Twitter implements INodeType {
 							value
 						}]
 						responseData = await twitterApiRequest2.call(this, 'POST', ``, body, {}, `https://api.twitter.com/2/tweets/search/stream/rules`);
-
+					}else if(operation ==="read"){
+						responseData = await twitterApiRequest2.call(this, 'GET', ``, {}, {}, `https://api.twitter.com/2/tweets/search/stream`);
 					}
 				}
 				if (Array.isArray(responseData)) {

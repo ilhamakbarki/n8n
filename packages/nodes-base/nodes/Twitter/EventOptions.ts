@@ -18,7 +18,12 @@ export const eventOperations: INodeProperties[] = [
 			{
 				name: 'Listen',
 				value: 'listen',
-				description: 'Listen an importan event',
+				description: 'Listen an important event',
+			},
+			{
+				name: 'Read',
+				value: 'read',
+				description: 'Read your list important event',
 			},
 		],
 		default: 'listen',
