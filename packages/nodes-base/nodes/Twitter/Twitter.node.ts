@@ -50,6 +50,8 @@ import { ISpaces } from './SpacesInterface';
 import { IUsers } from './UsersInterface';
 import { response } from 'express';
 import { usersTweetsOptions } from './UsersTweetsOptions';
+import { friendShipsOperations, friendShipsOptions } from './FriendshipsOptions';
+import { addAdditionalFields } from '../Telegram/GenericFunctions';
 
 const ISO6391 = require('iso-639-1');
 
@@ -75,7 +77,8 @@ export class Twitter implements INodeType {
 					show: {
 						resource: [
 							'directMessage',
-							'tweet'
+							'tweet',
+							'friendship'
 						],
 					},
 				},
@@ -115,6 +118,10 @@ export class Twitter implements INodeType {
 						name: 'Users',
 						value: 'users'
 					},
+					{
+						name: 'Friendship',
+						value: 'friendship'
+					},
 				],
 				default: 'tweet',
 				description: 'The resource to operate on.',
@@ -132,7 +139,9 @@ export class Twitter implements INodeType {
 			...usersOperations,
 			...usersOptions,
 			...usersLookupOptions,
-			...usersTweetsOptions
+			...usersTweetsOptions,
+			...friendShipsOperations,
+			...friendShipsOptions
 		],
 	};
 
@@ -421,6 +430,22 @@ export class Twitter implements INodeType {
 						responseData = await twitterApiRequest2.call(this, 'GET', '', {}, qs as IDataObject, `https://api.twitter.com/2/users/${user_id}/tweets`);
 					}
 
+				}
+				if (resource === 'friendships'){
+					const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+					let qs : IDataObject = {}
+					if (operation === 'users_following') {
+						if(typeof additionalFields.screen_name !=="undefined"){
+							qs["screen_name"] = additionalFields.screen_name as string
+						}
+						if(typeof additionalFields.user_id !=="undefined"){
+							qs["user_id"] = additionalFields.user_id as number
+						}
+						if(typeof additionalFields.follow !=="undefined"){
+							qs["follow"] = additionalFields.follow as boolean
+						}
+						responseData = await twitterApiRequest.call(this, 'POST', `/friendships/create.json`, {}, qs);
+					}
 				}
 				if (Array.isArray(responseData)) {
 					returnData.push.apply(returnData, responseData as IDataObject[]);
