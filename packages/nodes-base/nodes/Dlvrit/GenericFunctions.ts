@@ -3,23 +3,26 @@ import {
 } from 'n8n-core';
 
 import {
-	IDataObject, IWebhookFunctions, NodeApiError, NodeOperationError,
+	GenericValue,
+	IDataObject, IHttpRequestOptions, IWebhookFunctions, NodeApiError, NodeOperationError,
 } from 'n8n-workflow';
 
 import {
 	OptionsWithUrl,
-	Headers
+	Headers,
 } from 'request';
 
+export async function callAPI(this: IExecuteFunctions | IWebhookFunctions, method: string, uri: string, headers: Headers = {}, body: IDataObject = {}, qs: IDataObject = {}, option: IDataObject = {}, formData: IDataObject = {}): Promise<any> {
 
-export async function callAPI(this: IExecuteFunctions | IWebhookFunctions, method: string, uri: string, headers: Headers={}, body: IDataObject = {}, qs: IDataObject = {},  option: IDataObject = {}): Promise<any> {
 	let options: OptionsWithUrl = {
 		method,
 		body,
 		qs,
+		useQuerystring:true,
 		url: `https://api.dlvrit.com/1/${uri}`,
 		headers,
-		json : true
+		formData,
+		json: true
 	};
 	try {
 		if (Object.keys(option).length !== 0) {
@@ -28,10 +31,28 @@ export async function callAPI(this: IExecuteFunctions | IWebhookFunctions, metho
 		if (Object.keys(body).length === 0) {
 			delete options.body;
 		}
-		if (Object.keys(qs).length === 0) {
-			delete options.qs;
+		if (Object.keys(formData).length === 0) {
+			delete options.formData;
 		}
-		return await await this.helpers.request(options);
+		if(Object.keys(qs).length === 0){
+			delete options.qs
+			options.useQuerystring = false
+		}
+
+		return await this.helpers.request(options);
+	} catch (error) {
+		throw new NodeApiError(this.getNode(), error);
+	}
+}
+
+export async function callImage(this: IExecuteFunctions | IWebhookFunctions, url: string): Promise<any> {
+	try {
+		let httpRequest : IHttpRequestOptions = {
+			url,
+			method:"GET",
+			encoding:"stream"
+		}
+		return await this.helpers.httpRequest(httpRequest);
 	} catch (error) {
 		throw new NodeApiError(this.getNode(), error);
 	}

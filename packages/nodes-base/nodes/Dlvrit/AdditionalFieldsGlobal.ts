@@ -31,6 +31,13 @@ export const additionalFieldsGlobal: INodeProperties[] = [
 				description: 'Title to use if shared is set',
 			},
 			{
+				displayName: 'Media Image',
+				name: 'media',
+				type: 'string',
+				default: '',
+				description: 'Valid URL Image',
+			},
+			{
 				displayName: 'Post Time',
 				name: 'posttime',
 				type: 'string',

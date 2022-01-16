@@ -13,7 +13,7 @@ import {
 import { additionalFieldsGlobal } from './AdditionalFieldsGlobal';
 import { postRoutesOptions } from './PostRoutes';
 import { postAccountOptions } from './PostAccount';
-import { callAPI } from './GenericFunctions';
+import { callAPI, callImage } from './GenericFunctions';
 
 export class Dlvrit implements INodeType {
 	description: INodeTypeDescription = {
@@ -81,6 +81,7 @@ export class Dlvrit implements INodeType {
 		let qs: IDataObject = {}
 		qs.key = credentials.apiKey
 
+		let formData: IDataObject={}
 		for (let i = 0; i < items.length; i++) {
 			try {
 				if (resource == "getRoutes") {
@@ -98,31 +99,27 @@ export class Dlvrit implements INodeType {
 					qs["msg"] = this.getNodeParameter('message', i) as string
 
 					let additional = this.getNodeParameter('additionalFields', i) as IDataObject
-					if (additional.shared) {
-						qs["shared"] = "1"
+					if (typeof additional.shared !== 'undefined') {
+						additional.shared ? qs["shared"] = "1" : qs["shared"] = "0"
 					}
-					if (additional.title) {
+					if (typeof additional.title !== 'undefined') {
 						qs["title"] = additional.title
 					}
-					if (additional.posttime) {
+					if (typeof additional.posttime !== 'undefined') {
 						qs["posttime"] = additional.posttime
 					}
-					if (additional.order) {
+					if (typeof additional.order !== 'undefined') {
 						qs["order"] = additional.order
 					}
-					if (additional.queue) {
+					if (typeof additional.queue !== 'undefined') {
 						qs["queue"] = additional.queue
 					}
-					resource == "postRoutes" ? endpoint = `postToRoute.json` : endpoint = `postToAccount.json`
-					let r = await callAPI.call(this, `GET`, endpoint, {}, {}, qs, {})
-					if (r["status"] == "ok") {
-						returnData.push(r)
-					} else {
-						returnData.push({
-							"status": r["status"],
-							"data": r["0"]
-						})
+					if (typeof additional.media !== 'undefined') {
+						formData["media"] = await callImage.call(this, additional.media as string)
 					}
+					resource == "postRoutes" ? endpoint = `postToRoute.json` : endpoint = `postToAccount.json`
+					let r = await callAPI.call(this, "POST", endpoint, {}, {}, qs, {}, formData)
+					returnData.push(r)
 				} else {
 					throw new NodeOperationError(this.getNode(), `The resource "${resource}" is not known!`);
 				}
