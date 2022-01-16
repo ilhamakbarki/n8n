@@ -31,6 +31,7 @@ export const eventOptions: INodeProperties[] = [
 		displayName: 'Event Value',
 		name: 'value',
 		type: 'string',
+		required:true,
 		displayOptions: {
 			show: {
 				resource: [
