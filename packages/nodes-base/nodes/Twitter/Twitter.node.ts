@@ -434,7 +434,7 @@ export class Twitter implements INodeType {
 				if (resource === 'friendships'){
 					const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 					let qs : IDataObject = {}
-					if (operation === 'users_following') {
+					if (operation === 'create') {
 						if(typeof additionalFields.screen_name !=="undefined"){
 							qs["screen_name"] = additionalFields.screen_name as string
 						}
