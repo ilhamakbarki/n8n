@@ -11,7 +11,6 @@ import {
 	Headers
 } from 'request';
 
-
 export async function callAPI(this: IExecuteFunctions | IWebhookFunctions, method: string, uri: string, headers: Headers={}, body: IDataObject = {}, qs: IDataObject = {},  option: IDataObject = {}): Promise<any> {
 	let options: OptionsWithUrl = {
 		method,
@@ -19,7 +18,8 @@ export async function callAPI(this: IExecuteFunctions | IWebhookFunctions, metho
 		qs,
 		url: `https://tweetpik.com/api/${uri}`,
 		headers,
-		json : true
+		json : true,
+		encoding: "text/plain"
 	};
 	console.log(options)
 	try {
