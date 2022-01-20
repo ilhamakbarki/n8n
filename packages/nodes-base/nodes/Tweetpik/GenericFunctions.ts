@@ -15,12 +15,13 @@ import {
 export async function callAPI(this: IExecuteFunctions | IWebhookFunctions, method: string, uri: string, headers: Headers={}, body: IDataObject = {}, qs: IDataObject = {},  option: IDataObject = {}): Promise<any> {
 	let options: OptionsWithUrl = {
 		method,
-		body,
+		body : JSON.stringify(body),
 		qs,
 		url: `https://tweetpik.com/api/${uri}`,
 		headers,
 		json : true
 	};
+	console.log(options)
 	try {
 		if (Object.keys(option).length !== 0) {
 			options = Object.assign({}, options, option);
