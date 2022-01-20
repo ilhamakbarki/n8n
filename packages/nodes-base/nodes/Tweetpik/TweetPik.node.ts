@@ -71,7 +71,8 @@ export class TweetPik implements INodeType {
 		let endpoint: any;
 		let body: IDataObject = {}
 		let headers : Headers = {
-			"Authorization" : credentials.apiKey
+			"Authorization" : credentials.apiKey,
+			"Content-Type":"application/json"
 		}
 		for (let i = 0; i < items.length; i++) {
 			try {
