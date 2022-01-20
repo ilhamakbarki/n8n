@@ -18,8 +18,7 @@ export async function callAPI(this: IExecuteFunctions | IWebhookFunctions, metho
 		qs,
 		url: `https://tweetpik.com/api/${uri}`,
 		headers,
-		json : true,
-		encoding: "text/plain"
+		json : true
 	};
 	console.log(options)
 	try {
