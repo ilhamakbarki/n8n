@@ -12,6 +12,7 @@ import {
 import {
 	twilioApiRequest,
 } from './GenericFunctions';
+import { smsOptions } from './SmsOptions';
 
 export class Twilio implements INodeType {
 	description: INodeTypeDescription = {
@@ -151,6 +152,7 @@ export class Twilio implements INodeType {
 				},
 				description: 'The message to send',
 			},
+			...smsOptions
 		],
 	};
 
@@ -192,6 +194,11 @@ export class Twilio implements INodeType {
 						body.From = this.getNodeParameter('from', i) as string;
 						body.To = this.getNodeParameter('to', i) as string;
 						body.Body = this.getNodeParameter('message', i) as string;
+
+						let addField = this.getNodeParameter('additionalFields', i) as IDataObject
+						if(typeof addField.mediaUrl !== "undefined"){
+							body.MediaUrl = addField.mediaUrl
+						}
 
 						const toWhatsapp = this.getNodeParameter('toWhatsapp', i) as boolean;
 
