@@ -16,24 +16,34 @@ export const eventOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				name: 'Listen',
-				value: 'listen',
-				description: 'Listen an important event',
+				name: 'Add Rules',
+				value: 'add_rules',
+				description: 'Add the Rules of an important event',
 			},
 			{
-				name: 'Read',
-				value: 'read',
-				description: 'Read your list important event',
+				name : 'Get Rules',
+				value : 'get_rules',
+				description : 'Get your current list rulest'
 			},
+			{
+				name: 'Delete Rules',
+				value: 'del_rules',
+				description: 'Add the Rules of an important event',
+			},
+			// {
+			// 	name: 'Read',
+			// 	value: 'read',
+			// 	description: 'Read your list important event',
+			// },
 		],
-		default: 'listen',
+		default: 'add_rules',
 		description: 'The operation to perform.',
 	},
 ];
 
 export const eventOptions: INodeProperties[] = [
 	{
-		displayName: 'Event Value',
+		displayName: 'Rules Value',
 		name: 'value',
 		type: 'string',
 		required:true,
@@ -43,11 +53,66 @@ export const eventOptions: INodeProperties[] = [
 					'event',
 				],
 				operation : [
-					'listen'
+					'add_rules'
 				]
 			},
 		},
 		default: '',
-		description: 'The value of event want to listen.',
+		description: 'The rules value of event do you want to read, use comma (,) for many split events',
+	},
+	{
+		displayName: 'Tags Value',
+		name: 'tag',
+		type: 'string',
+		required:false,
+		displayOptions: {
+			show: {
+				resource: [
+					'event',
+				],
+				operation : [
+					'add_rules'
+				]
+			},
+		},
+		default: '',
+		description: 'The tag value of event do you want to read, use comma (,) for many split events',
+	},
+	{
+		displayName: 'Rules ID',
+		name: 'value',
+		type: 'string',
+		required:true,
+		displayOptions: {
+			show: {
+				resource: [
+					'event',
+				],
+				operation : [
+					'del_rules'
+				]
+			},
+		},
+		default: '',
+		description: 'Rules ID to Delete',
+	},
+	{
+		displayName: 'Read Fields',
+		name: 'value',
+		type: 'string',
+		required:true,
+		displayOptions: {
+			show: {
+				resource: [
+					'event',
+				],
+				operation : [
+					'read'
+				]
+			},
+		},
+		default: '',
+		hint:"tweet.fields=created_at&expansions=author_id&user.fields=created_at",
+		description: 'Identify and specify which fields you would like to retrieve',
 	},
 ];

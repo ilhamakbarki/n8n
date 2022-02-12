@@ -10,6 +10,7 @@ import {
 	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
+	NodeOperationError,
 } from 'n8n-workflow';
 
 import {
@@ -48,7 +49,6 @@ import {
 } from './TweetInterface';
 import { ISpaces } from './SpacesInterface';
 import { IUsers } from './UsersInterface';
-import { response } from 'express';
 import { usersTweetsOptions } from './UsersTweetsOptions';
 import { friendShipsOperations, friendShipsOptions } from './FriendshipsOptions';
 import { eventOperations, eventOptions } from './EventOptions';
@@ -124,8 +124,8 @@ export class Twitter implements INodeType {
 						value: 'friendship'
 					},
 					{
-						name:"Event",
-						value:"event"
+						name: "Event",
+						value: "event"
 					}
 				],
 				default: 'tweet',
@@ -147,8 +147,10 @@ export class Twitter implements INodeType {
 			...usersTweetsOptions,
 			...friendShipsOperations,
 			...friendShipsOptions,
+			//Event Listening Stream
 			...eventOperations,
-			...eventOptions
+			...eventOptions,
+			//...readOptions
 		],
 	};
 
@@ -438,33 +440,65 @@ export class Twitter implements INodeType {
 					}
 
 				}
-				if (resource === 'friendship'){
+				if (resource === 'friendship') {
 					const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
-					let qs : IDataObject = {}
+					let qs: IDataObject = {}
 					if (operation === 'create') {
-						if(typeof additionalFields.screen_name !=="undefined"){
+						if (typeof additionalFields.screen_name !== "undefined") {
 							qs["screen_name"] = additionalFields.screen_name as string
 						}
-						if(typeof additionalFields.user_id !=="undefined"){
+						if (typeof additionalFields.user_id !== "undefined") {
 							qs["user_id"] = additionalFields.user_id as number
 						}
-						if(typeof additionalFields.follow !=="undefined"){
+						if (typeof additionalFields.follow !== "undefined") {
 							qs["follow"] = additionalFields.follow as boolean
 						}
 						responseData = await twitterApiRequest.call(this, 'POST', `/friendships/create.json`, {}, qs);
 					}
 				}
-				if (resource === "event"){
-					if (operation === 'listen') {
-						let body : IDataObject = {}
+				if (resource === "event") {
+					if (operation === 'add_rules') {
+						let body: IDataObject = {}
 						const value = this.getNodeParameter('value', i) as string;
-						body["add"] = [{
-							value
-						}]
+						const tags = this.getNodeParameter('tag', i) as string;
+						let value_split = value.split(",")
+						let tags_split = tags.split(",")
+						if (tags_split.length > 0) {
+							if (value_split.length != tags_split.length) {
+								throw new NodeOperationError(this.getNode(), 'Tags and Rules name same length, Check the Comma (,)');
+							}
+						}
+						let add: IDataObject[] = []
+						for (let index in value_split) {
+							if (tags_split.length > 0 && tags_split[index].trim().length>1) {
+								add.push({ "value": value_split[index].trim(), 'tag':tags_split[index].trim()})
+							}else{
+								add.push({ "value": value_split[index].trim()})
+							}
+						}
+						body["add"] = add
 						responseData = await twitterApiRequest2.call(this, 'POST', ``, body, {}, `https://api.twitter.com/2/tweets/search/stream/rules`);
-					}else if(operation ==="read"){
-						responseData = await twitterApiRequest2.call(this, 'GET', ``, {}, {}, `https://api.twitter.com/2/tweets/search/stream`);
+					} else if (operation === "get_rules") {
+						let response = await twitterApiRequest2.call(this, 'GET', ``, {}, {}, `https://api.twitter.com/2/tweets/search/stream/rules`);
+						if (response["meta"]["result_count"] > 0) {
+							responseData = response["data"]
+						} else {
+							responseData = []
+						}
+					} else if (operation === "del_rules") {
+						const value = this.getNodeParameter('value', i) as string;
+						let body: IDataObject = {}
+						let ids = value.split(",")
+						body["delete"] = {
+							ids
+						}
+						responseData = await twitterApiRequest2.call(this, 'POST', ``, body, {}, `https://api.twitter.com/2/tweets/search/stream/rules`);
 					}
+					// else if (operation === "read") {
+					// 	const value = this.getNodeParameter('value', i) as string;
+					// 	console.log(value)
+					// 	responseData = await twitterApiRequest2.call(this, 'GET', ``, {}, {}, `https://api.twitter.com/2/tweets/search/stream?${value}`);
+					// }
 				}
 				if (Array.isArray(responseData)) {
 					returnData.push.apply(returnData, responseData as IDataObject[]);
