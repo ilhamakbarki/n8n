@@ -108,10 +108,10 @@ import {
 	ICredentialNodeAccess,
 	ICredentialsDecrypted,
 	ICredentialType,
+	INodeCredentialTestResult,
 	INodeParameters,
 	INodeProperties,
 	INodeTypeDescription,
-	NodeCredentialTestResult,
 	NodeHelpers,
 } from 'n8n-workflow';
 import CredentialIcon from '../CredentialIcon.vue';
@@ -279,7 +279,7 @@ export default mixins(showMessage, nodeHelpers).extend({
 				return false;
 			});
 
-			return !!nodesThatCanTest.length;
+			return !!nodesThatCanTest.length || (!!this.credentialType && !!this.credentialType.test);
 		},
 		nodesWithAccess(): INodeTypeDescription[] {
 			if (this.credentialTypeName) {
@@ -552,19 +552,11 @@ export default mixins(showMessage, nodeHelpers).extend({
 				(access) => !!access,
 			) as ICredentialNodeAccess[];
 
-			// Save only the none default data
-			const data = NodeHelpers.getNodeParameters(
-				this.credentialType!.properties,
-				this.credentialData as INodeParameters,
-				false,
-				false,
-			);
-
 			const details: ICredentialsDecrypted = {
 				id: this.credentialId,
 				name: this.credentialName,
 				type: this.credentialTypeName!,
-				data: data as unknown as ICredentialDataDecryptedObject,
+				data: this.credentialData,
 				nodesAccess,
 			};
 
@@ -574,7 +566,7 @@ export default mixins(showMessage, nodeHelpers).extend({
 		},
 
 		async testCredential(credentialDetails: ICredentialsDecrypted) {
-			const result: NodeCredentialTestResult = await this.$store.dispatch('credentials/testCredential', credentialDetails);
+			const result: INodeCredentialTestResult = await this.$store.dispatch('credentials/testCredential', credentialDetails);
 			if (result.status === 'Error') {
 				this.authError = result.message;
 				this.testedSuccessfully = false;
@@ -635,6 +627,10 @@ export default mixins(showMessage, nodeHelpers).extend({
 
 				if (this.isCredentialTestable) {
 					this.isTesting = true;
+
+					// Add the full data including defaults for testing
+					credentialDetails.data = this.credentialData;
+
 					await this.testCredential(credentialDetails);
 					this.isTesting = false;
 				}
