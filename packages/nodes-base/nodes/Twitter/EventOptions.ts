@@ -29,12 +29,7 @@ export const eventOperations: INodeProperties[] = [
 				name: 'Delete Rules',
 				value: 'del_rules',
 				description: 'Add the Rules of an important event',
-			},
-			// {
-			// 	name: 'Read',
-			// 	value: 'read',
-			// 	description: 'Read your list important event',
-			// },
+			}
 		],
 		default: 'add_rules',
 		description: 'The operation to perform.',
@@ -96,6 +91,9 @@ export const eventOptions: INodeProperties[] = [
 		default: '',
 		description: 'Rules ID to Delete',
 	},
+];
+
+export const eventListeningOptions : INodeProperties[] = [
 	{
 		displayName: 'Read Fields',
 		name: 'value',
@@ -103,11 +101,8 @@ export const eventOptions: INodeProperties[] = [
 		required:true,
 		displayOptions: {
 			show: {
-				resource: [
-					'event',
-				],
-				operation : [
-					'read'
+				event: [
+					'read',
 				]
 			},
 		},
@@ -115,4 +110,4 @@ export const eventOptions: INodeProperties[] = [
 		hint:"tweet.fields=created_at&expansions=author_id&user.fields=created_at",
 		description: 'Identify and specify which fields you would like to retrieve',
 	},
-];
+]

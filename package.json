@@ -27,6 +27,7 @@
   "postcss": {},
   "dependencies": {
     "image-to-base64": "^2.2.0",
-    "monkeylearn": "^3.4.0"
+    "monkeylearn": "^3.4.0",
+    "needle": "^3.0.0"
   }
 }
