@@ -39,7 +39,7 @@ export const tweetOperations: INodeProperties[] = [
 				name: 'Retweet',
 				value: 'retweet',
 				description: 'Retweet a tweet',
-			},
+			}
 		],
 		default: 'create',
 		description: 'The operation to perform.',

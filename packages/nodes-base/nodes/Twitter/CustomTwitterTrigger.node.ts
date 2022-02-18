@@ -12,6 +12,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import request = require('request');
+import { tokenFields } from '../Stripe/descriptions';
 
 import {
 	eventListeningOptions
@@ -19,7 +20,6 @@ import {
 
 const needle = require('needle')
 
-let streamGlobal: any
 export class CustomTwitterTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Custom Twitter Trigger',
@@ -80,7 +80,7 @@ export class CustomTwitterTrigger implements INodeType {
 	webhookMethods = {
 		default: {
 			async checkExists(this: IHookFunctions): Promise<boolean> {
-				const webhookUrl = this.getNodeWebhookUrl('default');
+				const webhookUrl = this.getNodeWebhookUrl('default') || "";
 				const credentials = await this.getCredentials('twitterBearerToken') as {
 					token: string;
 				};
@@ -89,30 +89,7 @@ export class CustomTwitterTrigger implements INodeType {
 				}
 				const value = this.getNodeParameter('value') as string;
 				let streamURL = `https://api.twitter.com/2/tweets/search/stream?${value}`
-
-				streamGlobal = needle.get(streamURL, {
-					headers: {
-						Authorization: `Bearer ${credentials.token}`,
-					},
-				})
-
-				streamGlobal.on('data', async (data: any) => {
-					try {
-						console.log("received stream")
-
-						let response = await needle('POST', webhookUrl, data, {
-							headers: {
-								'content-type': 'application/json'
-							},
-						})
-						console.log(response.body)
-					} catch (error) {
-						console.log("Error sini")
-						throw new NodeOperationError(this.getNode(), error);
-					}
-				})
-
-				console.log("success set stream")
+				streamGlobal = streamConnect.call(this, streamURL, credentials.token, webhookUrl, 0)
 				return true;
 			},
 
@@ -143,4 +120,60 @@ export class CustomTwitterTrigger implements INodeType {
 			throw new NodeOperationError(this.getNode(), error);
 		}
 	}
+}
+
+function bin2String(array: any) {
+	var result = "";
+	for (var i = 0; i < array.length; i++) {
+		result += String.fromCharCode(parseInt(array[i], 2));
+	}
+	return result;
+}
+
+let streamGlobal: any
+function streamConnect(this: IHookFunctions, streamUrl: string, token: string, webhookUrl: string, retryAttempt: number): any {
+	let stream = needle.get(streamUrl, {
+		headers: {
+			Authorization: `Bearer ${token}`,
+		},
+	})
+
+	stream.on('data', async (data: any) => {
+		console.log("received stream")
+		try {
+			let json = JSON.parse(data)
+			console.log("sending to webhook...")
+			let response = await needle('POST', webhookUrl, json, {
+				headers: {
+					'content-type': 'application/json'
+				},
+			})
+			console.log(response.body)
+		} catch (error) {
+			console.log("Error Received")
+			console.log(bin2String(data))
+			if (data.status === 401) {
+				console.log(data);
+				throw new NodeOperationError(this.getNode(), '401 Unauthorization');
+			} else if (data.detail === "This stream is currently at the maximum allowed connection limit.") {
+				console.log(data.detail)
+				throw new NodeOperationError(this.getNode(), 'This stream is currently at the maximum allowed connection limit.');
+			}
+		}
+	}).on('err', (error: any) => {
+		if (error.code !== 'ECONNRESET') {
+			console.log("received stream error")
+			console.log(error);
+		} else {
+			streamGlobal.request.abort()
+			console.log("success remove stream because disconnect")
+			setTimeout(() => {
+				console.log(`A connection error occurred. Reconnecting... count (${retryAttempt + 1})`)
+				streamGlobal = streamConnect.call(this, streamUrl, token, webhookUrl, ++retryAttempt)
+			}, 2 ** retryAttempt * 10);
+		}
+	})
+
+	console.log("success set stream")
+	return stream
 }

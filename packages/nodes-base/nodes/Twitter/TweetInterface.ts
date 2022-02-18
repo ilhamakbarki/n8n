@@ -8,3 +8,12 @@ export interface ITweet {
 	status: string;
 	in_reply_to_status_id?: string;
 }
+
+export interface ITweetV2 {
+	'expansions'?: string
+	'media.fields'?: string
+	'place.fields'?: string
+	'poll.fields'?: string
+	'tweet.fields'?: string
+	'user.fields'?: string
+}

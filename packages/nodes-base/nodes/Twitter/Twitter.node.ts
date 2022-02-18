@@ -45,13 +45,14 @@ import {
 } from './UsersLookupOptions'
 
 import {
-	ITweet,
+	ITweet, ITweetV2,
 } from './TweetInterface';
 import { ISpaces } from './SpacesInterface';
 import { IUsers } from './UsersInterface';
 import { usersTweetsOptions } from './UsersTweetsOptions';
 import { friendShipsOperations, friendShipsOptions } from './FriendshipsOptions';
 import { eventOperations, eventOptions } from './EventOptions';
+import { lookupTweets_v2, tweetOperations_v2 } from './TweetV2Description';
 
 const ISO6391 = require('iso-639-1');
 
@@ -91,7 +92,8 @@ export class Twitter implements INodeType {
 						resource: [
 							'spaces',
 							'users',
-							'event'
+							'event',
+							'tweet_v2'
 						],
 					},
 				},
@@ -126,7 +128,11 @@ export class Twitter implements INodeType {
 					{
 						name: "Event",
 						value: "event"
-					}
+					},
+					{
+						name: 'Tweet V2',
+						value: 'tweet_v2',
+					},
 				],
 				default: 'tweet',
 				description: 'The resource to operate on.',
@@ -137,6 +143,9 @@ export class Twitter implements INodeType {
 			// TWEET
 			...tweetOperations,
 			...tweetFields,
+			//TWEET V2
+			...tweetOperations_v2,
+			...lookupTweets_v2,
 			//Spaces
 			...spacesOperations,
 			...spacesOptions,
@@ -149,8 +158,7 @@ export class Twitter implements INodeType {
 			...friendShipsOptions,
 			//Event Listening Stream
 			...eventOperations,
-			...eventOptions,
-			//...readOptions
+			...eventOptions
 		],
 	};
 
@@ -499,6 +507,33 @@ export class Twitter implements INodeType {
 					// 	console.log(value)
 					// 	responseData = await twitterApiRequest2.call(this, 'GET', ``, {}, {}, `https://api.twitter.com/2/tweets/search/stream?${value}`);
 					// }
+				}
+				if (resource === 'tweet_v2') {
+					const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+					const qs: ITweetV2 = {}
+					if (typeof additionalFields.expansions != "undefined") {
+						qs.expansions = additionalFields.expansions as string
+					}
+					if (typeof additionalFields.media_fields != "undefined") {
+						qs['media.fields'] = additionalFields.media_fields as string
+					}
+					if (typeof additionalFields.place_fields != "undefined") {
+						qs['place.fields'] = additionalFields.place_fields as string
+					}
+					if (typeof additionalFields.poll_fields != "undefined") {
+						qs['poll.fields'] = additionalFields.poll_fields as string
+					}
+					if (typeof additionalFields.tweet_fields != "undefined") {
+						qs['tweet.fields'] = additionalFields.tweet_fields as string
+					}
+					if (additionalFields.user_fields) {
+						qs['user.fields'] = additionalFields.user_fields as string
+					}
+					if (operation === 'lookup') {
+						const tweetID = this.getNodeParameter('tweetID', i) as string
+						responseData = await twitterApiRequest2.call(this, 'GET', '', {}, qs as IDataObject, `https://api.twitter.com/2/tweets/${tweetID}`);
+						responseData = responseData.data
+					}
 				}
 				if (Array.isArray(responseData)) {
 					returnData.push.apply(returnData, responseData as IDataObject[]);
