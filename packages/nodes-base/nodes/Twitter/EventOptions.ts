@@ -95,8 +95,8 @@ export const eventOptions: INodeProperties[] = [
 
 export const eventListeningOptions : INodeProperties[] = [
 	{
-		displayName: 'Read Fields',
-		name: 'value',
+		displayName: 'URL Service Twitter',
+		name: 'host',
 		type: 'string',
 		required:true,
 		displayOptions: {
@@ -107,7 +107,6 @@ export const eventListeningOptions : INodeProperties[] = [
 			},
 		},
 		default: '',
-		hint:"tweet.fields=created_at&expansions=author_id&user.fields=created_at",
-		description: 'Identify and specify which fields you would like to retrieve',
+		description: 'The URL Host of Twitter',
 	},
 ]

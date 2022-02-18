@@ -78,6 +78,31 @@ export async function twitterApiRequest2(this: IExecuteFunctions | IExecuteSingl
 	}
 }
 
+export async function requestTwitterService(this: IExecuteFunctions | IExecuteSingleFunctions | ILoadOptionsFunctions | IHookFunctions, method: string, uri: string, body: any = {}, qs: IDataObject = {}, option: IDataObject = {}): Promise<any> { // tslint:disable-line:no-any
+	let options: OptionsWithUrl = {
+		method,
+		body,
+		qs,
+		url: uri,
+		json: true
+	};
+	try {
+		if (Object.keys(option).length !== 0) {
+			options = Object.assign({}, options, option);
+		}
+		if (Object.keys(body).length === 0) {
+			delete options.body;
+		}
+		if (Object.keys(qs).length === 0) {
+			delete options.qs;
+		}
+		//@ts-ignore
+		return await await this.helpers.request(options);
+	} catch (error) {
+		throw new NodeApiError(this.getNode(), error);
+	}
+}
+
 
 export async function twitterApiRequestAllItems(this: IExecuteFunctions | ILoadOptionsFunctions, propertyName: string, method: string, endpoint: string, body: any = {}, query: IDataObject = {}): Promise<any> { // tslint:disable-line:no-any
 
