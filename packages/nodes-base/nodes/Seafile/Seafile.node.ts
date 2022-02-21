@@ -18,7 +18,7 @@ import { operationsShareLink, optionsSLCreate } from './OptionsShareLink';
 
 import {
 	seaFileResource
-} from './seaFileResource';
+} from './SeafileResource';
 
 export class Seafile implements INodeType {
 	description: INodeTypeDescription = {
