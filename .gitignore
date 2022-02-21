@@ -16,3 +16,5 @@ nodelinter.config.json
 packages/*/package-lock.json
 docker-compose.yml
 Dockerfile
+!*/docker-compose.yml
+!*/Dockerfile
