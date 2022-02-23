@@ -25,6 +25,16 @@ export const operationsDir: INodeProperties[] = [
 				value: 'rename',
 				description: 'Rename directory on Repository',
 			},
+			{
+				name: 'List Directory',
+				value: 'list',
+				description: 'List item in directory on Repository',
+			},
+			{
+				name: 'Detail Directory',
+				value: 'detail',
+				description: 'Get Detail directory',
+			},
 		],
 		default: 'create',
 		description: 'The operation to perform.',
@@ -49,7 +59,9 @@ export const optionsDirCreate: INodeProperties[] = [
 				],
 				operation : [
 					'create',
-					'rename'
+					'rename',
+					'list',
+					'detail'
 				]
 			},
 		},
@@ -67,7 +79,8 @@ export const optionsDirCreate: INodeProperties[] = [
 				],
 				operation : [
 					'create',
-					'rename'
+					'rename',
+					'detail'
 				]
 			},
 		},
@@ -94,5 +107,78 @@ export const optionsDirRename: INodeProperties[] = [
 		},
 		default: '',
 		description: 'New Folder name.',
+	}
+]
+
+export const optionsDirList: INodeProperties[] = [
+	{
+		displayName: 'Additional Fields',
+		placeholder: 'Add Field',
+		name: 'additionalFields',
+		type: 'collection',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: [
+					'dir',
+				],
+				operation: [
+					'list',
+				]
+			},
+		},
+		options: [
+			{
+				displayName : 'Path',
+				name : 'path',
+				type : 'string',
+				default : '',
+				description : `The path to a directory. If p is missing, then defaults to '/' which is the top directory.`
+			},
+			{
+				displayName : 'Oid',
+				name : 'oid',
+				type : 'string',
+				default : '',
+				description : `The object id of the directory. The object id is the checksum of the directory contents.`
+			},
+			{
+				displayName : 'Show Item',
+				name : 'showItem',
+				type : 'options',
+				default : 1,
+				options : [
+					{
+						name : 'All Item',
+						value : 1
+					},
+					{
+						name : 'Only File',
+						value : 2
+					},
+					{
+						name : 'Only Directory',
+						value : 3
+					},
+				]
+			},
+			{
+				displayName : 'Recursive',
+				name : 'recursive',
+				type : 'options',
+				default : 0,
+				description : `Return all directory and All entries recursively`,
+				options : [
+					{
+						name : 'True',
+						value : 1
+					},
+					{
+						name : 'False',
+						value : 0
+					},
+				]
+			},
+		]
 	}
 ]

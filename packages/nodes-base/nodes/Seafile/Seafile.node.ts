@@ -13,8 +13,17 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { seaFileApiRequest } from './GenericFunctions';
-import { operationsDir, optionsDirCreate, optionsDirRename } from './OptionsDirectories';
-import { operationsShareLink, optionsSLCreate } from './OptionsShareLink';
+import {
+	operationsDir,
+	optionsDirCreate,
+	optionsDirList,
+	optionsDirRename
+} from './OptionsDirectories';
+
+import {
+	operationsShareLink,
+	optionsSLCreate
+} from './OptionsShareLink';
 
 import {
 	seaFileResource
@@ -47,6 +56,7 @@ export class Seafile implements INodeType {
 			// Options Directories
 			...optionsDirCreate,
 			...optionsDirRename,
+			...optionsDirList,
 			// Options Share Link
 			...optionsSLCreate
 		]
@@ -96,25 +106,44 @@ export class Seafile implements INodeType {
 			try {
 				const resource = this.getNodeParameter('resource', i) as string
 				const operation = this.getNodeParameter('operation', i) as string
-				const repoId = this.getNodeParameter('repo', i) as string
-				const name = this.getNodeParameter('name', i) as string
 
 				if (resource == "dir") {
-					let qs: IDataObject = {
-						p: `/${name}`
-					}
+					const repoId = this.getNodeParameter('repo', i) as string
+
+					let qs: IDataObject = {}
 					let url = `/api2/repos/${repoId}/dir/`;
 
 					if (operation == "create") {
-						let formData: IDataObject = {
-							operation: `mkdir`
+						const name = this.getNodeParameter('name', i) as string
+						let url2 = `/api/v2.1/repos/${repoId}/dir/detail/`;
+						qs["path"] = `/${name}`
+						try {
+							await seaFileApiRequest.call(this, `GET`, url2, {}, {}, qs)
+							returnData.push({
+								status: false,
+								message: `Folder already exists`
+							})
+						} catch (err: any) {
+							if (err.httpCode == "404") {
+								qs["p"] = `/${name}`
+								let formData: IDataObject = {
+									operation: `mkdir`
+								}
+								let response = await seaFileApiRequest.call(this, `POST`, url, {}, formData, qs)
+								let response2 = await seaFileApiRequest.call(this, `GET`, url2, {}, {}, qs)
+								returnData.push({
+									status: true,
+									message: response,
+									data: response2
+								})
+							} else {
+								throw new NodeOperationError(this.getNode(), err);
+							}
 						}
-						let response = await seaFileApiRequest.call(this, `POST`, url, {}, formData, qs)
-						returnData.push({
-							status: true,
-							message: response,
-						})
+
 					} else if (operation == "rename") {
+						const name = this.getNodeParameter('name', i) as string
+						qs["p"] = `/${name}`
 						const newName = this.getNodeParameter('newName', i) as string
 						let formData: IDataObject = {
 							operation: `rename`,
@@ -125,11 +154,42 @@ export class Seafile implements INodeType {
 							status: true,
 							message: response,
 						})
+					} else if (operation == "list") {
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject
+						if (typeof additionalFields["path"] != "undefined") {
+							qs["p"] = additionalFields["path"] as string
+						}
+						if (typeof additionalFields["oid"] != "undefined") {
+							qs["oid"] = additionalFields["oid"] as string
+						}
+						if (typeof additionalFields["showItem"] != "undefined") {
+							if (additionalFields["showItem"] == 2) {
+								qs["t"] = "f"
+							} else if (additionalFields["showItem"] == 3) {
+								qs["t"] = "d"
+							}
+						}
+						if (typeof additionalFields["recursive"] != "undefined") {
+							qs["recursive"] = additionalFields["recursive"] as number
+						}
+						let response = await seaFileApiRequest.call(this, `GET`, url, {}, {}, qs)
+						for (let r of response) {
+							returnData.push(r)
+						}
+					} else if (operation == "detail") {
+						const name = this.getNodeParameter('name', i) as string
+						let url2 = `/api/v2.1/repos/${repoId}/dir/detail/`;
+						qs["path"] = `/${name}`
+						let response = await seaFileApiRequest.call(this, `GET`, url2, {}, {}, qs)
+						returnData.push(response)
 					} else {
 						throw new NodeOperationError(this.getNode(), `The operation "${operation}" is not known!`);
 					}
 				}
 				else if (resource == "share_link") {
+					const repoId = this.getNodeParameter('repo', i) as string
+					const name = this.getNodeParameter('name', i) as string
+
 					if (operation == "create") {
 						let url = `/api/v2.1/share-links/`
 
