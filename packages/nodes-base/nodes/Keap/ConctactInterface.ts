@@ -15,7 +15,7 @@ export interface IAddress {
 }
 
 export interface ICustomField {
-	content: IDataObject;
+	content: string;
 	id: number;
 }
 

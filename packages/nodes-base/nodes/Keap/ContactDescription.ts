@@ -553,6 +553,37 @@ export const contactFields: INodeProperties[] = [
 			},
 		],
 	},
+	{
+		displayName: 'Custom Fields',
+		name: 'customFields',
+		type: 'collection',
+		placeholder: 'Add Custom Fields',
+		default: {},
+		displayOptions: {
+			show: {
+				operation: [
+					'upsert',
+				],
+				resource: [
+					'contact',
+				],
+			},
+		},
+		options:[
+			{
+				name:'doyoualreadyhaveawebsite',
+				default:'',
+				type:'string',
+				displayName : 'do_you_already_have_a_website?'
+			},
+			{
+				name:'whenareyoulookingtostart',
+				default:'',
+				type:'string',
+				displayName : 'when_are_you_looking_to_start?'
+			}
+		]
+	},
 /* -------------------------------------------------------------------------- */
 /*                                 contact:delete                             */
 /* -------------------------------------------------------------------------- */

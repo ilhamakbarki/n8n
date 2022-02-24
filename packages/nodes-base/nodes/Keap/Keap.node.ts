@@ -7,6 +7,8 @@ import {
 	IDataObject,
 	ILoadOptionsFunctions,
 	INodeExecutionData,
+	INodeProperties,
+	INodePropertyCollection,
 	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
@@ -62,6 +64,7 @@ import {
 import {
 	IAddress,
 	IContact,
+	ICustomField,
 	IEmailContact,
 	IFax,
 	IPhone,
@@ -283,7 +286,7 @@ export class Keap implements INodeType {
 				}
 				return returnData;
 			},
-		},
+		}
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
@@ -424,6 +427,53 @@ export class Keap implements INodeType {
 					if (phones) {
 						body.phone_numbers = phones as IPhone[];
 					}
+
+					const customFieldsBody: ICustomField[] = []
+					const customFields = this.getNodeParameter('customFields', i) as IDataObject
+					if (Object.keys(customFields).length > 0) {
+						//get Custom Fields
+						const response = await keapApiRequest.call(this, 'GET', '/contacts/model');
+						//Check 1 custom fields doyoualreadyhaveawebsite
+						if (typeof customFields["doyoualreadyhaveawebsite"] != "undefined") {
+							let index = -1
+							for (let i=0; i<response.custom_fields.length; i++) {
+								if (response.custom_fields[i]["field_name"] == "doyoualreadyhaveawebsite") {
+									index = i
+									break
+								}
+							}
+							if (index >= 0) {
+								let custom_field: IDataObject = response.custom_fields[index]
+								customFieldsBody.push({
+									id: custom_field["id"] as number,
+									content: customFields["doyoualreadyhaveawebsite"] as string
+								})
+							}
+						}
+						//End Custom field 1
+
+						//Check 2 custom fields whenareyoulookingtostart
+						if (typeof customFields["whenareyoulookingtostart"] != "undefined") {
+							let index = -1
+							for (let i=0; i<response.custom_fields.length; i++) {
+								if (response.custom_fields[i]["field_name"] == "whenareyoulookingtostart") {
+									index = i
+									break
+								}
+							}
+							if (index >= 0) {
+								let custom_field: IDataObject = response.custom_fields[index]
+								customFieldsBody.push({
+									id: custom_field["id"] as number,
+									content: customFields["whenareyoulookingtostart"] as string
+								})
+							}
+						}
+						//End Custom field 2
+					}
+					if (customFieldsBody.length > 0)
+						body.custom_fields = customFieldsBody
+
 					responseData = await keapApiRequest.call(this, 'PUT', '/contacts', body);
 				}
 				//https://developer.infusionsoft.com/docs/rest/#!/Contact/deleteContactUsingDELETE
