@@ -433,11 +433,11 @@ export class Keap implements INodeType {
 					if (Object.keys(customFields).length > 0) {
 						//get Custom Fields
 						const response = await keapApiRequest.call(this, 'GET', '/contacts/model');
-						//Check 1 custom fields doyoualreadyhaveawebsite
-						if (typeof customFields["doyoualreadyhaveawebsite"] != "undefined") {
+						//Check 1 custom fields note
+						if (typeof customFields["note"] != "undefined") {
 							let index = -1
 							for (let i=0; i<response.custom_fields.length; i++) {
-								if (response.custom_fields[i]["field_name"] == "doyoualreadyhaveawebsite") {
+								if (response.custom_fields[i]["field_name"] == "note") {
 									index = i
 									break
 								}
@@ -446,30 +446,11 @@ export class Keap implements INodeType {
 								let custom_field: IDataObject = response.custom_fields[index]
 								customFieldsBody.push({
 									id: custom_field["id"] as number,
-									content: customFields["doyoualreadyhaveawebsite"] as string
+									content: customFields["note"] as string
 								})
 							}
 						}
 						//End Custom field 1
-
-						//Check 2 custom fields whenareyoulookingtostart
-						if (typeof customFields["whenareyoulookingtostart"] != "undefined") {
-							let index = -1
-							for (let i=0; i<response.custom_fields.length; i++) {
-								if (response.custom_fields[i]["field_name"] == "whenareyoulookingtostart") {
-									index = i
-									break
-								}
-							}
-							if (index >= 0) {
-								let custom_field: IDataObject = response.custom_fields[index]
-								customFieldsBody.push({
-									id: custom_field["id"] as number,
-									content: customFields["whenareyoulookingtostart"] as string
-								})
-							}
-						}
-						//End Custom field 2
 					}
 					if (customFieldsBody.length > 0)
 						body.custom_fields = customFieldsBody

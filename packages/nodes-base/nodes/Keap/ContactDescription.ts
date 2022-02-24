@@ -571,17 +571,11 @@ export const contactFields: INodeProperties[] = [
 		},
 		options:[
 			{
-				name:'doyoualreadyhaveawebsite',
+				name:'note',
 				default:'',
 				type:'string',
-				displayName : 'do_you_already_have_a_website?'
+				displayName : 'Note'
 			},
-			{
-				name:'whenareyoulookingtostart',
-				default:'',
-				type:'string',
-				displayName : 'when_are_you_looking_to_start?'
-			}
 		]
 	},
 /* -------------------------------------------------------------------------- */
