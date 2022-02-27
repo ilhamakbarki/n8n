@@ -31,6 +31,7 @@ import {
 import {
 	usersOptions,
 	usersOperations,
+	usersTimelinesOptions,
 } from './UsersDescription';
 
 import {
@@ -50,7 +51,7 @@ import {
 import { ISpaces } from './SpacesInterface';
 import { IUsers } from './UsersInterface';
 import { usersTweetsOptions } from './UsersTweetsOptions';
-import { friendShipsOperations, friendShipsOptions } from './FriendshipsOptions';
+import { friendShipsLookupOptions, friendShipsOperations, friendShipsOptions } from './FriendshipsOptions';
 import { eventOperations, eventOptions } from './EventOptions';
 import { lookupTweets_v2, tweetOperations_v2 } from './TweetV2Description';
 
@@ -152,10 +153,13 @@ export class Twitter implements INodeType {
 			//Users
 			...usersOperations,
 			...usersOptions,
+			...usersTimelinesOptions,
 			...usersLookupOptions,
 			...usersTweetsOptions,
+			//Friendship
 			...friendShipsOperations,
 			...friendShipsOptions,
+			...friendShipsLookupOptions,
 			//Event Listening Stream
 			...eventOperations,
 			...eventOptions
@@ -390,13 +394,13 @@ export class Twitter implements INodeType {
 				if (resource === 'users') {
 					const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 					const qs: IUsers = {}
-					if (additionalFields.expansions) {
+					if (typeof additionalFields.expansions != "undefined") {
 						qs.expansions = additionalFields.expansions as string
 					}
-					if (additionalFields.tweet_fields) {
+					if (typeof additionalFields.tweet_fields != "undefined") {
 						qs['tweet.fields'] = additionalFields.tweet_fields as string
 					}
-					if (additionalFields.user_fields) {
+					if (typeof additionalFields.user_fields != "undefined") {
 						qs['user.fields'] = additionalFields.user_fields as string
 					}
 					const user_id = this.getNodeParameter('user_id', i) as string
@@ -409,10 +413,12 @@ export class Twitter implements INodeType {
 							qs.pagination_token = additionalFields.pagination_token as string
 						}
 						responseData = await twitterApiRequest2.call(this, 'GET', '', {}, qs as IDataObject, `https://api.twitter.com/2/users/${user_id}/following`);
-					} else if (operation === 'users_lookup') {
+					}
+					else if (operation === 'users_lookup') {
 						responseData = await twitterApiRequest2.call(this, 'GET', '', {}, qs as IDataObject, `https://api.twitter.com/2/users/${user_id}`);
 						responseData = responseData.data
-					} else if (operation === 'users_tweets') {
+					}
+					else if (operation === 'users_tweets') {
 						if (additionalFields.end_time) {
 							qs.end_time = additionalFields.end_time as string
 						}
@@ -446,7 +452,36 @@ export class Twitter implements INodeType {
 
 						responseData = await twitterApiRequest2.call(this, 'GET', '', {}, qs as IDataObject, `https://api.twitter.com/2/users/${user_id}/tweets`);
 					}
-
+					else if (operation === 'users_timelines') {
+						if (typeof additionalFields.end_time != "undefined") {
+							qs.end_time = additionalFields.end_time as string
+						}
+						if (typeof additionalFields.start_time != "undefined") {
+							qs.start_time = additionalFields.start_time as string
+						}
+						if (typeof additionalFields.max_results != "undefined") {
+							qs.max_results = additionalFields.max_results as number
+						}
+						if (typeof additionalFields.media_fields != "undefined") {
+							qs['media.fields'] = additionalFields.media_fields as string
+						}
+						if (typeof additionalFields.pagination_token != "undefined") {
+							qs.pagination_token = additionalFields.pagination_token as string
+						}
+						if (typeof additionalFields.place_fields != "undefined") {
+							qs['place.fields'] = additionalFields.place_fields as string
+						}
+						if (typeof additionalFields.poll_fields != "undefined") {
+							qs["poll.fields"] = additionalFields.poll_fields as string
+						}
+						if (typeof additionalFields.since_id != "undefined") {
+							qs.since_id = additionalFields.since_id as string
+						}
+						if (typeof additionalFields.until_id != "undefined") {
+							qs.until_id = additionalFields.until_id as string
+						}
+						responseData = await twitterApiRequest2.call(this, 'GET', '', {}, qs as IDataObject, `https://api.twitter.com/2/users/${user_id}/mentions`);
+					}
 				}
 				if (resource === 'friendship') {
 					const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
@@ -463,6 +498,15 @@ export class Twitter implements INodeType {
 						}
 						responseData = await twitterApiRequest.call(this, 'POST', `/friendships/create.json`, {}, qs);
 					}
+					else if (operation == 'lookup') {
+						if (typeof additionalFields.screen_name !== "undefined") {
+							qs["screen_name"] = additionalFields.screen_name as string
+						}
+						if (typeof additionalFields.user_id !== "undefined") {
+							qs["user_id"] = additionalFields.user_id as string
+						}
+						responseData = await twitterApiRequest.call(this, 'GET', `/friendships/lookup.json`, {}, qs);
+					}
 				}
 				if (resource === "event") {
 					if (operation === 'add_rules') {
@@ -478,10 +522,10 @@ export class Twitter implements INodeType {
 						}
 						let add: IDataObject[] = []
 						for (let index in value_split) {
-							if (tags_split.length > 0 && tags_split[index].trim().length>1) {
-								add.push({ "value": value_split[index].trim(), 'tag':tags_split[index].trim()})
-							}else{
-								add.push({ "value": value_split[index].trim()})
+							if (tags_split.length > 0 && tags_split[index].trim().length > 1) {
+								add.push({ "value": value_split[index].trim(), 'tag': tags_split[index].trim() })
+							} else {
+								add.push({ "value": value_split[index].trim() })
 							}
 						}
 						body["add"] = add
