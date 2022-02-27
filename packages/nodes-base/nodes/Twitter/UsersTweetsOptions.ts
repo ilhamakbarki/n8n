@@ -119,3 +119,84 @@ export const usersTweetsOptions = [
 		],
 	}
 ] as INodeProperties[];
+
+export const usersTimelinesV1Options = [
+	{
+		displayName: 'Additional Fields',
+		name: 'additionalFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: {
+			show: {
+				operation: [
+					'users_timelines',
+				],
+				resource: [
+					'users_v1',
+				],
+			},
+		},
+		options: [
+			{
+				displayName: 'User ID',
+				name: 'user_id',
+				type: 'number',
+				default : '',
+				hint : '1',
+				description: 'The ID of the user for whom to return results.',
+			},
+			{
+				displayName: 'Screen Name',
+				name: 'screen_name',
+				type: 'string',
+				default : '',
+				hint : 'noradio',
+				description: 'The screen name of the user for whom to return results.',
+			},
+			{
+				displayName: 'Count',
+				name: 'count',
+				type: 'number',
+				default : '',
+				hint : '1',
+				description: 'Specifies the number of Tweets to try and retrieve, up to a maximum of 200.',
+			},
+			{
+				displayName: 'Since ID',
+				name: 'since_id',
+				type: 'number',
+				default: '',
+				description: `Returns results with a Tweet ID greater than (that is, more recent than) the specified 'since' Tweet ID.`,
+			},
+			{
+				displayName: 'Max ID',
+				name: 'max_id',
+				type: 'number',
+				default: '',
+				description: `Returns results with an ID less than (that is, older than) or equal to the specified ID.`,
+			},
+			{
+				displayName: 'Trim User',
+				name: 'trim_user',
+				type: 'boolean',
+				default: false,
+				description: 'When set to either true , t or 1 , each tweet returned in a timeline will include a user object including only the status authors numerical ID.',
+			},
+			{
+				displayName: 'Exclude Replies',
+				name: 'exclude_replies',
+				type: 'boolean',
+				default: false,
+				description: 'This parameter will prevent replies from appearing in the returned timeline',
+			},
+			{
+				displayName: 'Include RTS',
+				name: 'include_rts',
+				type: 'boolean',
+				default: false,
+				description: 'When set to false , the timeline will strip any native retweets (though they will still count toward both the maximal length of the timeline and the slice selected by the count parameter)',
+			},
+		]
+	}
+] as INodeProperties[]

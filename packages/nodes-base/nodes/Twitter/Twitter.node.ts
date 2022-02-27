@@ -49,11 +49,12 @@ import {
 	ITweet, ITweetV2,
 } from './TweetInterface';
 import { ISpaces } from './SpacesInterface';
-import { IUsers } from './UsersInterface';
-import { usersTweetsOptions } from './UsersTweetsOptions';
+import { IUsers, IUsersV1 } from './UsersInterface';
+import { usersTimelinesV1Options, usersTweetsOptions } from './UsersTweetsOptions';
 import { friendShipsLookupOptions, friendShipsOperations, friendShipsOptions } from './FriendshipsOptions';
 import { eventOperations, eventOptions } from './EventOptions';
 import { lookupTweets_v2, tweetOperations_v2 } from './TweetV2Description';
+import { usersV1Operations } from './UsersV1Description';
 
 const ISO6391 = require('iso-639-1');
 
@@ -80,6 +81,7 @@ export class Twitter implements INodeType {
 						resource: [
 							'directMessage',
 							'tweet',
+							'users_v1',
 							'friendship'
 						],
 					},
@@ -119,7 +121,11 @@ export class Twitter implements INodeType {
 						value: 'spaces'
 					},
 					{
-						name: 'Users',
+						name: 'Users V1',
+						value: 'users_v1'
+					},
+					{
+						name: 'Users V2',
 						value: 'users'
 					},
 					{
@@ -150,6 +156,9 @@ export class Twitter implements INodeType {
 			//Spaces
 			...spacesOperations,
 			...spacesOptions,
+			//Users V1
+			...usersV1Operations,
+			...usersTimelinesV1Options,
 			//Users
 			...usersOperations,
 			...usersOptions,
@@ -390,6 +399,37 @@ export class Twitter implements INodeType {
 						responseData = await twitterApiRequest2.call(this, 'GET', '', {}, qs as IDataObject, `https://api.twitter.com/2/spaces/search`);
 					}
 
+				}
+				if (resource === 'users_v1') {
+					const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+					const qs: IUsersV1 = {}
+					if (operation === 'users_timelines') {
+						if (typeof additionalFields.user_id != "undefined") {
+							qs["user_id"] = additionalFields.user_id as number
+						}
+						if (typeof additionalFields.screen_name != "undefined") {
+							qs["screen_name"] = additionalFields.screen_name as string
+						}
+						if (typeof additionalFields.count != "undefined") {
+							qs["count"] = additionalFields.count as number
+						}
+						if (typeof additionalFields.since_id != "undefined") {
+							qs["since_id"] = additionalFields.since_id as number
+						}
+						if (typeof additionalFields.max_id != "undefined") {
+							qs["max_id"] = additionalFields.max_id as number
+						}
+						if (typeof additionalFields.trim_user != "undefined") {
+							qs["trim_user"] = additionalFields.trim_user as boolean
+						}
+						if (typeof additionalFields.exclude_replies != "undefined") {
+							qs["exclude_replies"] = additionalFields.exclude_replies as boolean
+						}
+						if (typeof additionalFields.include_rts != "undefined") {
+							qs["include_rts"] = additionalFields.include_rts as boolean
+						}
+						responseData = await twitterApiRequest.call(this, 'GET', `/statuses/user_timeline.json`, {}, qs as IDataObject);
+					}
 				}
 				if (resource === 'users') {
 					const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
