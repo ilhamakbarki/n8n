@@ -51,7 +51,7 @@ import {
 import { ISpaces } from './SpacesInterface';
 import { IUsers, IUsersV1 } from './UsersInterface';
 import { usersTimelinesV1Options, usersTweetsOptions } from './UsersTweetsOptions';
-import { friendShipsLookupOptions, friendShipsOperations, friendShipsOptions } from './FriendshipsOptions';
+import { friendShipsLookupOptions, friendShipsOperations, friendShipsOptions, friendShipsShowOptions } from './FriendshipsOptions';
 import { eventOperations, eventOptions } from './EventOptions';
 import { lookupTweets_v2, tweetOperations_v2 } from './TweetV2Description';
 import { usersV1Operations } from './UsersV1Description';
@@ -169,6 +169,7 @@ export class Twitter implements INodeType {
 			...friendShipsOperations,
 			...friendShipsOptions,
 			...friendShipsLookupOptions,
+			...friendShipsShowOptions,
 			//Event Listening Stream
 			...eventOperations,
 			...eventOptions
@@ -546,6 +547,21 @@ export class Twitter implements INodeType {
 							qs["user_id"] = additionalFields.user_id as string
 						}
 						responseData = await twitterApiRequest.call(this, 'GET', `/friendships/lookup.json`, {}, qs);
+					}
+					else if (operation == 'show') {
+						if(typeof additionalFields["source_id"] != "undefined"){
+							qs["source_id"] = additionalFields["source_id"] as number
+						}
+						if(typeof additionalFields["source_screen_name"] != "undefined"){
+							qs["source_screen_name"] = additionalFields["source_screen_name"] as string
+						}
+						if(typeof additionalFields["target_id"] != "undefined"){
+							qs["target_id"] = additionalFields["target_id"] as number
+						}
+						if(typeof additionalFields["target_screen_name"] != "undefined"){
+							qs["target_screen_name"] = additionalFields["target_screen_name"] as string
+						}
+						responseData = await twitterApiRequest.call(this, 'GET', `/friendships/show.json`, {}, qs);
 					}
 				}
 				if (resource === "event") {

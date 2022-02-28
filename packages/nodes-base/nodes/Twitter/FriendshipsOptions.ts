@@ -24,7 +24,12 @@ export const friendShipsOperations: INodeProperties[] = [
 				name: 'Lookup',
 				value: 'lookup',
 				description: 'Lookup a friendship',
-			}
+			},
+			{
+				name: 'Show',
+				value: 'show',
+				description: 'Show a friendship',
+			},
 		],
 		default: 'create',
 		description: 'The operation to perform.',
@@ -111,3 +116,57 @@ export const friendShipsLookupOptions = [
 		]
 	}
 ] as INodeProperties[];
+
+export const friendShipsShowOptions = [
+	{
+		displayName: 'Additional Fields',
+		name: 'additionalFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: {
+			show: {
+				operation: [
+					'show'
+				],
+				resource: [
+					'friendship',
+				],
+			},
+		},
+		options: [
+			{
+				name: "source_id",
+				displayName: "Source ID",
+				default: '',
+				type: "number",
+				description: "The user_id of the subject user.",
+				hint : '783214'
+			},
+			{
+				name: "source_screen_name",
+				displayName: "Source Screen Name",
+				default: '',
+				type: "string",
+				description: "The screen_name of the subject user.",
+				hint : 'twitter'
+			},
+			{
+				name: "target_id",
+				displayName: "Target ID",
+				default: '',
+				type: "number",
+				description: "The user_id of the target user.",
+				hint : '2244994945'
+			},
+			{
+				name: "target_screen_name",
+				displayName: "Source Screen Name",
+				default: '',
+				type: "string",
+				description: "The screen_name of the target user.",
+				hint : 'TwitterDev'
+			},
+		]
+	}
+] as INodeProperties[]
