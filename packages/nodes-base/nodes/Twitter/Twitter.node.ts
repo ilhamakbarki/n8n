@@ -561,7 +561,8 @@ export class Twitter implements INodeType {
 						if(typeof additionalFields["target_screen_name"] != "undefined"){
 							qs["target_screen_name"] = additionalFields["target_screen_name"] as string
 						}
-						responseData = await twitterApiRequest.call(this, 'GET', `/friendships/show.json`, {}, qs);
+						let response = await twitterApiRequest.call(this, 'GET', `/friendships/show.json`, {}, qs);
+						responseData = response["relationship"]
 					}
 				}
 				if (resource === "event") {
