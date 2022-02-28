@@ -161,7 +161,7 @@ export const friendShipsShowOptions = [
 			},
 			{
 				name: "target_screen_name",
-				displayName: "Source Screen Name",
+				displayName: "Target Screen Name",
 				default: '',
 				type: "string",
 				description: "The screen_name of the target user.",
