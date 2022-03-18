@@ -55,6 +55,7 @@ import { friendShipsLookupOptions, friendShipsOperations, friendShipsOptions, fr
 import { eventOperations, eventOptions } from './EventOptions';
 import { lookupTweets_v2, tweetOperations_v2 } from './TweetV2Description';
 import { usersV1Operations } from './UsersV1Description';
+import { usersFollowersOptions } from './UsersFollowOptions';
 
 const ISO6391 = require('iso-639-1');
 
@@ -165,6 +166,7 @@ export class Twitter implements INodeType {
 			...usersTimelinesOptions,
 			...usersLookupOptions,
 			...usersTweetsOptions,
+			...usersFollowersOptions,
 			//Friendship
 			...friendShipsOperations,
 			...friendShipsOptions,
@@ -522,6 +524,15 @@ export class Twitter implements INodeType {
 							qs.until_id = additionalFields.until_id as string
 						}
 						responseData = await twitterApiRequest2.call(this, 'GET', '', {}, qs as IDataObject, `https://api.twitter.com/2/users/${user_id}/mentions`);
+					}
+					else if(operation === 'users_followers'){
+						if (typeof additionalFields.max_results != "undefined") {
+							qs['max_results'] = additionalFields.max_results as number
+						}
+						if (typeof additionalFields.pagination_token != "undefined") {
+							qs['pagination_token'] = additionalFields.pagination_token as string
+						}
+						responseData = await twitterApiRequest2.call(this, 'GET', '', {}, qs as IDataObject, `https://api.twitter.com/2/users/${user_id}/followers`);
 					}
 				}
 				if (resource === 'friendship') {

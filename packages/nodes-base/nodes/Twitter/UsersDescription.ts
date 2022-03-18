@@ -21,6 +21,11 @@ export const usersOperations = [
 				description: 'Returns a list of users the specified user ID is following.',
 			},
 			{
+				name: 'Followers',
+				value: 'users_followers',
+				description: `Returns a list of users the specified user ID's Followers.`,
+			},
+			{
 				name: 'Lookup',
 				value: 'users_lookup',
 				description: 'Returns a variety of information about a single user specified by the requested ID.',
@@ -60,7 +65,8 @@ export const usersOptions = [
 					'users_following',
 					'users_lookup',
 					'users_tweets',
-					'users_timelines'
+					'users_timelines',
+					'users_followers'
 				],
 				resource: [
 					'users',
