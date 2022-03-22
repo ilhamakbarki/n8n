@@ -17,3 +17,26 @@ export interface ITweetV2 {
 	'tweet.fields'?: string
 	'user.fields'?: string
 }
+
+export interface IManageTweetsV2 {
+	'direct_message_deep_link'?: string
+	'for_super_followers_only'?: boolean
+	'geo'?: {
+		'place_id'?: string
+	}
+	'media'?: {
+		'media_ids'?: []
+		'tagged_user_ids'?: []
+	}
+	'poll'?: {
+		'duration_minutes'?: number
+		'options'?: []
+	}
+	'quote_tweet_id'?: string
+	'reply'?: {
+		'exclude_reply_user_ids'?: []
+		'in_reply_to_tweet_id'?: string
+	}
+	'reply_settings'?:string
+	'text'?:string
+}

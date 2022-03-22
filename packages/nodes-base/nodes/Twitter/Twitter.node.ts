@@ -46,14 +46,17 @@ import {
 } from './UsersLookupOptions'
 
 import {
-	ITweet, ITweetV2,
+	ITweet,
+	ITweetV2,
+	IManageTweetsV2
 } from './TweetInterface';
+
 import { ISpaces } from './SpacesInterface';
 import { IUsers, IUsersV1 } from './UsersInterface';
 import { usersTimelinesV1Options, usersTweetsOptions } from './UsersTweetsOptions';
 import { friendShipsLookupOptions, friendShipsOperations, friendShipsOptions, friendShipsShowOptions } from './FriendshipsOptions';
 import { eventOperations, eventOptions } from './EventOptions';
-import { lookupTweets_v2, tweetOperations_v2 } from './TweetV2Description';
+import { lookupTweets_v2, manageTweets, tweetOperations_v2 } from './TweetV2Description';
 import { usersV1Operations } from './UsersV1Description';
 import { usersFollowersOptions } from './UsersFollowOptions';
 
@@ -154,6 +157,7 @@ export class Twitter implements INodeType {
 			//TWEET V2
 			...tweetOperations_v2,
 			...lookupTweets_v2,
+			...manageTweets,
 			//Spaces
 			...spacesOperations,
 			...spacesOptions,
@@ -525,7 +529,7 @@ export class Twitter implements INodeType {
 						}
 						responseData = await twitterApiRequest2.call(this, 'GET', '', {}, qs as IDataObject, `https://api.twitter.com/2/users/${user_id}/mentions`);
 					}
-					else if(operation === 'users_followers'){
+					else if (operation === 'users_followers') {
 						if (typeof additionalFields.max_results != "undefined") {
 							qs['max_results'] = additionalFields.max_results as number
 						}
@@ -560,16 +564,16 @@ export class Twitter implements INodeType {
 						responseData = await twitterApiRequest.call(this, 'GET', `/friendships/lookup.json`, {}, qs);
 					}
 					else if (operation == 'show') {
-						if(typeof additionalFields["source_id"] != "undefined"){
+						if (typeof additionalFields["source_id"] != "undefined") {
 							qs["source_id"] = additionalFields["source_id"] as number
 						}
-						if(typeof additionalFields["source_screen_name"] != "undefined"){
+						if (typeof additionalFields["source_screen_name"] != "undefined") {
 							qs["source_screen_name"] = additionalFields["source_screen_name"] as string
 						}
-						if(typeof additionalFields["target_id"] != "undefined"){
+						if (typeof additionalFields["target_id"] != "undefined") {
 							qs["target_id"] = additionalFields["target_id"] as number
 						}
-						if(typeof additionalFields["target_screen_name"] != "undefined"){
+						if (typeof additionalFields["target_screen_name"] != "undefined") {
 							qs["target_screen_name"] = additionalFields["target_screen_name"] as string
 						}
 						let response = await twitterApiRequest.call(this, 'GET', `/friendships/show.json`, {}, qs);
@@ -622,28 +626,95 @@ export class Twitter implements INodeType {
 				}
 				if (resource === 'tweet_v2') {
 					const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
-					const qs: ITweetV2 = {}
-					if (typeof additionalFields.expansions != "undefined") {
-						qs.expansions = additionalFields.expansions as string
-					}
-					if (typeof additionalFields.media_fields != "undefined") {
-						qs['media.fields'] = additionalFields.media_fields as string
-					}
-					if (typeof additionalFields.place_fields != "undefined") {
-						qs['place.fields'] = additionalFields.place_fields as string
-					}
-					if (typeof additionalFields.poll_fields != "undefined") {
-						qs['poll.fields'] = additionalFields.poll_fields as string
-					}
-					if (typeof additionalFields.tweet_fields != "undefined") {
-						qs['tweet.fields'] = additionalFields.tweet_fields as string
-					}
-					if (additionalFields.user_fields) {
-						qs['user.fields'] = additionalFields.user_fields as string
-					}
 					if (operation === 'lookup') {
+						const qs: ITweetV2 = {}
+						if (typeof additionalFields.expansions != "undefined") {
+							qs.expansions = additionalFields.expansions as string
+						}
+						if (typeof additionalFields.media_fields != "undefined") {
+							qs['media.fields'] = additionalFields.media_fields as string
+						}
+						if (typeof additionalFields.place_fields != "undefined") {
+							qs['place.fields'] = additionalFields.place_fields as string
+						}
+						if (typeof additionalFields.poll_fields != "undefined") {
+							qs['poll.fields'] = additionalFields.poll_fields as string
+						}
+						if (typeof additionalFields.tweet_fields != "undefined") {
+							qs['tweet.fields'] = additionalFields.tweet_fields as string
+						}
+						if (additionalFields.user_fields) {
+							qs['user.fields'] = additionalFields.user_fields as string
+						}
 						const tweetID = this.getNodeParameter('tweetID', i) as string
 						responseData = await twitterApiRequest2.call(this, 'GET', '', {}, qs as IDataObject, `https://api.twitter.com/2/tweets/${tweetID}`);
+						responseData = responseData.data
+					}
+					else if (operation == 'manage_tweets') {
+						const body: IManageTweetsV2 = {}
+						if (typeof additionalFields.direct_message_deep_link != "undefined") {
+							body['direct_message_deep_link'] = additionalFields.direct_message_deep_link as string
+						}
+						if (typeof additionalFields.for_super_followers_only != "undefined") {
+							body['for_super_followers_only'] = additionalFields.for_super_followers_only as boolean
+						}
+						if (typeof additionalFields.geo_place_id != "undefined") {
+							body['geo'] = {
+								place_id : additionalFields.geo_place_id as string
+							}
+						}
+						let media : IDataObject={}
+						if (typeof additionalFields.media_media_ids != "undefined") {
+							let media_ids = additionalFields.media_media_ids as string
+							media_ids = media_ids.replace(/\s/g,'')
+							media['media_ids'] = media_ids.split(",")
+						}
+						if (typeof additionalFields.media_tagged_user_ids != "undefined") {
+							let media_tagged_user_ids = additionalFields.media_tagged_user_ids as string
+							media_tagged_user_ids = media_tagged_user_ids.replace(/\s/g,'')
+							media['tagged_user_ids'] = media_tagged_user_ids.split(",")
+						}
+						if(Object.keys(media).length>0){
+							body['media'] = media
+						}
+
+						let poll : IDataObject={}
+						if (typeof additionalFields.poll_options != "undefined") {
+							let poll_options = additionalFields.poll_options as string
+							poll_options = poll_options.replace(/\s/g,'')
+							poll['options'] = poll_options.split(",")
+						}
+						if (typeof additionalFields.poll_duration_minutes != "undefined") {
+							poll['duration_minutes'] = additionalFields.poll_duration_minutes as number
+						}
+						if(Object.keys(poll).length>0){
+							body['poll'] = poll
+						}
+
+						if (typeof additionalFields.quote_tweet_id != "undefined") {
+							body['quote_tweet_id'] = additionalFields.quote_tweet_id as string
+						}
+
+						let reply : IDataObject={}
+						if (typeof additionalFields.reply_exclude_reply_user_ids != "undefined") {
+							let reply_exclude_reply_user_ids = additionalFields.reply_exclude_reply_user_ids as string
+							reply_exclude_reply_user_ids = reply_exclude_reply_user_ids.replace(/\s/g,'')
+							reply['exclude_reply_user_ids'] = reply_exclude_reply_user_ids.split(",")
+						}
+						if (typeof additionalFields.reply_in_reply_to_tweet_id != "undefined") {
+							reply['in_reply_to_tweet_id'] = additionalFields.reply_in_reply_to_tweet_id as string
+						}
+						if(Object.keys(reply).length>0){
+							body['reply'] = reply
+						}
+
+						if (typeof additionalFields.reply_settings != "undefined") {
+							body['reply_settings'] = additionalFields.reply_settings as string
+						}
+						if (typeof additionalFields.text != "undefined") {
+							body['text'] = additionalFields.text as string
+						}
+						responseData = await twitterApiRequest2.call(this, 'POST', '', body, {}, `https://api.twitter.com/2/tweets`);
 						responseData = responseData.data
 					}
 				}
