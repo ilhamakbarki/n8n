@@ -141,7 +141,7 @@ export const manageTweets : INodeProperties[] = [
 				name: 'text',
 				type: 'string',
 				default: '',
-				hint:`mentionedUsers`,
+				hint:`Hello World!`,
 				description: `Text of the Tweet being created. This field is required if media.media_ids is not present.
 				`,
 			},
