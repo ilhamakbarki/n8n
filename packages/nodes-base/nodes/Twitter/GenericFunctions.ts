@@ -72,7 +72,32 @@ export async function twitterApiRequest2(this: IExecuteFunctions | IExecuteSingl
 			delete options.qs;
 		}
 		//@ts-ignore
-		return await await this.helpers.request(options);
+		return await this.helpers.request(options);
+	} catch (error) {
+		throw new NodeApiError(this.getNode(), error);
+	}
+}
+
+export async function twitterApiRequestOauth2(this: IExecuteFunctions | IExecuteSingleFunctions | ILoadOptionsFunctions | IHookFunctions, method: string, resource: string, body: any = {}, qs: IDataObject = {}, uri?: string, option: IDataObject = {}): Promise<any> { // tslint:disable-line:no-any
+	let options: OptionsWithUrl = {
+		method,
+		body,
+		qs,
+		url: uri || `https://api.twitter.com/1.1${resource}`,
+		json: true
+	};
+	try {
+		if (Object.keys(option).length !== 0) {
+			options = Object.assign({}, options, option);
+		}
+		if (Object.keys(body).length === 0) {
+			delete options.body;
+		}
+		if (Object.keys(qs).length === 0) {
+			delete options.qs;
+		}
+		//@ts-ignore
+		return await this.helpers.requestOAuth2.call(this, 'twitterOAuth2Api', options);
 	} catch (error) {
 		throw new NodeApiError(this.getNode(), error);
 	}

@@ -330,7 +330,8 @@
       "dist/credentials/NimbleApi.credentials.js",
       "dist/credentials/MonkeyLearnApi.credentials.js",
       "dist/credentials/DlvritApi.credentials.js",
-      "dist/credentials/TweetpikApi.credentials.js"
+      "dist/credentials/TweetpikApi.credentials.js",
+      "dist/credentials/TwitterOAuth2Api.credentials.js"
     ],
     "nodes": [
       "dist/nodes/ActionNetwork/ActionNetwork.node.js",

@@ -38,6 +38,7 @@ import {
 	twitterApiRequest,
 	twitterApiRequest2,
 	twitterApiRequestAllItems,
+	twitterApiRequestOauth2,
 	uploadAttachments,
 } from './GenericFunctions';
 
@@ -86,8 +87,23 @@ export class Twitter implements INodeType {
 							'directMessage',
 							'tweet',
 							'users_v1',
-							'friendship'
+							'friendship',
 						],
+					},
+				},
+			},
+			{
+				name: 'twitterOAuth2Api',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: [
+							'tweet_v2',
+						],
+						operation:[
+							//Tweet V2
+							'manage_tweets'
+						]
 					},
 				},
 			},
@@ -102,6 +118,24 @@ export class Twitter implements INodeType {
 							'event',
 							'tweet_v2'
 						],
+						operation:[
+							//Spaces
+							'lookup_spaces_id',
+							'lookup_creator_id',
+							'search_spaces_keyword',
+							//Users
+							'users_following',
+							'users_followers',
+							'users_lookup',
+							'users_tweets',
+							'users_timelines',
+							//Event
+							'add_rules',
+							'get_rules',
+							'del_rules',
+							//Tweet V2
+							'lookup',
+						]
 					},
 				},
 			},
@@ -714,7 +748,7 @@ export class Twitter implements INodeType {
 						if (typeof additionalFields.text != "undefined") {
 							body['text'] = additionalFields.text as string
 						}
-						responseData = await twitterApiRequest2.call(this, 'POST', '', body, {}, `https://api.twitter.com/2/tweets`);
+						responseData = await twitterApiRequestOauth2.call(this, 'POST', '', body, {}, `https://api.twitter.com/2/tweets`);
 						responseData = responseData.data
 					}
 				}

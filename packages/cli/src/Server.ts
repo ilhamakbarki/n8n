@@ -2147,9 +2147,10 @@ class App {
 							body: {
 								client_id: _.get(oauthCredentials, 'clientId') as string,
 								client_secret: _.get(oauthCredentials, 'clientSecret', '') as string,
+								code_verifier: _.get(oauthCredentials, 'code_verifier') as string | undefined,
 							},
 						};
-						delete oAuth2Parameters.clientSecret;
+						// delete oAuth2Parameters.clientSecret;
 					}
 
 					await this.externalHooks.run('oauth2.callback', [oAuth2Parameters]);
