@@ -45,7 +45,7 @@ export class AwsComprehend implements INodeType {
 					},
 				],
 				default: 'text',
-				description: 'The resource to perform.',
+				description: 'The resource to perform',
 			},
 			{
 				displayName: 'Operation',
@@ -142,7 +142,7 @@ export class AwsComprehend implements INodeType {
 						],
 					},
 				},
-				description: 'The language code for text.',
+				description: 'The language code for text',
 			},
 			{
 				displayName: 'Text',
@@ -159,7 +159,7 @@ export class AwsComprehend implements INodeType {
 						],
 					},
 				},
-				description: 'The text to send.',
+				description: 'The text to send',
 			},
 			{
 				displayName: 'Simplify Response',
@@ -176,7 +176,7 @@ export class AwsComprehend implements INodeType {
 					},
 				},
 				default: true,
-				description: 'Return a simplified version of the response instead of the raw data.',
+				description: 'Return a simplified version of the response instead of the raw data',
 			},
 			{
 				displayName: 'Endpoint Arn',
@@ -221,7 +221,7 @@ export class AwsComprehend implements INodeType {
 							alwaysOpenEditWindow: true,
 						},
 						default: '',
-						description: 'The Amazon Resource Name of an endpoint that is associated with a custom entity recognition model.',
+						description: 'The Amazon Resource Name of an endpoint that is associated with a custom entity recognition model',
 					},
 				],
 			},
