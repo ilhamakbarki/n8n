@@ -10,17 +10,11 @@ import {
 } from 'n8n-core';
 
 import {
-	IBinaryKeyData,
 	IDataObject,
-	INodeExecutionData,
 	NodeApiError,
-	NodeOperationError,
 } from 'n8n-workflow';
 
-export async function dialogApiRequest(this: IExecuteFunctions | IExecuteSingleFunctions | ILoadOptionsFunctions | IHookFunctions, method: string, resource: string, body: any = {}, qs: IDataObject = {}, uri?: string, option: IDataObject = {}): Promise<any> { // tslint:disable-line:no-any
-	const credentials = await this.getCredentials('dialog360Api') as {
-		apiKeySecret: string;
-	};
+export async function dialogApiRequest(this: IExecuteFunctions | IExecuteSingleFunctions | ILoadOptionsFunctions | IHookFunctions, method: string, resource: string, apikey: string, body: any = {}, qs: IDataObject = {}, uri?: string, option: IDataObject = {}): Promise<any> { // tslint:disable-line:no-any
 
 	let options: OptionsWithUrl = {
 		method,
@@ -28,8 +22,8 @@ export async function dialogApiRequest(this: IExecuteFunctions | IExecuteSingleF
 		qs,
 		url: uri || `https://waba.360dialog.io/${resource}`,
 		json: true,
-		headers: {
-			"D360-API-KEY":credentials.apiKeySecret
+		headers : {
+			"D360-API-KEY": apikey
 		}
 	};
 

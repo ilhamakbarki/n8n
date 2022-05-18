@@ -47,13 +47,19 @@ export class Dialog360 implements INodeType {
 		},
 		inputs: ['main'],
 		outputs: ['main'],
-		credentials: [
-			{
-				name: 'dialog360Api',
-				required: true,
-			},
-		],
+		credentials: [],
 		properties: [
+			{
+				displayName : 'API Key',
+				name : 'apikey',
+				default : '',
+				description : 'API key for 360 Dialog API',
+				type : 'string',
+				required : true,
+				typeOptions: {
+					password: true,
+				},
+			},
 			{
 				displayName: 'Resource',
 				name: 'resource',
@@ -91,12 +97,13 @@ export class Dialog360 implements INodeType {
 		let responseData;
 		const resource = this.getNodeParameter('resource', 0) as string;
 		const operation = this.getNodeParameter('operation', 0) as string;
+		const apikey = this.getNodeParameter('apikey', 0) as string;
 		for (let i = 0; i < length; i++) {
 			try {
 				if (resource === 'templates') {
 					if (operation === 'get') {
 						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
-						let resp = await dialogApiRequest.call(this, `GET`, `v1/configs/templates`)
+						let resp = await dialogApiRequest.call(this, `GET`, `v1/configs/templates`, apikey)
 						if (typeof additionalFields.name != 'undefined') {
 							let template
 							for (let d of resp.waba_templates) {
@@ -120,7 +127,7 @@ export class Dialog360 implements INodeType {
 						const recipient = this.getNodeParameter('recipient', i) as string;
 						const templateName = this.getNodeParameter('template', i) as string;
 						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
-						let resp = await dialogApiRequest.call(this, `GET`, `v1/configs/templates`)
+						let resp = await dialogApiRequest.call(this, `GET`, `v1/configs/templates`, apikey)
 						let template
 						for (let d of resp.waba_templates) {
 							if (d.name == templateName) {
@@ -189,7 +196,7 @@ export class Dialog360 implements INodeType {
 								components
 							}
 						}
-						responseData = await dialogApiRequest.call(this, `POST`, `v1/messages`, body)
+						responseData = await dialogApiRequest.call(this, `POST`, `v1/messages`, apikey, body)
 					} else {
 						throw new NodeOperationError(this.getNode(), `The operation "${operation}" is not known!`);
 					}
