@@ -25,7 +25,7 @@ export class Encryption implements INodeType {
 		group: ['input', 'output'],
 		version: 1,
 		description: 'Consume Encryption ',
-		subtitle: '={{$parameter["operation"] + ":" + $parameter["resource"]}}',
+		subtitle: '={{$parameter["resource"]}}',
 		defaults: {
 			name: 'Encryption',
 		},
@@ -57,6 +57,7 @@ export class Encryption implements INodeType {
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const hexKey: string = `6f4a42fdfda6feaa4b5465334a9dbaa953be5d1e3206ed022c4119958188ef47`
+		let chiper = PolyAES.withKey(hexKey)
 		const items = this.getInputData();
 		const returnData: IDataObject[] = [];
 		const length = items.length;
@@ -66,19 +67,25 @@ export class Encryption implements INodeType {
 			try {
 				if (resource === 'encrypt') {
 					const text = this.getNodeParameter('text', i) as string;
-					responseData = {
-						hash: PolyAES.withKey(hexKey).encrypt(text)
+					let json = JSON.parse(text)
+					let keys = Object.keys(json)
+					for (let d of keys) {
+						json[d] = chiper.encrypt(json[d])
 					}
+					responseData = json
 				} else if (resource === 'decrypt') {
 					const text = this.getNodeParameter('text', i) as string;
-					let plain_text = PolyAES.withKey(hexKey).decrypt(text)
-					if (typeof plain_text == 'string') {
-						responseData = {
-							plain_text
+					let json = JSON.parse(text)
+					let keys = Object.keys(json)
+					for (let d of keys) {
+						let plain_text = chiper.decrypt(json[d])
+						if (typeof plain_text == 'string') {
+							json[d] = plain_text
+						} else {
+							throw new NodeOperationError(this.getNode(), `Field "${d}" is wrong hash value`);
 						}
-					} else {
-						throw new NodeOperationError(this.getNode(), `"${text}" is wrong hash`);
 					}
+					responseData = json
 				} else {
 					throw new NodeOperationError(this.getNode(), `The resource "${resource}" is not known!`);
 				}
