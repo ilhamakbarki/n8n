@@ -38,6 +38,7 @@ export class AwsComprehend implements INodeType {
 				displayName: 'Resource',
 				name: 'resource',
 				type: 'options',
+				noDataExpression: true,
 				options: [
 					{
 						name: 'Text',
@@ -51,6 +52,7 @@ export class AwsComprehend implements INodeType {
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				options: [
 					{
 						name: 'Detect Dominant Language',
@@ -74,7 +76,6 @@ export class AwsComprehend implements INodeType {
 					},
 				],
 				default: 'detectDominantLanguage',
-				description: 'The operation to perform.',
 			},
 			{
 				displayName: 'Language Code',
@@ -162,7 +163,7 @@ export class AwsComprehend implements INodeType {
 				description: 'The text to send',
 			},
 			{
-				displayName: 'Simplify Response',
+				displayName: 'Simplify',
 				name: 'simple',
 				type: 'boolean',
 				displayOptions: {
@@ -176,7 +177,7 @@ export class AwsComprehend implements INodeType {
 					},
 				},
 				default: true,
-				description: 'Return a simplified version of the response instead of the raw data',
+				description: 'Whether to return a simplified version of the response instead of the raw data',
 			},
 			{
 				displayName: 'Endpoint Arn',
