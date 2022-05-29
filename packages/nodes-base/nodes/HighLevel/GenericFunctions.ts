@@ -1,23 +1,21 @@
 import {
 	IExecuteFunctions,
+	IExecuteSingleFunctions,
+	IHookFunctions,
 	ILoadOptionsFunctions,
 } from 'n8n-core';
-
-import {
-	IHookFunctions,
-} from 'n8n-workflow';
 
 /**
  * Make an authenticated REST API request to HighLevel.
  */
 export async function highLevelApiRequest(
-	this: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
+	this: IExecuteFunctions | IExecuteSingleFunctions | ILoadOptionsFunctions | IHookFunctions,
 	method: string,
 	endpoint: string,
 	body: object = {},
 	qs: object = {},
 ) {
-	const { apiKey } = this.getCredentials('highLevelApi') as { apiKey: string };
+	const { apiKey } = await this.getCredentials('highLevelApi') as { apiKey: string };
 
 	const options = {
 		headers: {
