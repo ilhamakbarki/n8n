@@ -1,10 +1,11 @@
 import { INodeProperties } from 'n8n-workflow';
 
-export const reactionOperations = [
+export const reactionOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -30,11 +31,10 @@ export const reactionOperations = [
 			},
 		],
 		default: 'add',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const reactionFields = [
+export const reactionFields: INodeProperties[] = [
 	{
 		displayName: 'Channel',
 		name: 'channelId',
@@ -56,7 +56,7 @@ export const reactionFields = [
 				],
 			},
 		},
-		description: 'Channel containing the message.',
+		description: 'Channel containing the message',
 	},
 	{
 		displayName: 'Emoji',
@@ -75,7 +75,7 @@ export const reactionFields = [
 				],
 			},
 		},
-		description: 'Name of emoji.',
+		description: 'Name of emoji',
 		placeholder: '+1',
 	},
 	{
@@ -96,6 +96,6 @@ export const reactionFields = [
 				],
 			},
 		},
-		description: `Timestamp of the message.`,
+		description: 'Timestamp of the message',
 	},
-] as INodeProperties[];
+];

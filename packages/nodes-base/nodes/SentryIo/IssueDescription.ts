@@ -2,11 +2,12 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export const issueOperations = [
+export const issueOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -37,11 +38,10 @@ export const issueOperations = [
 			},
 		],
 		default: 'get',
-		description: 'The operation to perform',
 	},
-] as INodeProperties[];
+];
 
-export const issueFields = [
+export const issueFields: INodeProperties[] = [
 	/* -------------------------------------------------------------------------- */
 	/*                                issue:get/delete                            */
 	/* -------------------------------------------------------------------------- */
@@ -65,6 +65,7 @@ export const issueFields = [
 		required: true,
 		description: 'ID of issue to get',
 	},
+
 	/* -------------------------------------------------------------------------- */
 	/*                                issue:getAll                                */
 	/* -------------------------------------------------------------------------- */
@@ -128,7 +129,7 @@ export const issueFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -152,7 +153,7 @@ export const issueFields = [
 			maxValue: 500,
 		},
 		default: 100,
-		description: 'How many results to return',
+		description: 'Max number of results to return',
 	},
 	{
 		displayName: 'Additional Fields',
@@ -176,7 +177,7 @@ export const issueFields = [
 				name: 'query',
 				type: 'string',
 				default: '',
-				description: 'An optional Sentry structured search query. If not provided an implied "is:unresolved" is assumed. Info <a href="https://docs.sentry.io/product/sentry-basics/search/" target="_blank">here</a>.',
+				description: 'An optional Sentry structured search query. If not provided, an implied "is:unresolved" is assumed. Info <a href="https://docs.sentry.io/product/sentry-basics/search/">here</a>.',
 			},
 			{
 				displayName: 'Stats Period',
@@ -200,10 +201,11 @@ export const issueFields = [
 				name: 'shortIdLookUp',
 				type: 'boolean',
 				default: true,
-				description: 'If this is set to true then short IDs are looked up by this function as well. This can cause the return value of the function to return an event issue of a different project which is why this is an opt-in',
+				description: 'If this is set to true then short IDs are looked up by this function as well. This can cause the return value of the function to return an event issue of a different project which is why this is an opt-in.',
 			},
 		],
 	},
+
 	/* -------------------------------------------------------------------------- */
 	/*                                issue:update                                */
 	/* -------------------------------------------------------------------------- */
@@ -227,7 +229,7 @@ export const issueFields = [
 		description: 'ID of issue to get',
 	},
 	{
-		displayName: 'Additional Fields',
+		displayName: 'Update Fields',
 		name: 'additionalFields',
 		type: 'collection',
 		placeholder: 'Add Field',
@@ -248,7 +250,7 @@ export const issueFields = [
 				name: 'assignedTo',
 				type: 'string',
 				default: '',
-				description: 'The actor id (or username) of the user or team that should be assigned to this issue',
+				description: 'The actor ID (or username) of the user or team that should be assigned to this issue',
 			},
 			{
 				displayName: 'Has Seen',
@@ -304,4 +306,4 @@ export const issueFields = [
 			},
 		],
 	},
-] as INodeProperties[];
+];

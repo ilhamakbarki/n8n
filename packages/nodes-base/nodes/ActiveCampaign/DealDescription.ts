@@ -10,11 +10,12 @@ import {
 	activeCampaignDefaultGetAllProperties,
 } from './GenericFunctions';
 
-export const dealOperations = [
+export const dealOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -60,12 +61,11 @@ export const dealOperations = [
 			},
 		],
 		default: 'create',
-		description: 'The operation to perform.',
 	},
 
-] as INodeProperties[];
+];
 
-export const dealFields = [
+export const dealFields: INodeProperties[] = [
 	// ----------------------------------
 	//         deal:create
 	// ----------------------------------
@@ -254,13 +254,13 @@ export const dealFields = [
 		},
 		default: 0,
 		required: true,
-		description: 'ID of the deal to update.',
+		description: 'ID of the deal to update',
 	},
 	{
 		displayName: 'Update Fields',
 		name: 'updateFields',
 		type: 'collection',
-		description: 'The fields to update.',
+		description: 'The fields to update',
 		placeholder: 'Add Field',
 		displayOptions: {
 			show: {
@@ -367,7 +367,7 @@ export const dealFields = [
 				],
 			},
 		},
-		description: 'The ID of the deal to delete.',
+		description: 'The ID of the deal to delete',
 	},
 
 	// ----------------------------------
@@ -389,7 +389,7 @@ export const dealFields = [
 				],
 			},
 		},
-		description: 'The ID of the deal to get.',
+		description: 'The ID of the deal to get',
 	},
 
 	// ----------------------------------
@@ -494,4 +494,4 @@ export const dealFields = [
 		description: 'The content of the deal note',
 	},
 
-] as INodeProperties[];
+];

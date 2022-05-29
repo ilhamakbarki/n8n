@@ -24,7 +24,6 @@ export class AcuitySchedulingTrigger implements INodeType {
 		description: 'Handle Acuity Scheduling events via webhooks',
 		defaults: {
 			name: 'Acuity Scheduling Trigger',
-			color: '#000000',
 		},
 		inputs: [],
 		outputs: ['main'],
@@ -76,7 +75,6 @@ export class AcuitySchedulingTrigger implements INodeType {
 					},
 				],
 				default: 'apiKey',
-				description: 'Method of authentication.',
 			},
 			{
 				displayName: 'Event',
@@ -117,7 +115,7 @@ export class AcuitySchedulingTrigger implements INodeType {
 				name: 'resolveData',
 				type: 'boolean',
 				default: true,
-				description: 'By default does the webhook-data only contain the ID of the object.<br />If this option gets activated it will resolve the data automatically.',
+				description: 'By default does the webhook-data only contain the ID of the object. If this option gets activated, it will resolve the data automatically.',
 			},
 		],
 	};

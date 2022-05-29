@@ -1,10 +1,11 @@
 import { INodeProperties } from 'n8n-workflow';
 
-export const quoteOperations = [
+export const quoteOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -40,11 +41,10 @@ export const quoteOperations = [
 			},
 		],
 		default: 'create',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const quoteFields = [
+export const quoteFields: INodeProperties[] = [
 /* -------------------------------------------------------------------------- */
 /*                                 quote:create                               */
 /* -------------------------------------------------------------------------- */
@@ -316,6 +316,7 @@ export const quoteFields = [
 		displayName: 'Quote ID',
 		name: 'quoteId',
 		type: 'string',
+		default: '',
 		required: true,
 		displayOptions: {
 			show: {
@@ -335,6 +336,7 @@ export const quoteFields = [
 		displayName: 'Quote ID',
 		name: 'quoteId',
 		type: 'string',
+		default: '',
 		required: true,
 		displayOptions: {
 			show: {
@@ -354,6 +356,7 @@ export const quoteFields = [
 		displayName: 'Quote ID',
 		name: 'quoteId',
 		type: 'string',
+		default: '',
 		required: true,
 		displayOptions: {
 			show: {
@@ -415,7 +418,7 @@ export const quoteFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -439,7 +442,7 @@ export const quoteFields = [
 			maxValue: 60,
 		},
 		default: 50,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	{
 		displayName: 'Options',
@@ -478,4 +481,4 @@ export const quoteFields = [
 			},
 		],
 	},
-] as INodeProperties[];
+];

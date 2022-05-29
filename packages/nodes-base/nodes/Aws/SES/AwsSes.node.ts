@@ -9,6 +9,7 @@ import {
 	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
+	NodeOperationError,
 } from 'n8n-workflow';
 
 import {
@@ -33,7 +34,6 @@ export class AwsSes implements INodeType {
 		description: 'Sends data to AWS SES',
 		defaults: {
 			name: 'AWS SES',
-			color: '#FF9900',
 		},
 		inputs: ['main'],
 		outputs: ['main'],
@@ -48,6 +48,7 @@ export class AwsSes implements INodeType {
 				displayName: 'Resource',
 				name: 'resource',
 				type: 'options',
+				noDataExpression: true,
 				options: [
 					{
 						name: 'Custom Verification Email',
@@ -63,12 +64,12 @@ export class AwsSes implements INodeType {
 					},
 				],
 				default: 'email',
-				description: 'The operation to perform.',
 			},
 			{
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				displayOptions: {
 					show: {
 						resource: [
@@ -105,11 +106,10 @@ export class AwsSes implements INodeType {
 					{
 						name: 'Update',
 						value: 'update',
-						description: 'Update an existing custom verification email template.',
+						description: 'Update an existing custom verification email template',
 					},
 				],
 				default: 'create',
-				description: 'The operation to perform.',
 			},
 
 			{
@@ -127,7 +127,7 @@ export class AwsSes implements INodeType {
 					},
 				},
 				required: true,
-				description: 'The email address that the custom verification email is sent from.',
+				description: 'The email address that the custom verification email is sent from',
 				default: '',
 			},
 			{
@@ -145,7 +145,7 @@ export class AwsSes implements INodeType {
 					},
 				},
 				default: '',
-				description: 'The name of the custom verification email template.',
+				description: 'The name of the custom verification email template',
 			},
 			{
 				displayName: 'Template Content',
@@ -164,7 +164,7 @@ export class AwsSes implements INodeType {
 						],
 					},
 				},
-				description: `The content of the custom verification email. The total size of the email must be less than 10 MB. The message body may contain HTML`,
+				description: 'The content of the custom verification email. The total size of the email must be less than 10 MB. The message body may contain HTML',
 				default: '',
 			},
 			{
@@ -183,7 +183,7 @@ export class AwsSes implements INodeType {
 				},
 				default: '',
 				required: true,
-				description: 'The subject line of the custom verification email.',
+				description: 'The subject line of the custom verification email',
 			},
 			{
 				displayName: 'Success Redirection URL',
@@ -200,7 +200,7 @@ export class AwsSes implements INodeType {
 					},
 				},
 				required: true,
-				description: 'The URL that the recipient of the verification email is sent to if his or her address is successfully verified.',
+				description: 'The URL that the recipient of the verification email is sent to if his or her address is successfully verified',
 				default: '',
 			},
 			{
@@ -218,7 +218,7 @@ export class AwsSes implements INodeType {
 					},
 				},
 				required: true,
-				description: 'The URL that the recipient of the verification email is sent to if his or her address is not successfully verified.',
+				description: 'The URL that the recipient of the verification email is sent to if his or her address is not successfully verified',
 				default: '',
 			},
 
@@ -238,7 +238,7 @@ export class AwsSes implements INodeType {
 				},
 				default: '',
 				required: true,
-				description: 'The email address to verify.',
+				description: 'The email address to verify',
 			},
 			{
 				displayName: 'Template Name',
@@ -256,7 +256,7 @@ export class AwsSes implements INodeType {
 				},
 				default: '',
 				required: true,
-				description: 'The name of the custom verification email template to use when sending the verification email.',
+				description: 'The name of the custom verification email template to use when sending the verification email',
 			},
 			{
 				displayName: 'Additional Fields',
@@ -279,7 +279,7 @@ export class AwsSes implements INodeType {
 						displayName: 'Configuration Set Name',
 						name: 'configurationSetName',
 						type: 'string',
-						description: 'Name of a configuration set to use when sending the verification email.',
+						description: 'Name of a configuration set to use when sending the verification email',
 						default: '',
 					},
 				],
@@ -302,7 +302,7 @@ export class AwsSes implements INodeType {
 					},
 				},
 				default: '',
-				description: 'The name of the custom verification email template.',
+				description: 'The name of the custom verification email template',
 			},
 			{
 				displayName: 'Update Fields',
@@ -325,21 +325,21 @@ export class AwsSes implements INodeType {
 						displayName: 'Failure Redirection URL',
 						name: 'failureRedirectionURL',
 						type: 'string',
-						description: 'The URL that the recipient of the verification email is sent to if his or her address is not successfully verified.',
+						description: 'The URL that the recipient of the verification email is sent to if his or her address is not successfully verified',
 						default: '',
 					},
 					{
 						displayName: 'From Email',
 						name: 'fromEmailAddress',
 						type: 'string',
-						description: 'The email address that the custom verification email is sent from.',
+						description: 'The email address that the custom verification email is sent from',
 						default: '',
 					},
 					{
 						displayName: 'Success Redirection URL',
 						name: 'successRedirectionURL',
 						type: 'string',
-						description: 'The URL that the recipient of the verification email is sent to if his or her address is successfully verified.',
+						description: 'The URL that the recipient of the verification email is sent to if his or her address is successfully verified',
 						default: '',
 					},
 					{
@@ -349,7 +349,7 @@ export class AwsSes implements INodeType {
 						typeOptions: {
 							alwaysOpenEditWindow: true,
 						},
-						description: `The content of the custom verification email. The total size of the email must be less than 10 MB. The message body may contain HTML`,
+						description: 'The content of the custom verification email. The total size of the email must be less than 10 MB. The message body may contain HTML',
 						default: '',
 					},
 					{
@@ -357,7 +357,7 @@ export class AwsSes implements INodeType {
 						name: 'templateSubject',
 						type: 'string',
 						default: '',
-						description: 'The subject line of the custom verification email.',
+						description: 'The subject line of the custom verification email',
 					},
 				],
 			},
@@ -376,12 +376,16 @@ export class AwsSes implements INodeType {
 					},
 				},
 				default: false,
-				description: 'If all results should be returned or only up to a given limit.',
+				description: 'Whether to return all results or only up to a given limit',
 			},
 			{
 				displayName: 'Limit',
 				name: 'limit',
 				type: 'number',
+				typeOptions: {
+					minValue: 1,
+				},
+				description: 'Max number of results to return',
 				default: 20,
 				displayOptions: {
 					show: {
@@ -401,6 +405,7 @@ export class AwsSes implements INodeType {
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				displayOptions: {
 					show: {
 						resource: [
@@ -419,7 +424,6 @@ export class AwsSes implements INodeType {
 					},
 				],
 				default: 'send',
-				description: 'The operation to perform.',
 			},
 			{
 				displayName: 'Is Body HTML',
@@ -436,7 +440,7 @@ export class AwsSes implements INodeType {
 					},
 				},
 				default: false,
-				description: 'If body is HTML or simple text.',
+				description: 'If body is HTML or simple text',
 			},
 			{
 				displayName: 'Subject',
@@ -473,7 +477,7 @@ export class AwsSes implements INodeType {
 					},
 				},
 				default: '',
-				description: 'The message to be sent.',
+				description: 'The message to be sent',
 				required: true,
 			},
 			{
@@ -491,7 +495,7 @@ export class AwsSes implements INodeType {
 					},
 				},
 				required: true,
-				description: 'Email address of the sender.',
+				description: 'Email address of the sender',
 				placeholder: 'admin@example.com',
 				default: '',
 			},
@@ -499,7 +503,7 @@ export class AwsSes implements INodeType {
 				displayName: 'To Addresses',
 				name: 'toAddresses',
 				type: 'string',
-				description: 'Email addresses of the recipients.',
+				description: 'Email addresses of the recipients',
 				typeOptions: {
 					multipleValues: true,
 					multipleValueButtonText: 'Add To Email',
@@ -552,7 +556,7 @@ export class AwsSes implements INodeType {
 					},
 				},
 				required: true,
-				description: 'Email address of the sender.',
+				description: 'Email address of the sender',
 				placeholder: 'admin@example.com',
 				default: '',
 			},
@@ -560,7 +564,7 @@ export class AwsSes implements INodeType {
 				displayName: 'To Addresses',
 				name: 'toAddresses',
 				type: 'string',
-				description: 'Email addresses of the recipients.',
+				description: 'Email addresses of the recipients',
 				typeOptions: {
 					multipleValues: true,
 					multipleValueButtonText: 'Add To Email',
@@ -644,7 +648,7 @@ export class AwsSes implements INodeType {
 							multipleValues: true,
 							multipleValueButtonText: 'Add Bcc Email',
 						},
-						description: 'Bcc Recipients of the email.',
+						description: 'Bcc Recipients of the email',
 						default: [],
 					},
 					{
@@ -655,14 +659,14 @@ export class AwsSes implements INodeType {
 							multipleValues: true,
 							multipleValueButtonText: 'Add Cc Email',
 						},
-						description: 'Cc recipients of the email.',
+						description: 'Cc recipients of the email',
 						default: [],
 					},
 					{
 						displayName: 'Configuration Set Name',
 						name: 'configurationSetName',
 						type: 'string',
-						description: 'Name of the configuration set to use when you send an email using send.',
+						description: 'Name of the configuration set to use when you send an email using send',
 						default: '',
 					},
 					{
@@ -674,7 +678,7 @@ export class AwsSes implements INodeType {
 							multipleValueButtonText: 'Add Reply To Email',
 						},
 						placeholder: 'Add Reply Address',
-						description: 'Reply-to email address(es) for the message.',
+						description: 'Reply-to email address(es) for the message',
 						default: [],
 					},
 					{
@@ -695,7 +699,7 @@ export class AwsSes implements INodeType {
 						displayName: 'Source ARN',
 						name: 'sourceArn',
 						type: 'string',
-						description: 'This parameter is used only for sending authorization.',
+						description: 'This parameter is used only for sending authorization',
 						default: '',
 					},
 				],
@@ -704,6 +708,7 @@ export class AwsSes implements INodeType {
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				displayOptions: {
 					show: {
 						resource: [
@@ -739,7 +744,6 @@ export class AwsSes implements INodeType {
 					},
 				],
 				default: 'create',
-				description: 'The operation to perform.',
 			},
 			{
 				displayName: 'Template Name',
@@ -759,7 +763,7 @@ export class AwsSes implements INodeType {
 					},
 				},
 				required: true,
-				description: 'The name of the template.',
+				description: 'The name of the template',
 				default: '',
 			},
 			{
@@ -776,7 +780,7 @@ export class AwsSes implements INodeType {
 						],
 					},
 				},
-				description: 'The subject line of the email.',
+				description: 'The subject line of the email',
 				default: '',
 			},
 			{
@@ -793,7 +797,7 @@ export class AwsSes implements INodeType {
 						],
 					},
 				},
-				description: 'The HTML body of the email.',
+				description: 'The HTML body of the email',
 				default: '',
 			},
 			{
@@ -817,7 +821,7 @@ export class AwsSes implements INodeType {
 						displayName: 'Text Part',
 						name: 'textPart',
 						type: 'string',
-						description: 'The email body that will be visible to recipients whose email clients do not display HTML.',
+						description: 'The email body that will be visible to recipients whose email clients do not display HTML',
 						default: '',
 					},
 				],
@@ -843,21 +847,21 @@ export class AwsSes implements INodeType {
 						displayName: 'Text Part',
 						name: 'textPart',
 						type: 'string',
-						description: 'The email body that will be visible to recipients whose email clients do not display HTML.',
+						description: 'The email body that will be visible to recipients whose email clients do not display HTML',
 						default: '',
 					},
 					{
 						displayName: 'Subject Part',
 						name: 'subjectPart',
 						type: 'string',
-						description: 'The subject line of the email.',
+						description: 'The subject line of the email',
 						default: '',
 					},
 					{
 						displayName: 'Html Part',
 						name: 'htmlPart',
 						type: 'string',
-						description: 'The HTML body of the email.',
+						description: 'The HTML body of the email',
 						default: '',
 					},
 				],
@@ -877,12 +881,16 @@ export class AwsSes implements INodeType {
 					},
 				},
 				default: false,
-				description: 'If all results should be returned or only up to a given limit.',
+				description: 'Whether to return all results or only up to a given limit',
 			},
 			{
 				displayName: 'Limit',
 				name: 'limit',
 				type: 'number',
+				typeOptions: {
+					minValue: 1,
+				},
+				description: 'Max number of results to return',
 				default: 20,
 				displayOptions: {
 					show: {
@@ -933,376 +941,384 @@ export class AwsSes implements INodeType {
 		const operation = this.getNodeParameter('operation', 0) as string;
 
 		for (let i = 0; i < items.length; i++) {
+			try {
+				if (resource === 'customVerificationEmail') {
 
-			if (resource === 'customVerificationEmail') {
+					if (operation === 'create') {
 
-				if (operation === 'create') {
+						const failureRedirectionURL = this.getNodeParameter('failureRedirectionURL', i) as string;
 
-					const failureRedirectionURL = this.getNodeParameter('failureRedirectionURL', i) as string;
+						const email = this.getNodeParameter('fromEmailAddress', i) as string;
 
-					const email = this.getNodeParameter('fromEmailAddress', i) as string;
+						const successRedirectionURL = this.getNodeParameter('successRedirectionURL', i) as string;
 
-					const successRedirectionURL = this.getNodeParameter('successRedirectionURL', i) as string;
+						const templateContent = this.getNodeParameter('templateContent', i) as string;
 
-					const templateContent = this.getNodeParameter('templateContent', i) as string;
+						const templateName = this.getNodeParameter('templateName', i) as string;
 
-					const templateName = this.getNodeParameter('templateName', i) as string;
+						const templateSubject = this.getNodeParameter('templateSubject', i) as string;
 
-					const templateSubject = this.getNodeParameter('templateSubject', i) as string;
+						const params = [
+							`Action=CreateCustomVerificationEmailTemplate`,
+							`FailureRedirectionURL=${failureRedirectionURL}`,
+							`FromEmailAddress=${email}`,
+							`SuccessRedirectionURL=${successRedirectionURL}`,
+							`TemplateContent=${templateContent}`,
+							`TemplateName=${templateName}`,
+							`TemplateSubject=${templateSubject}`,
+						];
 
-					const params = [
-						`Action=CreateCustomVerificationEmailTemplate`,
-						`FailureRedirectionURL=${failureRedirectionURL}`,
-						`FromEmailAddress=${email}`,
-						`SuccessRedirectionURL=${successRedirectionURL}`,
-						`TemplateContent=${templateContent}`,
-						`TemplateName=${templateName}`,
-						`TemplateSubject=${templateSubject}`,
-					];
+						responseData = await awsApiRequestSOAP.call(this, 'email', 'POST', '', params.join('&'));
 
-					responseData = await awsApiRequestSOAP.call(this, 'email', 'POST', '', params.join('&'));
-
-					responseData = responseData.CreateCustomVerificationEmailTemplateResponse;
-				}
-
-				if (operation === 'delete') {
-
-					const templateName = this.getNodeParameter('templateName', i) as string;
-
-					const params = [
-						`Action=DeleteCustomVerificationEmailTemplate`,
-						`TemplateName=${templateName}`,
-					];
-
-					responseData = await awsApiRequestSOAP.call(this, 'email', 'POST', '', params.join('&'));
-
-					responseData = responseData.DeleteCustomVerificationEmailTemplateResponse;
-				}
-
-				if (operation === 'get') {
-
-					const templateName = this.getNodeParameter('templateName', i) as string;
-
-					const params = [
-						`TemplateName=${templateName}`,
-					];
-
-					responseData = await awsApiRequestSOAP.call(this, 'email', 'POST', '/?Action=GetCustomVerificationEmailTemplate&' + params.join('&'));
-
-					responseData = responseData.GetCustomVerificationEmailTemplateResponse;
-				}
-
-				if (operation === 'getAll') {
-
-					const returnAll = this.getNodeParameter('returnAll', i) as boolean;
-
-					if (returnAll === true) {
-						responseData = await awsApiRequestSOAPAllItems.call(this, 'ListCustomVerificationEmailTemplatesResponse.ListCustomVerificationEmailTemplatesResult.CustomVerificationEmailTemplates.member', 'email', 'POST', '/?Action=ListCustomVerificationEmailTemplates');
-
-					} else {
-						const limit = this.getNodeParameter('limit', i) as number;
-
-						responseData = await awsApiRequestSOAP.call(this, 'email', 'GET', `/?Action=ListCustomVerificationEmailTemplates&MaxResults=${limit}`);
-
-						responseData = responseData.ListCustomVerificationEmailTemplatesResponse.ListCustomVerificationEmailTemplatesResult.CustomVerificationEmailTemplates.member;
-					}
-				}
-
-				if (operation === 'send') {
-
-					const email = this.getNodeParameter('email', i) as string[];
-
-					const templateName = this.getNodeParameter('templateName', i) as string;
-
-					const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
-
-					const params = [
-						`Action=SendCustomVerificationEmail`,
-						`TemplateName=${templateName}`,
-						`EmailAddress=${email}`,
-					];
-
-					if (additionalFields.configurationSetName) {
-						params.push(`ConfigurationSetName=${additionalFields.configurationSetName}`);
+						responseData = responseData.CreateCustomVerificationEmailTemplateResponse;
 					}
 
-					responseData = await awsApiRequestSOAP.call(this, 'email', 'POST', '', params.join('&'));
+					if (operation === 'delete') {
 
-					responseData = responseData.SendCustomVerificationEmailResponse;
-				}
+						const templateName = this.getNodeParameter('templateName', i) as string;
 
-				if (operation === 'update') {
+						const params = [
+							`Action=DeleteCustomVerificationEmailTemplate`,
+							`TemplateName=${templateName}`,
+						];
 
-					const templateName = this.getNodeParameter('templateName', i) as string;
+						responseData = await awsApiRequestSOAP.call(this, 'email', 'POST', '', params.join('&'));
 
-					const updateFields = this.getNodeParameter('updateFields', i) as IDataObject;
-
-					const params = [
-						`Action=UpdateCustomVerificationEmailTemplate`,
-						`TemplateName=${templateName}`,
-					];
-
-					if (updateFields.FailureRedirectionURL) {
-						params.push(`FailureRedirectionURL=${updateFields.FailureRedirectionURL}`);
+						responseData = responseData.DeleteCustomVerificationEmailTemplateResponse;
 					}
 
-					if (updateFields.email) {
-						params.push(`FromEmailAddress=${updateFields.email}`);
+					if (operation === 'get') {
+
+						const templateName = this.getNodeParameter('templateName', i) as string;
+
+						const params = [
+							`TemplateName=${templateName}`,
+						];
+
+						responseData = await awsApiRequestSOAP.call(this, 'email', 'POST', '/?Action=GetCustomVerificationEmailTemplate&' + params.join('&'));
+
+						responseData = responseData.GetCustomVerificationEmailTemplateResponse;
 					}
 
-					if (updateFields.successRedirectionURL) {
-						params.push(`SuccessRedirectionURL=${updateFields.successRedirectionURL}`);
-					}
+					if (operation === 'getAll') {
 
-					if (updateFields.templateContent) {
-						params.push(`TemplateContent=${updateFields.templateContent}`);
-					}
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
 
-					if (updateFields.templateSubject) {
-						params.push(`TemplateSubject=${updateFields.templateSubject}`);
-					}
+						if (returnAll === true) {
+							responseData = await awsApiRequestSOAPAllItems.call(this, 'ListCustomVerificationEmailTemplatesResponse.ListCustomVerificationEmailTemplatesResult.CustomVerificationEmailTemplates.member', 'email', 'POST', '/?Action=ListCustomVerificationEmailTemplates');
 
-					responseData = await awsApiRequestSOAP.call(this, 'email', 'POST', '', params.join('&'));
+						} else {
+							const limit = this.getNodeParameter('limit', i) as number;
 
-					responseData = responseData.UpdateCustomVerificationEmailTemplateResponse;
-				}
-			}
+							responseData = await awsApiRequestSOAP.call(this, 'email', 'GET', `/?Action=ListCustomVerificationEmailTemplates&MaxResults=${limit}`);
 
-			if (resource === 'email') {
-
-				if (operation === 'send') {
-
-					const toAddresses = this.getNodeParameter('toAddresses', i) as string[];
-
-					const message = this.getNodeParameter('body', i) as string;
-
-					const subject = this.getNodeParameter('subject', i) as string;
-
-					const fromEmail = this.getNodeParameter('fromEmail', i) as string;
-
-					const isBodyHtml = this.getNodeParameter('isBodyHtml', i) as boolean;
-
-					const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
-
-					const params = [
-						`Message.Subject.Data=${subject}`,
-						`Source=${fromEmail}`,
-					];
-
-					if (isBodyHtml) {
-						params.push(`Message.Body.Html.Data=${encodeURI(message)}`);
-					} else {
-						params.push(`Message.Body.Text.Data=${encodeURI(message)}`);
-					}
-
-					if (toAddresses.length) {
-						setParameter(params, 'Destination.ToAddresses.member', toAddresses);
-					} else {
-						throw new Error('At least one "To Address" has to be added!');
-					}
-
-					if (additionalFields.configurationSetName) {
-						params.push(`ConfigurationSetName=${additionalFields.configurationSetName}`);
-					}
-
-					if (additionalFields.returnPath) {
-						params.push(`ReturnPath=${additionalFields.returnPath}`);
-					}
-
-					if (additionalFields.returnPathArn) {
-						params.push(`ReturnPathArn=${additionalFields.returnPathArn}`);
-					}
-
-					if (additionalFields.sourceArn) {
-						params.push(`SourceArn=${additionalFields.sourceArn}`);
-					}
-
-					if (additionalFields.replyToAddresses) {
-						setParameter(params, 'ReplyToAddresses.member', additionalFields.replyToAddresses as string[]);
-					}
-
-					if (additionalFields.bccAddresses) {
-						setParameter(params, 'Destination.BccAddresses.member', additionalFields.bccAddresses as string[]);
-					}
-
-					if (additionalFields.ccAddresses) {
-						setParameter(params, 'Destination.CcAddresses.member', additionalFields.ccAddresses as string[]);
-					}
-					responseData = await awsApiRequestSOAP.call(this, 'email', 'POST', '/?Action=SendEmail&' + params.join('&'));
-				}
-
-				if (operation === 'sendTemplate') {
-
-					const toAddresses = this.getNodeParameter('toAddresses', i) as string[];
-
-					const template = this.getNodeParameter('templateName', i) as string;
-
-					const fromEmail = this.getNodeParameter('fromEmail', i) as string;
-
-					const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
-
-					const templateDataUi = this.getNodeParameter('templateDataUi', i) as IDataObject;
-
-					const params = [
-						`Template=${template}`,
-						`Source=${fromEmail}`,
-					];
-
-					if (toAddresses.length) {
-						setParameter(params, 'Destination.ToAddresses.member', toAddresses);
-					} else {
-						throw new Error('At least one "To Address" has to be added!');
-					}
-
-					if (additionalFields.configurationSetName) {
-						params.push(`ConfigurationSetName=${additionalFields.configurationSetName}`);
-					}
-
-					if (additionalFields.returnPath) {
-						params.push(`ReturnPath=${additionalFields.returnPath}`);
-					}
-
-					if (additionalFields.returnPathArn) {
-						params.push(`ReturnPathArn=${additionalFields.returnPathArn}`);
-					}
-
-					if (additionalFields.sourceArn) {
-						params.push(`SourceArn=${additionalFields.sourceArn}`);
-					}
-
-					if (additionalFields.replyToAddresses) {
-						setParameter(params, 'ReplyToAddresses.member', additionalFields.replyToAddresses as string[]);
-					}
-
-					if (additionalFields.bccAddresses) {
-						setParameter(params, 'Destination.BccAddresses.member', additionalFields.bccAddresses as string[]);
-					}
-
-					if (additionalFields.ccAddresses) {
-						setParameter(params, 'Destination.CcAddresses.member', additionalFields.ccAddresses as string[]);
-					}
-
-					if (templateDataUi) {
-						const templateDataValues = (templateDataUi as IDataObject).templateDataValues as IDataObject[];
-						const templateData: IDataObject = {};
-						if (templateDataValues !== undefined) {
-							for (const templateDataValue of templateDataValues) {
-								//@ts-ignore
-								templateData[templateDataValue.key] = templateDataValue.value;
-							}
-							params.push(`TemplateData=${JSON.stringify(templateData)}`);
+							responseData = responseData.ListCustomVerificationEmailTemplatesResponse.ListCustomVerificationEmailTemplatesResult.CustomVerificationEmailTemplates.member;
 						}
 					}
 
-					responseData = await awsApiRequestSOAP.call(this, 'email', 'POST', '/?Action=SendTemplatedEmail&' + params.join('&'));
+					if (operation === 'send') {
 
-					responseData = responseData.SendTemplatedEmailResponse;
-				}
-			}
+						const email = this.getNodeParameter('email', i) as string[];
 
-			if (resource === 'template') {
+						const templateName = this.getNodeParameter('templateName', i) as string;
 
-				if (operation === 'create') {
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 
-					const templateName = this.getNodeParameter('templateName', i) as string;
+						const params = [
+							`Action=SendCustomVerificationEmail`,
+							`TemplateName=${templateName}`,
+							`EmailAddress=${email}`,
+						];
 
-					const subjectPart = this.getNodeParameter('subjectPart', i) as string;
+						if (additionalFields.configurationSetName) {
+							params.push(`ConfigurationSetName=${additionalFields.configurationSetName}`);
+						}
 
-					const htmlPart = this.getNodeParameter('htmlPart', i) as string;
+						responseData = await awsApiRequestSOAP.call(this, 'email', 'POST', '', params.join('&'));
 
-					const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
-
-					const params = [
-						`Template.TemplateName=${templateName}`,
-						`Template.SubjectPart=${subjectPart}`,
-						`Template.HtmlPart=<h1>${htmlPart}</h1>`,
-					];
-
-					if (additionalFields.textPart) {
-						params.push(`Template.TextPart=${additionalFields.textPart}`);
+						responseData = responseData.SendCustomVerificationEmailResponse;
 					}
 
-					responseData = await awsApiRequestSOAP.call(this, 'email', 'POST', '/?Action=CreateTemplate&' + params.join('&'));
+					if (operation === 'update') {
 
-					responseData = responseData.CreateTemplateResponse;
-				}
+						const templateName = this.getNodeParameter('templateName', i) as string;
 
-				if (operation === 'delete') {
+						const updateFields = this.getNodeParameter('updateFields', i) as IDataObject;
 
-					const templateName = this.getNodeParameter('templateName', i) as string;
+						const params = [
+							`Action=UpdateCustomVerificationEmailTemplate`,
+							`TemplateName=${templateName}`,
+						];
 
-					const params = [
-						`TemplateName=${templateName}`,
-					];
+						if (updateFields.FailureRedirectionURL) {
+							params.push(`FailureRedirectionURL=${updateFields.FailureRedirectionURL}`);
+						}
 
-					responseData = await awsApiRequestSOAP.call(this, 'email', 'POST', '/?Action=DeleteTemplate&' + params.join('&'));
+						if (updateFields.email) {
+							params.push(`FromEmailAddress=${updateFields.email}`);
+						}
 
-					responseData = responseData.DeleteTemplateResponse;
-				}
+						if (updateFields.successRedirectionURL) {
+							params.push(`SuccessRedirectionURL=${updateFields.successRedirectionURL}`);
+						}
 
-				if (operation === 'get') {
+						if (updateFields.templateContent) {
+							params.push(`TemplateContent=${updateFields.templateContent}`);
+						}
 
-					const templateName = this.getNodeParameter('templateName', i) as string;
+						if (updateFields.templateSubject) {
+							params.push(`TemplateSubject=${updateFields.templateSubject}`);
+						}
 
-					const params = [
-						`TemplateName=${templateName}`,
-					];
+						responseData = await awsApiRequestSOAP.call(this, 'email', 'POST', '', params.join('&'));
 
-					responseData = await awsApiRequestSOAP.call(this, 'email', 'POST', '/?Action=GetTemplate&' + params.join('&'));
-
-					responseData = responseData.GetTemplateResponse;
-				}
-
-				if (operation === 'getAll') {
-
-					const returnAll = this.getNodeParameter('returnAll', i) as boolean;
-
-					if (returnAll === true) {
-						responseData = await awsApiRequestSOAPAllItems.call(this, 'ListTemplatesResponse.ListTemplatesResult.TemplatesMetadata.member', 'email', 'POST', '/?Action=ListTemplates');
-
-					} else {
-						const limit = this.getNodeParameter('limit', i) as number;
-
-						responseData = await awsApiRequestSOAP.call(this, 'email', 'GET', `/?Action=ListTemplates&MaxItems=${limit}`);
-
-						responseData = responseData.ListTemplatesResponse.ListTemplatesResult.TemplatesMetadata.member;
+						responseData = responseData.UpdateCustomVerificationEmailTemplateResponse;
 					}
 				}
 
-				if (operation === 'update') {
+				if (resource === 'email') {
 
-					const templateName = this.getNodeParameter('templateName', i) as string;
+					if (operation === 'send') {
 
-					const updateFields = this.getNodeParameter('updateFields', i) as IDataObject;
+						const toAddresses = this.getNodeParameter('toAddresses', i) as string[];
 
-					const params = [
-						`Template.TemplateName=${templateName}`,
-					];
+						const message = this.getNodeParameter('body', i) as string;
 
-					if (updateFields.textPart) {
-						params.push(`Template.TextPart=${updateFields.textPart}`);
+						const subject = this.getNodeParameter('subject', i) as string;
+
+						const fromEmail = this.getNodeParameter('fromEmail', i) as string;
+
+						const isBodyHtml = this.getNodeParameter('isBodyHtml', i) as boolean;
+
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+
+						const params = [
+							`Message.Subject.Data=${subject}`,
+							`Source=${fromEmail}`,
+						];
+
+						if (isBodyHtml) {
+							params.push(`Message.Body.Html.Data=${encodeURIComponent(message)}`);
+							params.push(`Message.Body.Html.Charset=UTF-8`);
+						} else {
+							params.push(`Message.Body.Text.Data=${encodeURIComponent(message)}`);
+						}
+
+						if (toAddresses.length) {
+							setParameter(params, 'Destination.ToAddresses.member', toAddresses);
+						} else {
+							throw new NodeOperationError(this.getNode(), 'At least one "To Address" has to be added!');
+						}
+
+						if (additionalFields.configurationSetName) {
+							params.push(`ConfigurationSetName=${additionalFields.configurationSetName}`);
+						}
+
+						if (additionalFields.returnPath) {
+							params.push(`ReturnPath=${additionalFields.returnPath}`);
+						}
+
+						if (additionalFields.returnPathArn) {
+							params.push(`ReturnPathArn=${additionalFields.returnPathArn}`);
+						}
+
+						if (additionalFields.sourceArn) {
+							params.push(`SourceArn=${additionalFields.sourceArn}`);
+						}
+
+						if (additionalFields.replyToAddresses) {
+							setParameter(params, 'ReplyToAddresses.member', additionalFields.replyToAddresses as string[]);
+						}
+
+						if (additionalFields.bccAddresses) {
+							setParameter(params, 'Destination.BccAddresses.member', additionalFields.bccAddresses as string[]);
+						}
+
+						if (additionalFields.ccAddresses) {
+							setParameter(params, 'Destination.CcAddresses.member', additionalFields.ccAddresses as string[]);
+						}
+						responseData = await awsApiRequestSOAP.call(this, 'email', 'POST', '/?Action=SendEmail&' + params.join('&'));
 					}
 
-					if (updateFields.subjectPart) {
-						params.push(`Template.SubjectPart=${updateFields.subjectPart}`);
+					if (operation === 'sendTemplate') {
+
+						const toAddresses = this.getNodeParameter('toAddresses', i) as string[];
+
+						const template = this.getNodeParameter('templateName', i) as string;
+
+						const fromEmail = this.getNodeParameter('fromEmail', i) as string;
+
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+
+						const templateDataUi = this.getNodeParameter('templateDataUi', i) as IDataObject;
+
+						const params = [
+							`Template=${template}`,
+							`Source=${fromEmail}`,
+						];
+
+						if (toAddresses.length) {
+							setParameter(params, 'Destination.ToAddresses.member', toAddresses);
+						} else {
+							throw new NodeOperationError(this.getNode(), 'At least one "To Address" has to be added!');
+						}
+
+						if (additionalFields.configurationSetName) {
+							params.push(`ConfigurationSetName=${additionalFields.configurationSetName}`);
+						}
+
+						if (additionalFields.returnPath) {
+							params.push(`ReturnPath=${additionalFields.returnPath}`);
+						}
+
+						if (additionalFields.returnPathArn) {
+							params.push(`ReturnPathArn=${additionalFields.returnPathArn}`);
+						}
+
+						if (additionalFields.sourceArn) {
+							params.push(`SourceArn=${additionalFields.sourceArn}`);
+						}
+
+						if (additionalFields.replyToAddresses) {
+							setParameter(params, 'ReplyToAddresses.member', additionalFields.replyToAddresses as string[]);
+						}
+
+						if (additionalFields.bccAddresses) {
+							setParameter(params, 'Destination.BccAddresses.member', additionalFields.bccAddresses as string[]);
+						}
+
+						if (additionalFields.ccAddresses) {
+							setParameter(params, 'Destination.CcAddresses.member', additionalFields.ccAddresses as string[]);
+						}
+
+						if (templateDataUi) {
+							const templateDataValues = (templateDataUi as IDataObject).templateDataValues as IDataObject[];
+							const templateData: IDataObject = {};
+							if (templateDataValues !== undefined) {
+								for (const templateDataValue of templateDataValues) {
+									//@ts-ignore
+									templateData[templateDataValue.key] = templateDataValue.value;
+								}
+								params.push(`TemplateData=${JSON.stringify(templateData)}`);
+							}
+						}
+
+						responseData = await awsApiRequestSOAP.call(this, 'email', 'POST', '/?Action=SendTemplatedEmail&' + params.join('&'));
+
+						responseData = responseData.SendTemplatedEmailResponse;
 					}
-
-					if (updateFields.subjectPart) {
-						params.push(`Template.HtmlPart=${updateFields.htmlPart}`);
-					}
-
-					responseData = await awsApiRequestSOAP.call(this, 'email', 'POST', '/?Action=UpdateTemplate&' + params.join('&'));
-
-					responseData = responseData.UpdateTemplateResponse;
 				}
-			}
 
-			if (Array.isArray(responseData)) {
-				returnData.push.apply(returnData, responseData as IDataObject[]);
-			} else {
-				if (responseData !== undefined) {
-					returnData.push(responseData as IDataObject);
+				if (resource === 'template') {
+
+					if (operation === 'create') {
+
+						const templateName = this.getNodeParameter('templateName', i) as string;
+
+						const subjectPart = this.getNodeParameter('subjectPart', i) as string;
+
+						const htmlPart = this.getNodeParameter('htmlPart', i) as string;
+
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+
+						const params = [
+							`Template.TemplateName=${templateName}`,
+							`Template.SubjectPart=${subjectPart}`,
+							`Template.HtmlPart=<h1>${htmlPart}</h1>`,
+						];
+
+						if (additionalFields.textPart) {
+							params.push(`Template.TextPart=${additionalFields.textPart}`);
+						}
+
+						responseData = await awsApiRequestSOAP.call(this, 'email', 'POST', '/?Action=CreateTemplate&' + params.join('&'));
+
+						responseData = responseData.CreateTemplateResponse;
+					}
+
+					if (operation === 'delete') {
+
+						const templateName = this.getNodeParameter('templateName', i) as string;
+
+						const params = [
+							`TemplateName=${templateName}`,
+						];
+
+						responseData = await awsApiRequestSOAP.call(this, 'email', 'POST', '/?Action=DeleteTemplate&' + params.join('&'));
+
+						responseData = responseData.DeleteTemplateResponse;
+					}
+
+					if (operation === 'get') {
+
+						const templateName = this.getNodeParameter('templateName', i) as string;
+
+						const params = [
+							`TemplateName=${templateName}`,
+						];
+
+						responseData = await awsApiRequestSOAP.call(this, 'email', 'POST', '/?Action=GetTemplate&' + params.join('&'));
+
+						responseData = responseData.GetTemplateResponse;
+					}
+
+					if (operation === 'getAll') {
+
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+
+						if (returnAll === true) {
+							responseData = await awsApiRequestSOAPAllItems.call(this, 'ListTemplatesResponse.ListTemplatesResult.TemplatesMetadata.member', 'email', 'POST', '/?Action=ListTemplates');
+
+						} else {
+							const limit = this.getNodeParameter('limit', i) as number;
+
+							responseData = await awsApiRequestSOAP.call(this, 'email', 'GET', `/?Action=ListTemplates&MaxItems=${limit}`);
+
+							responseData = responseData.ListTemplatesResponse.ListTemplatesResult.TemplatesMetadata.member;
+						}
+					}
+
+					if (operation === 'update') {
+
+						const templateName = this.getNodeParameter('templateName', i) as string;
+
+						const updateFields = this.getNodeParameter('updateFields', i) as IDataObject;
+
+						const params = [
+							`Template.TemplateName=${templateName}`,
+						];
+
+						if (updateFields.textPart) {
+							params.push(`Template.TextPart=${updateFields.textPart}`);
+						}
+
+						if (updateFields.subjectPart) {
+							params.push(`Template.SubjectPart=${updateFields.subjectPart}`);
+						}
+
+						if (updateFields.subjectPart) {
+							params.push(`Template.HtmlPart=${updateFields.htmlPart}`);
+						}
+
+						responseData = await awsApiRequestSOAP.call(this, 'email', 'POST', '/?Action=UpdateTemplate&' + params.join('&'));
+
+						responseData = responseData.UpdateTemplateResponse;
+					}
 				}
+
+				if (Array.isArray(responseData)) {
+					returnData.push.apply(returnData, responseData as IDataObject[]);
+				} else {
+					if (responseData !== undefined) {
+						returnData.push(responseData as IDataObject);
+					}
+				}
+			} catch (error) {
+				if (this.continueOnFail()) {
+					returnData.push({ error: error.message });
+					continue;
+				}
+				throw error;
 			}
 		}
 

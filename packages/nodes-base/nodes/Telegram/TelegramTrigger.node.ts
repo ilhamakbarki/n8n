@@ -27,10 +27,9 @@ export class TelegramTrigger implements INodeType {
 		group: ['trigger'],
 		version: 1,
 		subtitle: '=Updates: {{$parameter["updates"].join(", ")}}',
-		description: 'Starts the workflow on a Telegram update.',
+		description: 'Starts the workflow on a Telegram update',
 		defaults: {
 			name: 'Telegram Trigger',
-			color: '#0088cc',
 		},
 		inputs: [],
 		outputs: ['main'],
@@ -57,37 +56,37 @@ export class TelegramTrigger implements INodeType {
 					{
 						name: '*',
 						value: '*',
-						description: 'All updates.',
+						description: 'All updates',
 					},
 					{
 						name: 'message',
 						value: 'message',
-						description: 'Trigger on new incoming message of any kind — text, photo, sticker, etc..',
+						description: 'Trigger on new incoming message of any kind — text, photo, sticker, etc',
 					},
 					{
 						name: 'edited_message',
 						value: 'edited_message',
-						description: 'Trigger on new version of a channel post that is known to the bot and was edited.',
+						description: 'Trigger on new version of a channel post that is known to the bot and was edited',
 					},
 					{
 						name: 'channel_post',
 						value: 'channel_post',
-						description: 'Trigger on new incoming channel post of any kind — text, photo, sticker, etc..',
+						description: 'Trigger on new incoming channel post of any kind — text, photo, sticker, etc',
 					},
 					{
 						name: 'edited_channel_post',
 						value: 'edited_channel_post',
-						description: 'Trigger on new version of a channel post that is known to the bot and was edited.',
+						description: 'Trigger on new version of a channel post that is known to the bot and was edited',
 					},
 					{
 						name: 'inline_query',
 						value: 'inline_query',
-						description: 'Trigger on new incoming inline query.',
+						description: 'Trigger on new incoming inline query',
 					},
 					{
 						name: 'callback_query',
 						value: 'callback_query',
-						description: 'Trigger on new incoming callback query.',
+						description: 'Trigger on new incoming callback query',
 					},
 
 					{
@@ -108,7 +107,7 @@ export class TelegramTrigger implements INodeType {
 				],
 				required: true,
 				default: [],
-				description: 'The update types to listen to.',
+				description: 'The update types to listen to',
 			},
 			{
 				displayName: 'Additional Fields',
@@ -122,9 +121,7 @@ export class TelegramTrigger implements INodeType {
 						name: 'download',
 						type: 'boolean',
 						default: false,
-						description: `Telegram delivers the image in 3 sizes.<br>
-						By default, just the larger image would be downloaded.<br>
-						if you want to change the size set the field 'Image Size'`,
+						description: 'Telegram delivers the image in multiple sizes. By default, just the large image would be downloaded. If you want to change the size, set the field \'Image Size\'.',
 					},
 					{
 						displayName: 'Image Size',
@@ -149,6 +146,10 @@ export class TelegramTrigger implements INodeType {
 							{
 								name: 'Large',
 								value: 'large',
+							},
+							{
+								name: 'Extra Large',
+								value: 'extraLarge',
 							},
 						],
 						default: 'large',
@@ -199,7 +200,7 @@ export class TelegramTrigger implements INodeType {
 
 				try {
 					await apiRequest.call(this, 'POST', endpoint, body);
-				} catch (e) {
+				} catch (error) {
 					return false;
 				}
 
@@ -210,7 +211,7 @@ export class TelegramTrigger implements INodeType {
 
 	async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
 
-		const credentials = this.getCredentials('telegramApi') as IDataObject;
+		const credentials = await this.getCredentials('telegramApi');
 
 		const bodyData = this.getBodyData() as IEvent;
 
@@ -220,7 +221,13 @@ export class TelegramTrigger implements INodeType {
 
 			let imageSize = 'large';
 
-			if ((bodyData.message && bodyData.message.photo && Array.isArray(bodyData.message.photo) || bodyData.message?.document)) {
+			let key: 'message' | 'channel_post' = 'message';
+
+			if (bodyData.channel_post) {
+				key = 'channel_post';
+			}
+
+			if ((bodyData[key] && bodyData[key]?.photo && Array.isArray(bodyData[key]?.photo) || bodyData[key]?.document)) {
 
 				if (additionalFields.imageSize) {
 
@@ -229,22 +236,22 @@ export class TelegramTrigger implements INodeType {
 
 				let fileId;
 
-				if (bodyData.message.photo) {
+				if (bodyData[key]?.photo) {
 
-					let image = getImageBySize(bodyData.message.photo as IDataObject[], imageSize) as IDataObject;
+					let image = getImageBySize(bodyData[key]?.photo as IDataObject[], imageSize) as IDataObject;
 
 					// When the image is sent from the desktop app telegram does not resize the image
 					// So return the only image avaiable
 					// Basically the Image Size parameter would work just when the images comes from the mobile app
 					if (image === undefined) {
-						image = bodyData.message.photo[0];
+						image = bodyData[key]!.photo![0];
 					}
 
 					fileId = image.file_id;
 
 				} else {
 
-					fileId = bodyData.message?.document?.file_id;
+					fileId = bodyData[key]?.document?.file_id;
 				}
 
 				const { result: { file_path } } = await apiRequest.call(this, 'GET', `getFile?file_id=${fileId}`, {});

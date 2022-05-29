@@ -2,11 +2,12 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export const cardCommentOperations = [
+export const cardCommentOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -37,11 +38,10 @@ export const cardCommentOperations = [
 			},
 		],
 		default: 'create',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const cardCommentFields = [
+export const cardCommentFields: INodeProperties[] = [
 	// ----------------------------------
 	//         cardComment:create
 	// ----------------------------------
@@ -64,7 +64,7 @@ export const cardCommentFields = [
 				],
 			},
 		},
-		description: 'The ID of the board that card belongs to.',
+		description: 'The ID of the board that card belongs to',
 	},
 	{
 		displayName: 'List ID',
@@ -88,7 +88,7 @@ export const cardCommentFields = [
 				],
 			},
 		},
-		description: 'The ID of the list that card belongs to.',
+		description: 'The ID of the list that card belongs to',
 	},
 	{
 		displayName: 'Card ID',
@@ -134,7 +134,7 @@ export const cardCommentFields = [
 				],
 			},
 		},
-		description: 'The user who posted the comment.',
+		description: 'The user who posted the comment',
 	},
 	{
 		displayName: 'Comment',
@@ -152,7 +152,7 @@ export const cardCommentFields = [
 				],
 			},
 		},
-		description: 'The comment text.',
+		description: 'The comment text',
 	},
 
 	// ----------------------------------
@@ -177,7 +177,7 @@ export const cardCommentFields = [
 				],
 			},
 		},
-		description: 'The ID of the board that card belongs to.',
+		description: 'The ID of the board that card belongs to',
 	},
 	{
 		displayName: 'List ID',
@@ -201,7 +201,7 @@ export const cardCommentFields = [
 				],
 			},
 		},
-		description: 'The ID of the list that card belongs to.',
+		description: 'The ID of the list that card belongs to',
 	},
 	{
 		displayName: 'Card ID',
@@ -226,7 +226,7 @@ export const cardCommentFields = [
 				],
 			},
 		},
-		description: 'The ID of the card.',
+		description: 'The ID of the card',
 	},
 	{
 		displayName: 'Comment ID',
@@ -251,7 +251,7 @@ export const cardCommentFields = [
 				],
 			},
 		},
-		description: 'The ID of the comment to delete.',
+		description: 'The ID of the comment to delete',
 	},
 
 	// ----------------------------------
@@ -273,7 +273,7 @@ export const cardCommentFields = [
 				],
 			},
 		},
-		description: 'The ID of the board that card belongs to.',
+		description: 'The ID of the board that card belongs to',
 	},
 	{
 		displayName: 'List ID',
@@ -297,7 +297,7 @@ export const cardCommentFields = [
 				],
 			},
 		},
-		description: 'The ID of the list that card belongs to.',
+		description: 'The ID of the list that card belongs to',
 	},
 	{
 		displayName: 'Card ID',
@@ -322,7 +322,7 @@ export const cardCommentFields = [
 				],
 			},
 		},
-		description: 'The ID of the card.',
+		description: 'The ID of the card',
 	},
 	{
 		displayName: 'Comment ID',
@@ -340,7 +340,7 @@ export const cardCommentFields = [
 				],
 			},
 		},
-		description: 'The ID of the comment to get.',
+		description: 'The ID of the comment to get',
 	},
 
 	// ----------------------------------
@@ -365,7 +365,7 @@ export const cardCommentFields = [
 				],
 			},
 		},
-		description: 'The ID of the board that card belongs to.',
+		description: 'The ID of the board that card belongs to',
 	},
 	{
 		displayName: 'List ID',
@@ -389,7 +389,7 @@ export const cardCommentFields = [
 				],
 			},
 		},
-		description: 'The ID of the list that card belongs to.',
+		description: 'The ID of the list that card belongs to',
 	},
 	{
 		displayName: 'Card ID',
@@ -414,7 +414,7 @@ export const cardCommentFields = [
 				],
 			},
 		},
-		description: 'The ID of the card.',
+		description: 'The ID of the card',
 	},
 	{
 		displayName: 'Return All',
@@ -431,7 +431,7 @@ export const cardCommentFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -455,6 +455,6 @@ export const cardCommentFields = [
 			maxValue: 200,
 		},
 		default: 100,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
-] as INodeProperties[];
+];

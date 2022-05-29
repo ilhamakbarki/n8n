@@ -1,10 +1,11 @@
 import { INodeProperties } from 'n8n-workflow';
 
-export const paymentOperations = [
+export const paymentOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -35,11 +36,10 @@ export const paymentOperations = [
 			},
 		],
 		default: 'create',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const paymentFields = [
+export const paymentFields: INodeProperties[] = [
 /* -------------------------------------------------------------------------- */
 /*                                 payment:create                             */
 /* -------------------------------------------------------------------------- */
@@ -192,14 +192,6 @@ export const paymentFields = [
 						value: 22,
 					},
 					{
-						name: 'Solo',
-						value: 22,
-					},
-					{
-						name: 'Swich',
-						value: 23,
-					},
-					{
 						name: 'Swich',
 						value: 23,
 					},
@@ -267,6 +259,7 @@ export const paymentFields = [
 		displayName: 'Payment ID',
 		name: 'paymentId',
 		type: 'string',
+		default: '',
 		required: true,
 		displayOptions: {
 			show: {
@@ -286,6 +279,7 @@ export const paymentFields = [
 		displayName: 'Payment ID',
 		name: 'paymentId',
 		type: 'string',
+		default: '',
 		required: true,
 		displayOptions: {
 			show: {
@@ -347,7 +341,7 @@ export const paymentFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -371,7 +365,7 @@ export const paymentFields = [
 			maxValue: 60,
 		},
 		default: 50,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	{
 		displayName: 'Options',
@@ -405,4 +399,4 @@ export const paymentFields = [
 		],
 	},
 
-] as INodeProperties[];
+];

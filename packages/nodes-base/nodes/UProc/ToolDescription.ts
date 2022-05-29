@@ -1,6 +1,6 @@
 import {
 	IDataObject,
-	INodeProperties,
+	INodeProperties
 } from 'n8n-workflow';
 
 import {
@@ -26,7 +26,7 @@ for (const group of (groups as IDataObject).groups as IDataObject[]) {
 		displayName: 'Operation',
 		name: 'tool',
 		type: 'options',
-		description: 'The Operation to consume.',
+		description: 'The Operation to consume',
 		displayOptions: {
 			show: {
 				group: [

@@ -2,11 +2,12 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export const formOperations = [
+export const formOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -27,11 +28,10 @@ export const formOperations = [
 			},
 		],
 		default: 'getFields',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const formFields = [
+export const formFields: INodeProperties[] = [
 
 	/* -------------------------------------------------------------------------- */
 	/*                                form:submit                                 */
@@ -55,7 +55,7 @@ export const formFields = [
 			},
 		},
 		default: '',
-		description: `The ID of the form you're sending data to.`,
+		description: 'The ID of the form you\'re sending data to',
 	},
 	{
 		displayName: 'Additional Fields',
@@ -79,14 +79,14 @@ export const formFields = [
 				name: 'skipValidation',
 				type: 'boolean',
 				default: false,
-				description: `Whether or not to skip validation based on the form settings.`,
+				description: 'Whether or not to skip validation based on the form settings',
 			},
 			{
 				displayName: 'Submitted At',
 				name: 'submittedAt',
 				type: 'dateTime',
 				default: '',
-				description: 'Time of the form submission.',
+				description: 'Time of the form submission',
 			},
 		],
 	},
@@ -126,44 +126,42 @@ export const formFields = [
 						name: 'ipAddress',
 						type: 'string',
 						default: '',
-						description: 'The IP address of the visitor filling out the form.',
+						description: 'The IP address of the visitor filling out the form',
 					},
 					{
 						displayName: 'Page URI',
 						name: 'pageUri',
 						type: 'string',
 						default: '',
-						description: 'The URI of the page the submission happened on.',
+						description: 'The URI of the page the submission happened on',
 					},
 					{
 						displayName: 'Page Name',
 						name: 'pageName',
 						type: 'string',
 						default: '',
-						description: 'The name or title of the page the submission happened on.',
+						description: 'The name or title of the page the submission happened on',
 					},
 					{
 						displayName: 'Page ID',
 						name: 'pageId',
 						type: 'string',
 						default: '',
-						description: 'The ID of a page created on the HubSpot CMS.',
+						description: 'The ID of a page created on the HubSpot CMS',
 					},
 					{
 						displayName: 'SFDC campaign ID',
 						name: 'sfdcCampaignId',
 						type: 'string',
 						default: '',
-						description: `If the form is for an account using the HubSpot Salesforce Integration,</br>
-						you can include the ID of a Salesforce campaign to add the contact to the specified campaign.`,
+						description: 'If the form is for an account using the HubSpot Salesforce Integration, you can include the ID of a Salesforce campaign to add the contact to the specified campaign',
 					},
 					{
 						displayName: 'Go to Webinar Webinar ID',
 						name: 'goToWebinarWebinarKey',
 						type: 'string',
 						default: '',
-						description: `If the form is for an account using the HubSpot GoToWebinar Integration,</br>
-						you can include the ID of a webinar to enroll the contact in that webinar when they submit the form.`,
+						description: 'If the form is for an account using the HubSpot GoToWebinar Integration, you can include the ID of a webinar to enroll the contact in that webinar when they submit the form',
 					},
 				],
 			},
@@ -236,7 +234,7 @@ export const formFields = [
 										name: 'value',
 										type: 'boolean',
 										default: false,
-										description: ' Whether or not the visitor checked the checkbox for this subscription type.',
+										description: 'Whether or not the visitor checked the checkbox for this subscription type',
 									},
 									{
 										displayName: 'Text',
@@ -263,15 +261,14 @@ export const formFields = [
 							loadOptionsMethod: 'getSubscriptionTypes',
 						},
 						default: '',
-						description: 'The ID of the specific subscription type that this forms indicates interest to.',
+						description: 'The ID of the specific subscription type that this forms indicates interest to',
 					},
 					{
 						displayName: 'Value',
 						name: 'value',
 						type: 'boolean',
 						default: false,
-						description: `This must be true when using the 'legitimateInterest' option, as it reflects</br>
-						the consent indicated by the visitor when submitting the form`,
+						description: 'This must be true when using the \'legitimateInterest\' option, as it reflects the consent indicated by the visitor when submitting the form',
 					},
 					{
 						displayName: 'Legal Basis',
@@ -288,14 +285,14 @@ export const formFields = [
 							},
 						],
 						default: '',
-						description: 'The privacy text displayed to the visitor.',
+						description: 'The privacy text displayed to the visitor',
 					},
 					{
 						displayName: 'Text',
 						name: 'text',
 						type: 'string',
 						default: '',
-						description: 'The privacy text displayed to the visitor.',
+						description: 'The privacy text displayed to the visitor',
 					},
 				],
 			},
@@ -326,4 +323,4 @@ export const formFields = [
 		default: '',
 		description: 'The ID of the form',
 	},
-] as INodeProperties[];
+];

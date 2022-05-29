@@ -1,18 +1,17 @@
-import {
-	BINARY_ENCODING,
-	IExecuteFunctions,
-} from 'n8n-core';
+import { IExecuteFunctions } from 'n8n-core';
 
 import {
 	IDataObject,
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
+	NodeOperationError,
 } from 'n8n-workflow';
 
 import {
 	dropboxApiRequest,
 	dropboxpiRequestAllItems,
+	getCredentials,
 	getRootDirectory,
 	simplify,
 } from './GenericFunctions';
@@ -28,7 +27,6 @@ export class Dropbox implements INodeType {
 		description: 'Access data on Dropbox',
 		defaults: {
 			name: 'Dropbox',
-			color: '#007ee5',
 		},
 		inputs: ['main'],
 		outputs: ['main'],
@@ -72,12 +70,13 @@ export class Dropbox implements INodeType {
 					},
 				],
 				default: 'accessToken',
-				description: 'Means of authenticating with the service.',
+				description: 'Means of authenticating with the service',
 			},
 			{
 				displayName: 'Resource',
 				name: 'resource',
 				type: 'options',
+				noDataExpression: true,
 				options: [
 					{
 						name: 'File',
@@ -93,7 +92,6 @@ export class Dropbox implements INodeType {
 					},
 				],
 				default: 'file',
-				description: 'The resource to operate on.',
 			},
 
 			// ----------------------------------
@@ -103,6 +101,7 @@ export class Dropbox implements INodeType {
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				displayOptions: {
 					show: {
 						resource: [
@@ -138,13 +137,13 @@ export class Dropbox implements INodeType {
 					},
 				],
 				default: 'upload',
-				description: 'The operation to perform.',
 			},
 
 			{
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				displayOptions: {
 					show: {
 						resource: [
@@ -180,13 +179,13 @@ export class Dropbox implements INodeType {
 					},
 				],
 				default: 'create',
-				description: 'The operation to perform.',
 			},
 
 			{
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				displayOptions: {
 					show: {
 						resource: [
@@ -201,7 +200,6 @@ export class Dropbox implements INodeType {
 					},
 				],
 				default: 'query',
-				description: 'The operation to perform.',
 			},
 
 			// ----------------------------------
@@ -229,7 +227,7 @@ export class Dropbox implements INodeType {
 					},
 				},
 				placeholder: '/invoices/original.txt',
-				description: 'The path of file or folder to copy.',
+				description: 'The path of file or folder to copy',
 			},
 			{
 				displayName: 'To Path',
@@ -249,7 +247,7 @@ export class Dropbox implements INodeType {
 					},
 				},
 				placeholder: '/invoices/copy.txt',
-				description: 'The destination path of file or folder.',
+				description: 'The destination path of file or folder',
 			},
 
 			// ----------------------------------
@@ -298,7 +296,7 @@ export class Dropbox implements INodeType {
 					},
 				},
 				placeholder: '/invoices/old_name.txt',
-				description: 'The path of file or folder to move.',
+				description: 'The path of file or folder to move',
 			},
 			{
 				displayName: 'To Path',
@@ -318,7 +316,7 @@ export class Dropbox implements INodeType {
 					},
 				},
 				placeholder: '/invoices/new_name.txt',
-				description: 'The new path of file or folder.',
+				description: 'The new path of file or folder',
 			},
 
 			// ----------------------------------
@@ -359,7 +357,7 @@ export class Dropbox implements INodeType {
 						],
 					},
 				},
-				description: 'Name of the binary property to which to<br />write the data of the read file.',
+				description: 'Name of the binary property to which to write the data of the read file',
 			},
 
 			// ----------------------------------
@@ -399,7 +397,7 @@ export class Dropbox implements INodeType {
 						],
 					},
 				},
-				description: 'If the data to upload should be taken from binary field.',
+				description: 'If the data to upload should be taken from binary field',
 			},
 			{
 				displayName: 'File Content',
@@ -421,7 +419,7 @@ export class Dropbox implements INodeType {
 
 				},
 				placeholder: '',
-				description: 'The text content of the file to upload.',
+				description: 'The text content of the file to upload',
 			},
 			{
 				displayName: 'Binary Property',
@@ -444,7 +442,7 @@ export class Dropbox implements INodeType {
 
 				},
 				placeholder: '',
-				description: 'Name of the binary property which contains<br />the data for the file to be uploaded.',
+				description: 'Name of the binary property which contains the data for the file to be uploaded',
 			},
 
 			// ----------------------------------
@@ -466,7 +464,7 @@ export class Dropbox implements INodeType {
 						],
 					},
 				},
-				description: ' The string to search for. May match across multiple fields based on the request arguments.',
+				description: 'The string to search for. May match across multiple fields based on the request arguments.',
 			},
 			{
 				displayName: 'File Status',
@@ -493,7 +491,7 @@ export class Dropbox implements INodeType {
 						],
 					},
 				},
-				description: ' The string to search for. May match across multiple fields based on the request arguments.',
+				description: 'The string to search for. May match across multiple fields based on the request arguments.',
 			},
 			{
 				displayName: 'Return All',
@@ -510,12 +508,15 @@ export class Dropbox implements INodeType {
 					},
 				},
 				default: false,
-				description: 'If all results should be returned or only up to a given limit.',
+				description: 'Whether to return all results or only up to a given limit',
 			},
 			{
 				displayName: 'Limit',
 				name: 'limit',
 				type: 'number',
+				typeOptions: {
+					minValue: 1,
+				},
 				displayOptions: {
 					show: {
 						resource: [
@@ -530,10 +531,10 @@ export class Dropbox implements INodeType {
 					},
 				},
 				default: 100,
-				description: 'How many results to return.',
+				description: 'Max number of results to return',
 			},
 			{
-				displayName: 'Simple',
+				displayName: 'Simplify',
 				name: 'simple',
 				type: 'boolean',
 				displayOptions: {
@@ -547,7 +548,7 @@ export class Dropbox implements INodeType {
 					},
 				},
 				default: true,
-				description: 'When set to true a simplify version of the response will be used else the raw data.',
+				description: 'Whether to return a simplified version of the response instead of the raw data',
 			},
 			{
 				displayName: 'Filters',
@@ -619,7 +620,7 @@ export class Dropbox implements INodeType {
 						name: 'file_extensions',
 						type: 'string',
 						default: '',
-						description: 'Multiple can be set separated by comma. Example: jpg,pdf',
+						description: 'Multiple file extensions can be set separated by comma. Example: jpg,pdf.',
 					},
 					{
 						displayName: 'Folder',
@@ -677,7 +678,7 @@ export class Dropbox implements INodeType {
 					},
 				},
 				placeholder: '/invoices/2019/',
-				description: 'The path of which to list the content.',
+				description: 'The path of which to list the content',
 			},
 			{
 				displayName: 'Return All',
@@ -694,12 +695,15 @@ export class Dropbox implements INodeType {
 					},
 				},
 				default: false,
-				description: 'If all results should be returned or only up to a given limit.',
+				description: 'Whether to return all results or only up to a given limit',
 			},
 			{
 				displayName: 'Limit',
 				name: 'limit',
 				type: 'number',
+				typeOptions: {
+					minValue: 1,
+				},
 				displayOptions: {
 					show: {
 						resource: [
@@ -714,7 +718,7 @@ export class Dropbox implements INodeType {
 					},
 				},
 				default: 100,
-				description: 'How many results to return.',
+				description: 'Max number of results to return',
 			},
 			{
 				displayName: 'Filters',
@@ -741,21 +745,21 @@ export class Dropbox implements INodeType {
 						description: 'If true, the results will include entries for files and folders that used to exist but were deleted. The default for this field is False.',
 					},
 					{
-						displayName: 'Include Shared Members ',
+						displayName: 'Include Shared Members',
 						name: 'include_has_explicit_shared_members',
 						type: 'boolean',
 						default: false,
 						description: 'If true, the results will include a flag for each file indicating whether or not that file has any explicit members. The default for this field is False.',
 					},
 					{
-						displayName: 'Include Mounted Folders ',
+						displayName: 'Include Mounted Folders',
 						name: 'include_mounted_folders',
 						type: 'boolean',
 						default: true,
 						description: 'If true, the results will include entries under mounted folders which includes app folder, shared folder and team folder. The default for this field is True.',
 					},
 					{
-						displayName: 'Include Non Downloadable Files ',
+						displayName: 'Include Non Downloadable Files',
 						name: 'include_non_downloadable_files',
 						type: 'boolean',
 						default: true,
@@ -793,265 +797,286 @@ export class Dropbox implements INodeType {
 		let headers: IDataObject = {};
 		let simple = false;
 
-		// get the root directory to set it as the default search folder
-		const { root_info: { root_namespace_id } } = await getRootDirectory.call(this);
 
-		headers = {
-			'dropbox-api-path-root': JSON.stringify({
-				'.tag': 'root',
-				'root': root_namespace_id,
-			}),
-		};
+		const { accessType } = await getCredentials.call(this);
+
+		if (accessType === 'full') {
+			// get the root directory to set it as the default for all operations
+			const { root_info: { root_namespace_id } } = await getRootDirectory.call(this);
+
+			headers = {
+				'dropbox-api-path-root': JSON.stringify({
+					'.tag': 'root',
+					'root': root_namespace_id,
+				}),
+			};
+		}
 
 		for (let i = 0; i < items.length; i++) {
-			body = {};
+			try {
+				body = {};
 
-			if (resource === 'file') {
-				if (operation === 'download') {
-					// ----------------------------------
-					//         download
-					// ----------------------------------
+				if (resource === 'file') {
+					if (operation === 'download') {
+						// ----------------------------------
+						//         download
+						// ----------------------------------
 
-					requestMethod = 'POST';
+						requestMethod = 'POST';
 
-					query.arg = JSON.stringify({
-						path: this.getNodeParameter('path', i) as string,
-					});
+						query.arg = JSON.stringify({
+							path: this.getNodeParameter('path', i) as string,
+						});
 
-					endpoint = 'https://content.dropboxapi.com/2/files/download';
+						endpoint = 'https://content.dropboxapi.com/2/files/download';
 
-				} else if (operation === 'upload') {
-					// ----------------------------------
-					//         upload
-					// ----------------------------------
+					} else if (operation === 'upload') {
+						// ----------------------------------
+						//         upload
+						// ----------------------------------
 
-					requestMethod = 'POST';
-					headers['Content-Type'] = 'application/octet-stream';
+						requestMethod = 'POST';
+						headers['Content-Type'] = 'application/octet-stream';
 
-					query.arg = JSON.stringify({
-						mode: 'overwrite',
-						path: this.getNodeParameter('path', i) as string,
-					});
+						query.arg = JSON.stringify({
+							mode: 'overwrite',
+							path: this.getNodeParameter('path', i) as string,
+						});
 
-					endpoint = 'https://content.dropboxapi.com/2/files/upload';
+						endpoint = 'https://content.dropboxapi.com/2/files/upload';
 
-					options = { json: false };
+						options = { json: false };
 
-					if (this.getNodeParameter('binaryData', i) === true) {
+						if (this.getNodeParameter('binaryData', i) === true) {
 
-						// Is binary file to upload
-						const item = items[i];
+							// Is binary file to upload
+							const item = items[i];
 
-						if (item.binary === undefined) {
-							throw new Error('No binary data exists on item!');
-						}
+							if (item.binary === undefined) {
+								throw new NodeOperationError(this.getNode(), 'No binary data exists on item!');
+							}
 
-						const propertyNameUpload = this.getNodeParameter('binaryPropertyName', i) as string;
+							const propertyNameUpload = this.getNodeParameter('binaryPropertyName', i) as string;
 
-						if (item.binary[propertyNameUpload] === undefined) {
-							throw new Error(`No binary data property "${propertyNameUpload}" does not exists on item!`);
-						}
+							if (item.binary[propertyNameUpload] === undefined) {
+								throw new NodeOperationError(this.getNode(), `No binary data property "${propertyNameUpload}" does not exists on item!`);
+							}
 
-						body = Buffer.from(item.binary[propertyNameUpload].data, BINARY_ENCODING);
-					} else {
-						// Is text file
-						body = Buffer.from(this.getNodeParameter('fileContent', i) as string, 'utf8');
-					}
-				}
-			} else if (resource === 'folder') {
-				if (operation === 'create') {
-					// ----------------------------------
-					//         create
-					// ----------------------------------
-
-					requestMethod = 'POST';
-					body = {
-						path: this.getNodeParameter('path', i) as string,
-					};
-
-					endpoint = 'https://api.dropboxapi.com/2/files/create_folder_v2';
-
-				} else if (operation === 'list') {
-					// ----------------------------------
-					//         list
-					// ----------------------------------
-
-					returnAll = this.getNodeParameter('returnAll', 0) as boolean;
-
-					const filters = this.getNodeParameter('filters', i) as IDataObject;
-
-					property = 'entries';
-
-					requestMethod = 'POST';
-					body = {
-						path: this.getNodeParameter('path', i) as string,
-						limit: 1000,
-					};
-
-					if (returnAll === false) {
-						const limit = this.getNodeParameter('limit', 0) as number;
-						body.limit = limit;
-					}
-
-					Object.assign(body, filters);
-
-					endpoint = 'https://api.dropboxapi.com/2/files/list_folder';
-
-				}
-			} else if (resource === 'search') {
-				if (operation === 'query') {
-					// ----------------------------------
-					//         query
-					// ----------------------------------
-
-					returnAll = this.getNodeParameter('returnAll', 0) as boolean;
-
-					simple = this.getNodeParameter('simple', 0) as boolean;
-
-					const filters = this.getNodeParameter('filters', i) as IDataObject;
-
-					property = 'matches';
-
-					requestMethod = 'POST';
-					body = {
-						query: this.getNodeParameter('query', i) as string,
-						options: {
-							filename_only: true,
-						},
-					};
-
-					if (filters.file_extensions) {
-						filters.file_extensions = (filters.file_extensions as string).split(',');
-					}
-
-					Object.assign(body.options, filters);
-
-					if (returnAll === false) {
-						const limit = this.getNodeParameter('limit', i) as number;
-						Object.assign(body.options, { max_results: limit });
-					}
-
-					endpoint = 'https://api.dropboxapi.com/2/files/search_v2';
-				}
-			}
-			if (['file', 'folder', 'search'].includes(resource)) {
-				if (operation === 'copy') {
-					// ----------------------------------
-					//         copy
-					// ----------------------------------
-
-					requestMethod = 'POST';
-					body = {
-						from_path: this.getNodeParameter('path', i) as string,
-						to_path: this.getNodeParameter('toPath', i) as string,
-					};
-
-					endpoint = 'https://api.dropboxapi.com/2/files/copy_v2';
-
-				} else if (operation === 'delete') {
-					// ----------------------------------
-					//         delete
-					// ----------------------------------
-
-					requestMethod = 'POST';
-					body = {
-						path: this.getNodeParameter('path', i) as string,
-					};
-
-					endpoint = 'https://api.dropboxapi.com/2/files/delete_v2';
-
-				} else if (operation === 'move') {
-					// ----------------------------------
-					//         move
-					// ----------------------------------
-
-					requestMethod = 'POST';
-					body = {
-						from_path: this.getNodeParameter('path', i) as string,
-						to_path: this.getNodeParameter('toPath', i) as string,
-					};
-
-					endpoint = 'https://api.dropboxapi.com/2/files/move_v2';
-				}
-			} else {
-				throw new Error(`The resource "${resource}" is not known!`);
-			}
-
-			if (resource === 'file' && operation === 'download') {
-				// Return the data as a buffer
-				options = { encoding: null };
-			}
-
-			let responseData;
-
-			if (returnAll === true) {
-				responseData = await dropboxpiRequestAllItems.call(this, property, requestMethod, endpoint, body, query, headers);
-			} else {
-				responseData = await dropboxApiRequest.call(this, requestMethod, endpoint, body, query, headers, options);
-			}
-
-			if (resource === 'file' && operation === 'upload') {
-				responseData = JSON.parse(responseData);
-			}
-
-			if (resource === 'file' && operation === 'download') {
-
-				const newItem: INodeExecutionData = {
-					json: items[i].json,
-					binary: {},
-				};
-
-				if (items[i].binary !== undefined) {
-					// Create a shallow copy of the binary data so that the old
-					// data references which do not get changed still stay behind
-					// but the incoming data does not get changed.
-					Object.assign(newItem.binary, items[i].binary);
-				}
-
-				items[i] = newItem;
-
-				const dataPropertyNameDownload = this.getNodeParameter('binaryPropertyName', i) as string;
-
-				const filePathDownload = this.getNodeParameter('path', i) as string;
-				items[i].binary![dataPropertyNameDownload] = await this.helpers.prepareBinaryData(Buffer.from(responseData), filePathDownload);
-
-			} else if (resource === 'folder' && operation === 'list') {
-
-				const propNames: { [key: string]: string } = {
-					'id': 'id',
-					'name': 'name',
-					'client_modified': 'lastModifiedClient',
-					'server_modified': 'lastModifiedServer',
-					'rev': 'rev',
-					'size': 'contentSize',
-					'.tag': 'type',
-					'content_hash': 'contentHash',
-				};
-
-				if (returnAll === false) {
-					responseData = responseData.entries;
-				}
-
-				for (const item of responseData) {
-					const newItem: IDataObject = {};
-
-					// Get the props and save them under a proper name
-					for (const propName of Object.keys(propNames)) {
-						if (item[propName] !== undefined) {
-							newItem[propNames[propName]] = item[propName];
+							body = await this.helpers.getBinaryDataBuffer(i, propertyNameUpload);
+						} else {
+							// Is text file
+							body = Buffer.from(this.getNodeParameter('fileContent', i) as string, 'utf8');
 						}
 					}
+				} else if (resource === 'folder') {
+					if (operation === 'create') {
+						// ----------------------------------
+						//         create
+						// ----------------------------------
 
-					returnData.push(newItem as IDataObject);
+						requestMethod = 'POST';
+						body = {
+							path: this.getNodeParameter('path', i) as string,
+						};
+
+						endpoint = 'https://api.dropboxapi.com/2/files/create_folder_v2';
+
+					} else if (operation === 'list') {
+						// ----------------------------------
+						//         list
+						// ----------------------------------
+
+						returnAll = this.getNodeParameter('returnAll', 0) as boolean;
+
+						const filters = this.getNodeParameter('filters', i) as IDataObject;
+
+						property = 'entries';
+
+						requestMethod = 'POST';
+						body = {
+							path: this.getNodeParameter('path', i) as string,
+							limit: 1000,
+						};
+
+						if (returnAll === false) {
+							const limit = this.getNodeParameter('limit', 0) as number;
+							body.limit = limit;
+						}
+
+						Object.assign(body, filters);
+
+						endpoint = 'https://api.dropboxapi.com/2/files/list_folder';
+
+					}
+				} else if (resource === 'search') {
+					if (operation === 'query') {
+						// ----------------------------------
+						//         query
+						// ----------------------------------
+
+						returnAll = this.getNodeParameter('returnAll', 0) as boolean;
+
+						simple = this.getNodeParameter('simple', 0) as boolean;
+
+						const filters = this.getNodeParameter('filters', i) as IDataObject;
+
+						property = 'matches';
+
+						requestMethod = 'POST';
+						body = {
+							query: this.getNodeParameter('query', i) as string,
+							options: {
+								filename_only: true,
+							},
+						};
+
+						if (filters.file_extensions) {
+							filters.file_extensions = (filters.file_extensions as string).split(',');
+						}
+
+						Object.assign(body.options, filters);
+
+						if (returnAll === false) {
+							const limit = this.getNodeParameter('limit', i) as number;
+							Object.assign(body.options, { max_results: limit });
+						}
+
+						endpoint = 'https://api.dropboxapi.com/2/files/search_v2';
+					}
 				}
-			} else if (resource === 'search' && operation === 'query') {
-				if (returnAll === true) {
-					returnData.push.apply(returnData, (simple === true) ? simplify(responseData) : responseData);
+				if (['file', 'folder', 'search'].includes(resource)) {
+					if (operation === 'copy') {
+						// ----------------------------------
+						//         copy
+						// ----------------------------------
+
+						requestMethod = 'POST';
+						body = {
+							from_path: this.getNodeParameter('path', i) as string,
+							to_path: this.getNodeParameter('toPath', i) as string,
+						};
+
+						endpoint = 'https://api.dropboxapi.com/2/files/copy_v2';
+
+					} else if (operation === 'delete') {
+						// ----------------------------------
+						//         delete
+						// ----------------------------------
+
+						requestMethod = 'POST';
+						body = {
+							path: this.getNodeParameter('path', i) as string,
+						};
+
+						endpoint = 'https://api.dropboxapi.com/2/files/delete_v2';
+
+					} else if (operation === 'move') {
+						// ----------------------------------
+						//         move
+						// ----------------------------------
+
+						requestMethod = 'POST';
+						body = {
+							from_path: this.getNodeParameter('path', i) as string,
+							to_path: this.getNodeParameter('toPath', i) as string,
+						};
+
+						endpoint = 'https://api.dropboxapi.com/2/files/move_v2';
+					}
 				} else {
-					returnData.push.apply(returnData, (simple === true) ? simplify(responseData[property]) : responseData[property]);
+					throw new NodeOperationError(this.getNode(), `The resource "${resource}" is not known!`);
 				}
-			} else {
-				returnData.push(responseData);
+
+				if (resource === 'file' && operation === 'download') {
+					// Return the data as a buffer
+					options = { encoding: null };
+				}
+
+				let responseData;
+
+				if (returnAll === true) {
+					responseData = await dropboxpiRequestAllItems.call(this, property, requestMethod, endpoint, body, query, headers);
+				} else {
+					responseData = await dropboxApiRequest.call(this, requestMethod, endpoint, body, query, headers, options);
+				}
+
+				if (resource === 'file' && operation === 'upload') {
+					responseData = JSON.parse(responseData);
+				}
+
+				if (resource === 'file' && operation === 'download') {
+
+					const newItem: INodeExecutionData = {
+						json: items[i].json,
+						binary: {},
+					};
+
+					if (items[i].binary !== undefined) {
+						// Create a shallow copy of the binary data so that the old
+						// data references which do not get changed still stay behind
+						// but the incoming data does not get changed.
+						Object.assign(newItem.binary, items[i].binary);
+					}
+
+					items[i] = newItem;
+
+					const dataPropertyNameDownload = this.getNodeParameter('binaryPropertyName', i) as string;
+
+					const filePathDownload = this.getNodeParameter('path', i) as string;
+					items[i].binary![dataPropertyNameDownload] = await this.helpers.prepareBinaryData(Buffer.from(responseData), filePathDownload);
+
+				} else if (resource === 'folder' && operation === 'list') {
+
+					const propNames: { [key: string]: string } = {
+						'id': 'id',
+						'name': 'name',
+						'client_modified': 'lastModifiedClient',
+						'server_modified': 'lastModifiedServer',
+						'rev': 'rev',
+						'size': 'contentSize',
+						'.tag': 'type',
+						'content_hash': 'contentHash',
+						'path_lower': 'pathLower',
+						'path_display': 'pathDisplay',
+						'has_explicit_shared_members': 'hasExplicitSharedMembers',
+						'is_downloadable': 'isDownloadable',
+					};
+
+					if (returnAll === false) {
+						responseData = responseData.entries;
+					}
+
+					for (const item of responseData) {
+						const newItem: IDataObject = {};
+
+						// Get the props and save them under a proper name
+						for (const propName of Object.keys(propNames)) {
+							if (item[propName] !== undefined) {
+								newItem[propNames[propName]] = item[propName];
+							}
+						}
+
+						returnData.push(newItem as IDataObject);
+					}
+				} else if (resource === 'search' && operation === 'query') {
+					if (returnAll === true) {
+						returnData.push.apply(returnData, (simple === true) ? simplify(responseData) : responseData);
+					} else {
+						returnData.push.apply(returnData, (simple === true) ? simplify(responseData[property]) : responseData[property]);
+					}
+				} else {
+					returnData.push(responseData);
+				}
+			} catch (error) {
+				if (this.continueOnFail()) {
+					if (resource === 'file' && operation === 'download'){
+						items[i].json = { error: error.message };
+					}else{
+						returnData.push({ error: error.message });
+					}
+					continue;
+				}
+				throw error;
 			}
 		}
 

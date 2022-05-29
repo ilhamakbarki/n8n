@@ -2,11 +2,12 @@ import {
 	INodeProperties,
  } from 'n8n-workflow';
 
-export const userOperations = [
+export const userOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -36,6 +37,16 @@ export const userOperations = [
 				description: 'Get all users',
 			},
 			{
+				name: 'Get Organizations',
+				value: 'getOrganizations',
+				description: 'Get a user\'s organizations',
+			},
+			{
+				name: 'Get Related Data',
+				value: 'getRelatedData',
+				description: 'Get data related to the user',
+			},
+			{
 				name: 'Search',
 				value: 'search',
 				description: 'Search users',
@@ -47,11 +58,10 @@ export const userOperations = [
 			},
 		],
 		default: 'create',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const userFields = [
+export const userFields: INodeProperties[] = [
 
 /* -------------------------------------------------------------------------- */
 /*                                user:create                                 */
@@ -72,7 +82,7 @@ export const userFields = [
 			},
 		},
 		required: true,
-		description: `The user's name`,
+		description: 'The user\'s name',
 	},
 	{
 		displayName: 'Additional Fields',
@@ -93,17 +103,17 @@ export const userFields = [
 		options: [
 			{
 				displayName: 'Alias',
-				name: 'alis',
+				name: 'alias',
 				type: 'string',
 				default: '',
-				description: `An alias displayed to end users`,
+				description: 'An alias displayed to end users',
 			},
 			{
 				displayName: 'Custom Role ID',
 				name: 'custom_role_id',
 				type: 'number',
 				default: 0,
-				description: `A custom role if the user is an agent on the Enterprise plan`,
+				description: 'A custom role if the user is an agent on the Enterprise plan',
 			},
 			{
 				displayName: 'Details',
@@ -117,11 +127,11 @@ export const userFields = [
 				name: 'email',
 				type: 'string',
 				default: '',
-				description: `The user's primary email address`,
+				description: 'The user\'s primary email address',
 			},
 			{
 				displayName: 'External ID',
-				name: 'externalId',
+				name: 'external_id',
 				type: 'string',
 				default: '',
 				description: 'A unique identifier from another system',
@@ -134,7 +144,7 @@ export const userFields = [
 					loadOptionsMethod: 'getLocales',
 				},
 				default: '',
-				description: `The user's locale.`,
+				description: 'The user\'s locale',
 			},
 			{
 				displayName: 'Moderator',
@@ -155,35 +165,38 @@ export const userFields = [
 				name: 'only_private_comments',
 				type: 'boolean',
 				default: false,
-				description: `true if the user can only create private comments`,
+				description: 'true if the user can only create private comments',
 			},
 			{
 				displayName: 'Organization ID',
-				name: 'organizationId',
-				type: 'number',
-				default: 0,
-				description: `The id of the user's organization. If the user has more than one organization memberships, the id of the user's default organization`,
+				name: 'organization_id',
+				typeOptions: {
+					loadOptionsMethod: 'getOrganizations',
+				},
+				type: 'options',
+				default: '',
+				description: 'The ID of the user\'s organization. If the user has more than one organization memberships, the ID of the user\'s default organization.',
 			},
 			{
 				displayName: 'Phone',
 				name: 'phone',
 				type: 'string',
 				default: '',
-				description: `The user's primary phone number.`,
+				description: 'The user\'s primary phone number',
 			},
 			{
 				displayName: 'Report CSV',
 				name: 'report_csv',
 				type: 'boolean',
 				default: false,
-				description: `Whether or not the user can access the CSV report on the Search tab of the Reporting page in the Support admin interface.`,
+				description: 'Whether or not the user can access the CSV report on the Search tab of the Reporting page in the Support admin interface',
 			},
 			{
 				displayName: 'Restricted Agent',
 				name: 'restricted_agent',
 				type: 'boolean',
 				default: false,
-				description: `If the agent has any restrictions; false for admins and unrestricted agents, true for other agents`,
+				description: 'If the agent has any restrictions; false for admins and unrestricted agents, true for other agents',
 			},
 			{
 				displayName: 'Role',
@@ -204,21 +217,21 @@ export const userFields = [
 					},
 				],
 				default: '',
-				description: `The user's role`,
+				description: 'The user\'s role',
 			},
 			{
 				displayName: 'Signature',
 				name: 'signature',
 				type: 'string',
 				default: '',
-				description: `The user's signature. Only agents and admins can have signatures`,
+				description: 'The user\'s signature. Only agents and admins can have signatures.',
 			},
 			{
 				displayName: 'Suspended',
 				name: 'suspended',
 				type: 'boolean',
 				default: false,
-				description: `If the agent is suspended. Tickets from suspended users are also suspended, and these users cannot sign in to the end user portal`,
+				description: 'If the agent is suspended. Tickets from suspended users are also suspended, and these users cannot sign in to the end user portal.',
 			},
 			{
 				displayName: 'Tags',
@@ -253,20 +266,20 @@ export const userFields = [
 					},
 				],
 				default: '',
-				description: `Specifies which tickets the user has access to`,
+				description: 'Specifies which tickets the user has access to',
 			},
 			{
 				displayName: 'Timezone',
 				name: 'time_zone',
 				type: 'string',
 				default: '',
-				description: `The user's time zone.`,
+				description: 'The user\'s time zone',
 			},
 			{
 				displayName: 'User Fields',
 				name: 'userFieldsUi',
 				placeholder: 'Add User Field',
-				description: `Values of custom fields in the user's profile.`,
+				description: 'Values of custom fields in the user\'s profile',
 				type: 'fixedCollection',
 				typeOptions: {
 					multipleValues: true,
@@ -285,14 +298,14 @@ export const userFields = [
 									loadOptionsMethod: 'getUserFields',
 								},
 								default: '',
-								description: 'Name of the field to sort on.',
+								description: 'Name of the field to sort on',
 							},
 							{
 								displayName: 'Value',
 								name: 'value',
 								type: 'string',
 								default: '',
-								description: 'Value of the field.',
+								description: 'Value of the field',
 							},
 						],
 					},
@@ -303,7 +316,7 @@ export const userFields = [
 				name: 'verified',
 				type: 'boolean',
 				default: false,
-				description: `The user's primary identity is verified or not`,
+				description: 'The user\'s primary identity is verified or not',
 			},
 		],
 	},
@@ -326,7 +339,6 @@ export const userFields = [
 				],
 			},
 		},
-		description: 'User ID',
 	},
 	{
 		displayName: 'Update Fields',
@@ -347,17 +359,17 @@ export const userFields = [
 		options: [
 			{
 				displayName: 'Alias',
-				name: 'alis',
+				name: 'alias',
 				type: 'string',
 				default: '',
-				description: `An alias displayed to end users`,
+				description: 'An alias displayed to end users',
 			},
 			{
 				displayName: 'Custom Role ID',
 				name: 'custom_role_id',
 				type: 'number',
 				default: 0,
-				description: `A custom role if the user is an agent on the Enterprise plan`,
+				description: 'A custom role if the user is an agent on the Enterprise plan',
 			},
 			{
 				displayName: 'Details',
@@ -371,11 +383,11 @@ export const userFields = [
 				name: 'email',
 				type: 'string',
 				default: '',
-				description: `The user's primary email address`,
+				description: 'The user\'s primary email address',
 			},
 			{
 				displayName: 'External ID',
-				name: 'externalId',
+				name: 'external_id',
 				type: 'string',
 				default: '',
 				description: 'A unique identifier from another system',
@@ -388,7 +400,7 @@ export const userFields = [
 					loadOptionsMethod: 'getLocales',
 				},
 				default: '',
-				description: `The user's locale.`,
+				description: 'The user\'s locale',
 			},
 			{
 				displayName: 'Moderator',
@@ -402,7 +414,7 @@ export const userFields = [
 				name: 'name',
 				type: 'string',
 				default: '',
-				description: `The user's name`,
+				description: 'The user\'s name',
 			},
 			{
 				displayName: 'Notes',
@@ -416,35 +428,38 @@ export const userFields = [
 				name: 'only_private_comments',
 				type: 'boolean',
 				default: false,
-				description: `true if the user can only create private comments`,
+				description: 'true if the user can only create private comments',
 			},
 			{
 				displayName: 'Organization ID',
-				name: 'organizationId',
-				type: 'number',
-				default: 0,
-				description: `The id of the user's organization. If the user has more than one organization memberships, the id of the user's default organization`,
+				name: 'organization_id',
+				typeOptions: {
+					loadOptionsMethod: 'getOrganizations',
+				},
+				type: 'options',
+				default: '',
+				description: 'The ID of the user\'s organization. If the user has more than one organization memberships, the ID of the user\'s default organization.',
 			},
 			{
 				displayName: 'Phone',
 				name: 'phone',
 				type: 'string',
 				default: '',
-				description: `The user's primary phone number.`,
+				description: 'The user\'s primary phone number',
 			},
 			{
 				displayName: 'Report CSV',
 				name: 'report_csv',
 				type: 'boolean',
 				default: false,
-				description: `Whether or not the user can access the CSV report on the Search tab of the Reporting page in the Support admin interface.`,
+				description: 'Whether or not the user can access the CSV report on the Search tab of the Reporting page in the Support admin interface',
 			},
 			{
 				displayName: 'Restricted Agent',
 				name: 'restricted_agent',
 				type: 'boolean',
 				default: false,
-				description: `If the agent has any restrictions; false for admins and unrestricted agents, true for other agents`,
+				description: 'If the agent has any restrictions; false for admins and unrestricted agents, true for other agents',
 			},
 			{
 				displayName: 'Role',
@@ -465,21 +480,21 @@ export const userFields = [
 					},
 				],
 				default: '',
-				description: `The user's role`,
+				description: 'The user\'s role',
 			},
 			{
 				displayName: 'Signature',
 				name: 'signature',
 				type: 'string',
 				default: '',
-				description: `The user's signature. Only agents and admins can have signatures`,
+				description: 'The user\'s signature. Only agents and admins can have signatures.',
 			},
 			{
 				displayName: 'Suspended',
 				name: 'suspended',
 				type: 'boolean',
 				default: false,
-				description: `If the agent is suspended. Tickets from suspended users are also suspended, and these users cannot sign in to the end user portal`,
+				description: 'If the agent is suspended. Tickets from suspended users are also suspended, and these users cannot sign in to the end user portal.',
 			},
 			{
 				displayName: 'Tags',
@@ -514,20 +529,20 @@ export const userFields = [
 					},
 				],
 				default: '',
-				description: `Specifies which tickets the user has access to`,
+				description: 'Specifies which tickets the user has access to',
 			},
 			{
 				displayName: 'Timezone',
 				name: 'time_zone',
 				type: 'string',
 				default: '',
-				description: `The user's time zone.`,
+				description: 'The user\'s time zone',
 			},
 			{
 				displayName: 'User Fields',
 				name: 'userFieldsUi',
 				placeholder: 'Add User Field',
-				description: `Values of custom fields in the user's profile.`,
+				description: 'Values of custom fields in the user\'s profile',
 				type: 'fixedCollection',
 				typeOptions: {
 					multipleValues: true,
@@ -546,14 +561,14 @@ export const userFields = [
 									loadOptionsMethod: 'getUserFields',
 								},
 								default: '',
-								description: 'Name of the field to sort on.',
+								description: 'Name of the field to sort on',
 							},
 							{
 								displayName: 'Value',
 								name: 'value',
 								type: 'string',
 								default: '',
-								description: 'Value of the field.',
+								description: 'Value of the field',
 							},
 						],
 					},
@@ -564,7 +579,7 @@ export const userFields = [
 				name: 'verified',
 				type: 'boolean',
 				default: false,
-				description: `The user's primary identity is verified or not`,
+				description: 'The user\'s primary identity is verified or not',
 			},
 		],
 	},
@@ -587,7 +602,6 @@ export const userFields = [
 				],
 			},
 		},
-		description: 'User ID',
 	},
 /* -------------------------------------------------------------------------- */
 /*                                   user:getAll                              */
@@ -607,7 +621,7 @@ export const userFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -631,7 +645,7 @@ export const userFields = [
 			maxValue: 100,
 		},
 		default: 100,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	{
 		displayName: 'Filters',
@@ -690,7 +704,7 @@ export const userFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -714,7 +728,7 @@ export const userFields = [
 			maxValue: 100,
 		},
 		default: 100,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	{
 		displayName: 'Filters',
@@ -766,6 +780,45 @@ export const userFields = [
 				],
 			},
 		},
-		description: 'User ID',
 	},
-] as INodeProperties[];
+/* -------------------------------------------------------------------------- */
+/*                             user:getRelatedData                            */
+/* -------------------------------------------------------------------------- */
+	{
+		displayName: 'User ID',
+		name: 'id',
+		type: 'string',
+		default: '',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: [
+					'user',
+				],
+				operation: [
+					'getRelatedData',
+				],
+			},
+		},
+	},
+/* -------------------------------------------------------------------------- */
+/*                              user:getOrganizations                         */
+/* -------------------------------------------------------------------------- */
+	{
+		displayName: 'User ID',
+		name: 'id',
+		type: 'string',
+		default: '',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: [
+					'user',
+				],
+				operation: [
+					'getOrganizations',
+				],
+			},
+		},
+	},
+];

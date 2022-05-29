@@ -2,11 +2,12 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export const customObjectOperations = [
+export const customObjectOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -21,6 +22,16 @@ export const customObjectOperations = [
 				description: 'Create a custom object record',
 			},
 			{
+				name: 'Create or Update',
+				value: 'upsert',
+				description: 'Create a new record, or update the current one if it already exists (upsert)',
+			},
+			{
+				name: 'Delete',
+				value: 'delete',
+				description: 'Delete a custom object record',
+			},
+			{
 				name: 'Get',
 				value: 'get',
 				description: 'Get a custom object record',
@@ -31,22 +42,16 @@ export const customObjectOperations = [
 				description: 'Get all custom object records',
 			},
 			{
-				name: 'Delete',
-				value: 'delete',
-				description: 'Delete a custom object record',
-			},
-			{
 				name: 'Update',
 				value: 'update',
 				description: 'Update a custom object record',
 			},
 		],
 		default: 'create',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const customObjectFields = [
+export const customObjectFields: INodeProperties[] = [
 
 	/* -------------------------------------------------------------------------- */
 	/*                                customObject:create                         */
@@ -67,10 +72,53 @@ export const customObjectFields = [
 				],
 				operation: [
 					'create',
+					'upsert',
 				],
 			},
 		},
-		description: 'Name of the custom object.',
+		description: 'Name of the custom object',
+	},
+	{
+		displayName: 'Match Against',
+		name: 'externalId',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'getExternalIdFields',
+			loadOptionsDependsOn: [
+				'customObject',
+			],
+		},
+		required: true,
+		default: '',
+		displayOptions: {
+			show: {
+				resource: [
+					'customObject',
+				],
+				operation: [
+					'upsert',
+				],
+			},
+		},
+		description: 'The field to check to see if the object already exists',
+	},
+	{
+		displayName: 'Value to Match',
+		name: 'externalIdValue',
+		type: 'string',
+		required: true,
+		default: '',
+		displayOptions: {
+			show: {
+				resource: [
+					'customObject',
+				],
+				operation: [
+					'upsert',
+				],
+			},
+		},
+		description: 'If this value exists in the \'match against\' field, update the object. Otherwise create a new one.',
 	},
 	{
 		displayName: 'Fields',
@@ -87,10 +135,11 @@ export const customObjectFields = [
 				],
 				operation: [
 					'create',
+					'upsert',
 				],
 			},
 		},
-		description: 'Filter by custom fields.',
+		description: 'Filter by custom fields',
 		default: {},
 		options: [
 			{
@@ -108,14 +157,14 @@ export const customObjectFields = [
 							],
 						},
 						default: '',
-						description: 'The ID of the field.',
+						description: 'The ID of the field',
 					},
 					{
 						displayName: 'Value',
 						name: 'value',
 						type: 'string',
 						default: '',
-						description: 'The value to set on custom field.',
+						description: 'The value to set on custom field',
 					},
 				],
 			},
@@ -162,7 +211,7 @@ export const customObjectFields = [
 				],
 			},
 		},
-		description: 'Record ID to be updated.',
+		description: 'Record ID to be updated',
 	},
 	{
 		displayName: 'Fields',
@@ -172,7 +221,7 @@ export const customObjectFields = [
 		typeOptions: {
 			multipleValues: true,
 		},
-		description: 'Filter by custom fields ',
+		description: 'Filter by custom fields',
 		default: {},
 		displayOptions: {
 			show: {
@@ -200,14 +249,14 @@ export const customObjectFields = [
 							],
 						},
 						default: '',
-						description: 'The ID of the field.',
+						description: 'The ID of the field',
 					},
 					{
 						displayName: 'Value',
 						name: 'value',
 						type: 'string',
 						default: '',
-						description: 'The value to set on custom field.',
+						description: 'The value to set on custom field',
 					},
 				],
 			},
@@ -254,7 +303,7 @@ export const customObjectFields = [
 				],
 			},
 		},
-		description: 'Record ID to be retrieved.',
+		description: 'Record ID to be retrieved',
 	},
 
 	/* -------------------------------------------------------------------------- */
@@ -279,7 +328,7 @@ export const customObjectFields = [
 				],
 			},
 		},
-		description: 'Name of the custom object.',
+		description: 'Name of the custom object',
 	},
 	{
 		displayName: 'Record ID',
@@ -297,7 +346,7 @@ export const customObjectFields = [
 				],
 			},
 		},
-		description: 'Record ID to be deleted.',
+		description: 'Record ID to be deleted',
 	},
 
 	/* -------------------------------------------------------------------------- */
@@ -339,7 +388,7 @@ export const customObjectFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -363,7 +412,7 @@ export const customObjectFields = [
 			maxValue: 100,
 		},
 		default: 50,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	{
 		displayName: 'Options',
@@ -390,7 +439,7 @@ export const customObjectFields = [
 				typeOptions: {
 					multipleValues: true,
 				},
-				description: 'The condition to set.',
+				description: 'The condition to set',
 				default: {},
 				options: [
 					{
@@ -408,8 +457,9 @@ export const customObjectFields = [
 									],
 								},
 								default: '',
-								description: 'For date, number, or boolean, please use expressions.',
+								description: 'For date, number, or boolean, please use expressions',
 							},
+							// eslint-disable-next-line n8n-nodes-base/node-param-operation-without-no-data-expression
 							{
 								displayName: 'Operation',
 								name: 'operation',
@@ -458,9 +508,72 @@ export const customObjectFields = [
 						'customObject',
 					],
 				},
-				default: '',
+				default: [],
 				description: 'Fields to include separated by ,',
 			},
 		],
 	},
-] as INodeProperties[];
+	{
+		displayName: 'Additional Fields',
+		name: 'additionalFields',
+		type: 'collection',
+		displayOptions: {
+			show: {
+				operation: [
+					'create',
+					'upsert',
+				],
+				resource: [
+					'customObject',
+				],
+			},
+		},
+		default: {},
+		placeholder: 'Add Field',
+		options: [
+			{
+				displayName: 'Record Type ID',
+				name: 'recordTypeId',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getRecordTypes',
+					loadOptionsDependsOn: [
+						'customObject',
+					],
+				},
+				default: '',
+			},
+		],
+	},
+	{
+		displayName: 'Update Fields',
+		name: 'updateFields',
+		type: 'collection',
+		displayOptions: {
+			show: {
+				operation: [
+					'update',
+				],
+				resource: [
+					'customObject',
+				],
+			},
+		},
+		default: {},
+		placeholder: 'Add Field',
+		options: [
+			{
+				displayName: 'Record Type ID',
+				name: 'recordTypeId',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getRecordTypes',
+					loadOptionsDependsOn: [
+						'customObject',
+					],
+				},
+				default: '',
+			},
+		],
+	},
+];

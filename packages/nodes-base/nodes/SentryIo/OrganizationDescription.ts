@@ -2,11 +2,12 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export const organizationOperations = [
+export const organizationOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -30,13 +31,17 @@ export const organizationOperations = [
 				value: 'getAll',
 				description: 'Get all organizations',
 			},
+			{
+				name: 'Update',
+				value: 'update',
+				description: 'Update an organization',
+			},
 		],
 		default: 'get',
-		description: 'The operation to perform',
 	},
-] as INodeProperties[];
+];
 
-export const organizationFields = [
+export const organizationFields: INodeProperties[] = [
 	/* -------------------------------------------------------------------------- */
 	/*                                organization:getAll                         */
 	/* -------------------------------------------------------------------------- */
@@ -55,7 +60,7 @@ export const organizationFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -79,7 +84,7 @@ export const organizationFields = [
 			maxValue: 500,
 		},
 		default: 100,
-		description: 'How many results to return',
+		description: 'Max number of results to return',
 	},
 	{
 		displayName: 'Additional Fields',
@@ -114,6 +119,7 @@ export const organizationFields = [
 			},
 		],
 	},
+
 	/* -------------------------------------------------------------------------- */
 	/*                                organization:get                            */
 	/* -------------------------------------------------------------------------- */
@@ -138,6 +144,7 @@ export const organizationFields = [
 		required: true,
 		description: 'The slug of the organization the team should be created for',
 	},
+
 	/* -------------------------------------------------------------------------- */
 	/*                                organization:create                         */
 	/* -------------------------------------------------------------------------- */
@@ -198,8 +205,66 @@ export const organizationFields = [
 				name: 'slug',
 				type: 'string',
 				default: '',
-				description: 'The unique URL slug for this organization. If this is not provided a slug is automatically generated based on the name',
+				description: 'The unique URL slug for this organization. If this is not provided a slug is automatically generated based on the name.',
 			},
 		],
 	},
-] as INodeProperties[];
+
+	/* -------------------------------------------------------------------------- */
+	/*                                organization:update                         */
+	/* -------------------------------------------------------------------------- */
+	{
+		displayName: 'Slug',
+		name: 'organization_slug',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'getOrganizations',
+		},
+		default: '',
+		displayOptions: {
+			show: {
+				resource: [
+					'organization',
+				],
+				operation: [
+					'update',
+				],
+			},
+		},
+		required: true,
+		description: 'The slug of the organization to update',
+	},
+	{
+		displayName: 'Update Fields',
+		name: 'updateFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: [
+					'organization',
+				],
+				operation: [
+					'update',
+				],
+			},
+		},
+		options: [
+			{
+				displayName: 'Name',
+				name: 'name',
+				type: 'string',
+				default: '',
+				description: 'The new name of the organization',
+			},
+			{
+				displayName: 'Slug',
+				name: 'slug',
+				type: 'string',
+				default: '',
+				description: 'The new URL slug for this organization',
+			},
+		],
+	},
+];

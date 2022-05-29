@@ -2,11 +2,12 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export const boardItemOperations = [
+export const boardItemOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -18,7 +19,7 @@ export const boardItemOperations = [
 			{
 				name: 'Add Update',
 				value: 'addUpdate',
-				description: `Add an update to an item.`,
+				description: 'Add an update to an item',
 			},
 			{
 				name: 'Change Column Value',
@@ -33,12 +34,12 @@ export const boardItemOperations = [
 			{
 				name: 'Create',
 				value: 'create',
-				description: `Create an item in a board's group`,
+				description: 'Create an item in a board\'s group',
 			},
 			{
 				name: 'Delete',
 				value: 'delete',
-				description: `Delete an item`,
+				description: 'Delete an item',
 			},
 			{
 				name: 'Get',
@@ -62,11 +63,10 @@ export const boardItemOperations = [
 			},
 		],
 		default: 'create',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const boardItemFields = [
+export const boardItemFields: INodeProperties[] = [
 
 	/* -------------------------------------------------------------------------- */
 	/*                                 boardItem:addUpdate                         */
@@ -87,7 +87,7 @@ export const boardItemFields = [
 				],
 			},
 		},
-		description: 'The unique identifier of the item to add update to.',
+		description: 'The unique identifier of the item to add update to',
 	},
 	{
 		displayName: 'Update Text',
@@ -105,7 +105,7 @@ export const boardItemFields = [
 				],
 			},
 		},
-		description: 'The update text to add.',
+		description: 'The update text to add',
 	},
 	/* -------------------------------------------------------------------------- */
 	/*                                 boardItem:changeColumnValue                */
@@ -129,7 +129,7 @@ export const boardItemFields = [
 				],
 			},
 		},
-		description: 'The unique identifier of the board.',
+		description: 'The unique identifier of the board',
 	},
 	{
 		displayName: 'Item ID',
@@ -147,7 +147,7 @@ export const boardItemFields = [
 				],
 			},
 		},
-		description: 'The unique identifier of the item to to change column of.',
+		description: 'The unique identifier of the item to to change column of',
 	},
 	{
 		displayName: 'Column ID',
@@ -171,7 +171,7 @@ export const boardItemFields = [
 				],
 			},
 		},
-		description: `The column's unique identifier.`,
+		description: 'The column\'s unique identifier',
 	},
 	{
 		displayName: 'Value',
@@ -189,7 +189,7 @@ export const boardItemFields = [
 				],
 			},
 		},
-		description: 'The column value in JSON format. Documentation can be found <a href="https://monday.com/developers/v2#mutations-section-columns-change-column-value" target="_blank">here</a>.',
+		description: 'The column value in JSON format. Documentation can be found <a href="https://monday.com/developers/v2#mutations-section-columns-change-column-value">here</a>.',
 	},
 	/* -------------------------------------------------------------------------- */
 	/*                                 boardItem:changeMultipleColumnValues       */
@@ -213,7 +213,7 @@ export const boardItemFields = [
 				],
 			},
 		},
-		description: 'The unique identifier of the board.',
+		description: 'The unique identifier of the board',
 	},
 	{
 		displayName: 'Item ID',
@@ -231,7 +231,7 @@ export const boardItemFields = [
 				],
 			},
 		},
-		description: `Item's ID`,
+		description: 'Item\'s ID',
 	},
 	{
 		displayName: 'Column Values',
@@ -249,7 +249,7 @@ export const boardItemFields = [
 				],
 			},
 		},
-		description: 'The column fields and values in JSON format. Documentation can be found <a href="https://monday.com/developers/v2#mutations-section-columns-change-multiple-column-values" target="_blank">here</a>.',
+		description: 'The column fields and values in JSON format. Documentation can be found <a href="https://monday.com/developers/v2#mutations-section-columns-change-multiple-column-values">here</a>.',
 		typeOptions: {
 			alwaysOpenEditWindow: true,
 		},
@@ -316,7 +316,7 @@ export const boardItemFields = [
 			},
 		},
 		default: '',
-		description: `The new item's name.`,
+		description: 'The new item\'s name',
 	},
 	{
 		displayName: 'Additional Fields',
@@ -366,7 +366,7 @@ export const boardItemFields = [
 				],
 			},
 		},
-		description: `Item's ID`,
+		description: 'Item\'s ID',
 	},
 	/* -------------------------------------------------------------------------- */
 	/*                                 boardItem:get                              */
@@ -387,7 +387,7 @@ export const boardItemFields = [
 				],
 			},
 		},
-		description: `Item's ID (Multiple can be added separated by comma)`,
+		description: 'Item\'s ID (Multiple can be added separated by comma)',
 	},
 	/* -------------------------------------------------------------------------- */
 	/*                                 boardItem:getAll                           */
@@ -450,7 +450,7 @@ export const boardItemFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -474,7 +474,7 @@ export const boardItemFields = [
 			maxValue: 100,
 		},
 		default: 50,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	/* -------------------------------------------------------------------------- */
 	/*                                 boardItem:getByColumnValue                 */
@@ -498,7 +498,7 @@ export const boardItemFields = [
 				],
 			},
 		},
-		description: 'The unique identifier of the board.',
+		description: 'The unique identifier of the board',
 	},
 	{
 		displayName: 'Column ID',
@@ -522,7 +522,7 @@ export const boardItemFields = [
 				],
 			},
 		},
-		description: `The column's unique identifier.`,
+		description: 'The column\'s unique identifier',
 	},
 	{
 		displayName: 'Column Value',
@@ -540,7 +540,7 @@ export const boardItemFields = [
 				],
 			},
 		},
-		description: 'The column value to search items by.',
+		description: 'The column value to search items by',
 	},
 	{
 		displayName: 'Return All',
@@ -557,7 +557,7 @@ export const boardItemFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -581,7 +581,7 @@ export const boardItemFields = [
 			maxValue: 100,
 		},
 		default: 50,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	/* -------------------------------------------------------------------------- */
 	/*                                 boardItem:move                             */
@@ -622,7 +622,7 @@ export const boardItemFields = [
 			},
 		},
 		default: '',
-		description: `The item's ID`,
+		description: 'The item\'s ID',
 	},
 	{
 		displayName: 'Group ID',
@@ -647,4 +647,4 @@ export const boardItemFields = [
 			},
 		},
 	},
-] as INodeProperties[];
+];

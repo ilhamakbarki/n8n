@@ -1,12 +1,13 @@
 import {
 	INodeProperties,
- } from 'n8n-workflow';
+} from 'n8n-workflow';
 
-export const timeEntryTagOperations = [
+export const timeEntryTagOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -28,19 +29,18 @@ export const timeEntryTagOperations = [
 			{
 				name: 'Remove',
 				value: 'remove',
-				description:'Remove tag from time entry',
+				description: 'Remove tag from time entry',
 			},
 		],
 		default: 'add',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const timeEntryTagFields = [
+export const timeEntryTagFields: INodeProperties[] = [
 
-/* -------------------------------------------------------------------------- */
-/*                                timeEntryTag:getAll                         */
-/* -------------------------------------------------------------------------- */
+	/* -------------------------------------------------------------------------- */
+	/*                                timeEntryTag:getAll                         */
+	/* -------------------------------------------------------------------------- */
 	{
 		displayName: 'Team ID',
 		name: 'team',
@@ -76,7 +76,7 @@ export const timeEntryTagFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -100,11 +100,12 @@ export const timeEntryTagFields = [
 			maxValue: 10,
 		},
 		default: 5,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
-/* -------------------------------------------------------------------------- */
-/*                                timeEntryTag:add                            */
-/* -------------------------------------------------------------------------- */
+
+	/* -------------------------------------------------------------------------- */
+	/*                                timeEntryTag:add                            */
+	/* -------------------------------------------------------------------------- */
 	{
 		displayName: 'Team ID',
 		name: 'team',
@@ -188,9 +189,10 @@ export const timeEntryTagFields = [
 			},
 		],
 	},
-/* -------------------------------------------------------------------------- */
-/*                                timeEntryTag:remove                         */
-/* -------------------------------------------------------------------------- */
+
+	/* -------------------------------------------------------------------------- */
+	/*                                timeEntryTag:remove                         */
+	/* -------------------------------------------------------------------------- */
 	{
 		displayName: 'Team ID',
 		name: 'team',
@@ -251,4 +253,4 @@ export const timeEntryTagFields = [
 		},
 		required: true,
 	},
-] as INodeProperties[];
+];

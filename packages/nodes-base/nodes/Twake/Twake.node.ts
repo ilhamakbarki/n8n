@@ -9,6 +9,7 @@ import {
 	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
+	NodeOperationError,
 } from 'n8n-workflow';
 
 import {
@@ -26,7 +27,6 @@ export class Twake implements INodeType {
 		description: 'Consume Twake API',
 		defaults: {
 			name: 'Twake',
-			color: '#7168ee',
 		},
 		inputs: ['main'],
 		outputs: ['main'],
@@ -75,6 +75,7 @@ export class Twake implements INodeType {
 				displayName: 'Resource',
 				name: 'resource',
 				type: 'options',
+				noDataExpression: true,
 				options: [
 					{
 						name: 'Message',
@@ -83,12 +84,12 @@ export class Twake implements INodeType {
 					},
 				],
 				default: 'message',
-				description: 'The operation to perform.',
 			},
 			{
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				displayOptions: {
 					show: {
 						resource: [
@@ -104,7 +105,6 @@ export class Twake implements INodeType {
 					},
 				],
 				default: 'send',
-				description: 'The operation to perform.',
 			},
 			{
 				displayName: 'Channel ID',
@@ -121,7 +121,7 @@ export class Twake implements INodeType {
 					},
 				},
 				default: '',
-				description: `Channel's ID`,
+				description: 'Channel\'s ID',
 			},
 			{
 				displayName: 'Content',
@@ -164,7 +164,6 @@ export class Twake implements INodeType {
 						name: 'senderName',
 						type: 'string',
 						default: '',
-						description: 'Sender name',
 					},
 				],
 			},
@@ -176,7 +175,7 @@ export class Twake implements INodeType {
 			async getChannels(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				const responseData = await twakeApiRequest.call(this, 'POST', '/channel', {});
 				if (responseData === undefined) {
-					throw new Error('No data got returned');
+					throw new NodeOperationError(this.getNode(), 'No data got returned');
 				}
 
 				const returnData: INodePropertyOptions[] = [];
@@ -194,7 +193,7 @@ export class Twake implements INodeType {
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 		const returnData: IDataObject[] = [];
-		const length = (items.length as unknown) as number;
+		const length = items.length;
 		const qs: IDataObject = {};
 		let responseData;
 		const resource = this.getNodeParameter('resource', 0) as string;

@@ -2,11 +2,12 @@ import {
 	INodeProperties,
  } from 'n8n-workflow';
 
-export const conditionFields = [
+export const conditionFields: INodeProperties[] = [
 	{
 		displayName: 'Resource',
 		name: 'resource',
 		type: 'options',
+		noDataExpression: true,
 		options: [
 			{
 				name: 'Ticket',
@@ -50,6 +51,7 @@ export const conditionFields = [
 		],
 		default: 'status',
 	},
+	// eslint-disable-next-line n8n-nodes-base/node-param-operation-without-no-data-expression
 	{
 		displayName: 'Operation',
 		name: 'operation',
@@ -105,6 +107,7 @@ export const conditionFields = [
 		},
 		default: 'is',
 	},
+	// eslint-disable-next-line n8n-nodes-base/node-param-operation-without-no-data-expression
 	{
 		displayName: 'Operation',
 		name: 'operation',
@@ -333,4 +336,4 @@ export const conditionFields = [
 		},
 		default: '',
 	},
-] as INodeProperties[];
+];

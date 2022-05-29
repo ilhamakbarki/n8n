@@ -10,6 +10,8 @@ import {
 	INodeType,
 	INodeTypeDescription,
 	IWebhookResponseData,
+	NodeApiError,
+	NodeOperationError,
 } from 'n8n-workflow';
 
 import {
@@ -24,10 +26,9 @@ export class GetResponseTrigger implements INodeType {
 		icon: 'file:getResponse.png',
 		group: ['trigger'],
 		version: 1,
-		description: 'Starts the workflow when GetResponse events occure.',
+		description: 'Starts the workflow when GetResponse events occur',
 		defaults: {
 			name: 'GetResponse Trigger',
-			color: '#00afec',
 		},
 		inputs: [],
 		outputs: ['main'],
@@ -79,7 +80,6 @@ export class GetResponseTrigger implements INodeType {
 					},
 				],
 				default: 'apiKey',
-				description: 'The resource to operate on.',
 			},
 			{
 				displayName: 'Events',
@@ -89,27 +89,27 @@ export class GetResponseTrigger implements INodeType {
 					{
 						name: 'Customer Subscribed',
 						value: 'subscribe',
-						description: 'Receive notifications when a customer is subscribed to a list.',
+						description: 'Receive notifications when a customer is subscribed to a list',
 					},
 					{
 						name: 'Customer Unsubscribed',
 						value: 'unsubscribe',
-						description: 'Receive notifications when a customer is unsubscribed from a list.',
+						description: 'Receive notifications when a customer is unsubscribed from a list',
 					},
 					{
 						name: 'Email Opened',
 						value: 'open',
-						description: 'Receive notifications when a email is opened.',
+						description: 'Receive notifications when a email is opened',
 					},
 					{
 						name: 'Email Clicked',
 						value: 'click',
-						description: 'Receive notifications when a email is clicked.',
+						description: 'Receive notifications when a email is clicked',
 					},
 					{
 						name: 'Survey Submitted',
 						value: 'survey',
-						description: 'Receive notifications when a survey is submitted.',
+						description: 'Receive notifications when a survey is submitted',
 					},
 				],
 				default: [],
@@ -136,7 +136,7 @@ export class GetResponseTrigger implements INodeType {
 						name: 'delete',
 						type: 'boolean',
 						default: false,
-						description: 'Delete the current subscription.',
+						description: 'Delete the current subscription',
 					},
 				],
 			},
@@ -174,11 +174,11 @@ export class GetResponseTrigger implements INodeType {
 
 					if (data.url !== webhookUrl) {
 						if (deleteCurrentSubscription === false) {
-							throw new Error(`The webhook (${data.url}) is active in the account. Delete it manually or set the parameter "Delete Current Subscription" to true, and the node will delete it for you.`);
+							throw new NodeApiError(this.getNode(), data, { message: `The webhook (${data.url}) is active in the account. Delete it manually or set the parameter "Delete Current Subscription" to true, and the node will delete it for you.` });
 						}
 					}
 				} catch (error) {
-					if (error.message.includes('[404]')) {
+					if (error.httpCode === '404') {
 						return false;
 					}
 				}
@@ -206,7 +206,7 @@ export class GetResponseTrigger implements INodeType {
 			async delete(this: IHookFunctions): Promise<boolean> {
 				try {
 					await getresponseApiRequest.call(this, 'DELETE', '/accounts/callbacks');
-				} catch (e) {
+				} catch (error) {
 					return false;
 				}
 

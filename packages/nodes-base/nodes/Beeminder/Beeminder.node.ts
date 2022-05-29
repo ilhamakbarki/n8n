@@ -10,6 +10,7 @@ import {
 	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
+	NodeOperationError,
 } from 'n8n-workflow';
 
 import {
@@ -23,7 +24,7 @@ import {
 	beeminderApiRequest,
 } from './GenericFunctions';
 
-import * as moment from 'moment-timezone';
+import moment from 'moment-timezone';
 
 export class Beeminder implements INodeType {
 	description: INodeTypeDescription = {
@@ -35,7 +36,6 @@ export class Beeminder implements INodeType {
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		defaults: {
 			name: 'Beeminder',
-			color: '#FFCB06',
 		},
 		icon: 'file:beeminder.png',
 		inputs: ['main'],
@@ -51,6 +51,7 @@ export class Beeminder implements INodeType {
 				displayName: 'Resource',
 				name: 'resource',
 				type: 'options',
+				noDataExpression: true,
 				required: true,
 				options: [
 					{
@@ -59,36 +60,35 @@ export class Beeminder implements INodeType {
 					},
 				],
 				default: 'datapoint',
-				description: 'The resource to operate on.',
 			},
 			{
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				options: [
 					{
 						name: 'Create',
 						value: 'create',
-						description: 'Create datapoint for goal.',
+						description: 'Create datapoint for goal',
 					},
 					{
 						name: 'Delete',
 						value: 'delete',
-						description: 'Delete a datapoint.',
+						description: 'Delete a datapoint',
 					},
 					{
 						name: 'Get All',
 						value: 'getAll',
-						description: 'Get all datapoints for a goal.',
+						description: 'Get all datapoints for a goal',
 					},
 					{
 						name: 'Update',
 						value: 'update',
-						description: 'Update a datapoint.',
+						description: 'Update a datapoint',
 					},
 				],
 				default: 'create',
-				description: 'The operation to perform.',
 				required: true,
 			},
 			{
@@ -106,7 +106,7 @@ export class Beeminder implements INodeType {
 					},
 				},
 				default: '',
-				description: 'The name of the goal.',
+				description: 'The name of the goal',
 				required: true,
 			},
 			{
@@ -124,7 +124,7 @@ export class Beeminder implements INodeType {
 					},
 				},
 				default: false,
-				description: 'If all results should be returned or only up to a given limit.',
+				description: 'Whether to return all results or only up to a given limit',
 			},
 			{
 				displayName: 'Limit',
@@ -148,7 +148,7 @@ export class Beeminder implements INodeType {
 					maxValue: 300,
 				},
 				default: 30,
-				description: 'How many results to return.',
+				description: 'Max number of results to return',
 			},
 			{
 				displayName: 'Value',
@@ -156,7 +156,7 @@ export class Beeminder implements INodeType {
 				type: 'number',
 				default: 1,
 				placeholder: '',
-				description: 'Datapoint value to send.',
+				description: 'Datapoint value to send',
 				displayOptions: {
 					show: {
 						resource: [
@@ -174,7 +174,6 @@ export class Beeminder implements INodeType {
 				name: 'datapointId',
 				type: 'string',
 				default: '',
-				description: 'Datapoint id',
 				displayOptions: {
 					show: {
 						operation: [
@@ -207,7 +206,6 @@ export class Beeminder implements INodeType {
 						name: 'comment',
 						type: 'string',
 						default: '',
-						description: 'Comment',
 					},
 					{
 						displayName: 'Timestamp',
@@ -215,7 +213,7 @@ export class Beeminder implements INodeType {
 						type: 'dateTime',
 						default: '',
 						placeholder: '',
-						description: 'Defaults to "now" if none is passed in, or the existing timestamp if the datapoint is being updated rather than created.',
+						description: 'Defaults to "now" if none is passed in, or the existing timestamp if the datapoint is being updated rather than created',
 					},
 					{
 						displayName: 'Request ID',
@@ -223,7 +221,7 @@ export class Beeminder implements INodeType {
 						type: 'string',
 						default: '',
 						placeholder: '',
-						description: 'String to uniquely identify a datapoint.',
+						description: 'String to uniquely identify a datapoint',
 					},
 				],
 			},
@@ -250,7 +248,7 @@ export class Beeminder implements INodeType {
 						type: 'string',
 						default: 'id',
 						placeholder: '',
-						description: 'Attribute to sort on.',
+						description: 'Attribute to sort on',
 					},
 				],
 			},
@@ -277,14 +275,13 @@ export class Beeminder implements INodeType {
 						type: 'number',
 						default: 1,
 						placeholder: '',
-						description: 'Datapoint value to send.',
+						description: 'Datapoint value to send',
 					},
 					{
 						displayName: 'Comment',
 						name: 'comment',
 						type: 'string',
 						default: '',
-						description: 'Comment',
 					},
 					{
 						displayName: 'Timestamp',
@@ -292,7 +289,7 @@ export class Beeminder implements INodeType {
 						type: 'dateTime',
 						default: '',
 						placeholder: '',
-						description: 'Defaults to "now" if none is passed in, or the existing timestamp if the datapoint is being updated rather than created.',
+						description: 'Defaults to "now" if none is passed in, or the existing timestamp if the datapoint is being updated rather than created',
 					},
 				],
 			},
@@ -305,11 +302,7 @@ export class Beeminder implements INodeType {
 			// select them easily
 			async getGoals(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 
-				const credentials = this.getCredentials('beeminderApi');
-
-				if (credentials === undefined) {
-					throw new Error('No credentials got returned!');
-				}
+				const credentials = await this.getCredentials('beeminderApi');
 
 				const endpoint = `/users/${credentials.user}/goals.json`;
 
@@ -330,7 +323,7 @@ export class Beeminder implements INodeType {
 
 		const items = this.getInputData();
 		const returnData: IDataObject[] = [];
-		const length = items.length as unknown as number;
+		const length = items.length;
 		const timezone = this.getTimezone();
 
 		const resource = this.getNodeParameter('resource', 0) as string;
@@ -339,60 +332,66 @@ export class Beeminder implements INodeType {
 
 
 		for (let i = 0; i < length; i++) {
+			try {
+				if (resource === 'datapoint') {
+					const goalName = this.getNodeParameter('goalName', i) as string;
+					if (operation === 'create') {
+						const value = this.getNodeParameter('value', i) as number;
+						const options = this.getNodeParameter('additionalFields', i) as INodeParameters;
+						const data: IDataObject = {
+							value,
+							goalName,
+						};
+						Object.assign(data, options);
 
-			if (resource === 'datapoint') {
-				const goalName = this.getNodeParameter('goalName', i) as string;
-				if (operation === 'create') {
-					const value = this.getNodeParameter('value', i) as number;
-					const options = this.getNodeParameter('additionalFields', i) as INodeParameters;
-					const data: IDataObject = {
-						value,
-						goalName,
-					};
-					Object.assign(data, options);
-
-					if (data.timestamp) {
-						data.timestamp = moment.tz(data.timestamp, timezone).unix();
+						if (data.timestamp) {
+							data.timestamp = moment.tz(data.timestamp, timezone).unix();
+						}
+						results = await createDatapoint.call(this, data);
 					}
-					results = await createDatapoint.call(this, data);
-				}
-				else if (operation === 'getAll') {
-					const returnAll = this.getNodeParameter('returnAll', i) as boolean;
-					const options = this.getNodeParameter('options', i) as INodeParameters;
-					const data: IDataObject = {
-						goalName,
-					};
-					Object.assign(data, options);
+					else if (operation === 'getAll') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						const options = this.getNodeParameter('options', i) as INodeParameters;
+						const data: IDataObject = {
+							goalName,
+						};
+						Object.assign(data, options);
 
-					if (returnAll === false) {
-						data.count = this.getNodeParameter('limit', 0) as number;
-					}
+						if (returnAll === false) {
+							data.count = this.getNodeParameter('limit', 0) as number;
+						}
 
-					results = await getAllDatapoints.call(this, data);
-				}
-				else if (operation === 'update') {
-					const datapointId = this.getNodeParameter('datapointId', i) as string;
-					const options = this.getNodeParameter('updateFields', i) as INodeParameters;
-					const data: IDataObject = {
-						goalName,
-						datapointId,
-					};
-					Object.assign(data, options);
-					if (data.timestamp) {
-						data.timestamp = moment.tz(data.timestamp, timezone).unix();
+						results = await getAllDatapoints.call(this, data);
 					}
-					results = await updateDatapoint.call(this, data);
+					else if (operation === 'update') {
+						const datapointId = this.getNodeParameter('datapointId', i) as string;
+						const options = this.getNodeParameter('updateFields', i) as INodeParameters;
+						const data: IDataObject = {
+							goalName,
+							datapointId,
+						};
+						Object.assign(data, options);
+						if (data.timestamp) {
+							data.timestamp = moment.tz(data.timestamp, timezone).unix();
+						}
+						results = await updateDatapoint.call(this, data);
+					}
+					else if (operation === 'delete') {
+						const datapointId = this.getNodeParameter('datapointId', i) as string;
+						const data: IDataObject = {
+							goalName,
+							datapointId,
+						};
+						results = await deleteDatapoint.call(this, data);
+					}
 				}
-				else if (operation === 'delete') {
-					const datapointId = this.getNodeParameter('datapointId', i) as string;
-					const data: IDataObject = {
-						goalName,
-						datapointId,
-					};
-					results = await deleteDatapoint.call(this, data);
+			} catch (error) {
+				if (this.continueOnFail()) {
+					returnData.push({ error: error.message });
+					continue;
 				}
+				throw error;
 			}
-
 			if (Array.isArray(results)) {
 				returnData.push.apply(returnData, results as IDataObject[]);
 			} else {

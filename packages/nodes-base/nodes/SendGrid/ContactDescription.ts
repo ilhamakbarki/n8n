@@ -2,11 +2,12 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export const contactOperations = [
+export const contactOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -18,7 +19,7 @@ export const contactOperations = [
 			{
 				name: 'Create/Update',
 				value: 'upsert',
-				description: 'Create/update a contact',
+				description: 'Create a new contact, or update the current one if it already exists (upsert)',
 			},
 			{
 				name: 'Delete',
@@ -37,11 +38,10 @@ export const contactOperations = [
 			},
 		],
 		default: 'upsert',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const contactFields = [
+export const contactFields: INodeProperties[] = [
 	/* -------------------------------------------------------------------------- */
 	/*                                 contact:getAll                             */
 	/* -------------------------------------------------------------------------- */
@@ -60,7 +60,7 @@ export const contactFields = [
 			},
 		},
 		default: false,
-		description: 'If set to true, all the results will be returned.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -84,7 +84,7 @@ export const contactFields = [
 			maxValue: 1000,
 		},
 		default: 100,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	{
 		displayName: 'Filters',
@@ -108,7 +108,7 @@ export const contactFields = [
 				name: 'query',
 				type: 'string',
 				default: '',
-				description: 'The query field accepts valid  <a href="https://sendgrid.com/docs/for-developers/sending-email/segmentation-query-language/" target="_blank">SGQL</a> for searching for a contact.',
+				description: 'The query field accepts valid <a href="https://sendgrid.com/docs/for-developers/sending-email/segmentation-query-language/">SGQL</a> for searching for a contact',
 			},
 		],
 	},
@@ -132,7 +132,7 @@ export const contactFields = [
 			},
 		},
 		default: '',
-		description: 'Primary email for the contact.',
+		description: 'Primary email for the contact',
 	},
 	{
 		displayName: 'Additional Fields',
@@ -227,7 +227,7 @@ export const contactFields = [
 				displayName: 'List IDs',
 				name: 'listIdsUi',
 				placeholder: 'List IDs',
-				description: 'Adds a custom field to set also values which have not been predefined.',
+				description: 'Adds a custom field to set also values which have not been predefined',
 				type: 'fixedCollection',
 				default: {},
 				options: [
@@ -242,8 +242,8 @@ export const contactFields = [
 								typeOptions: {
 									loadOptionsMethod: 'getListIds',
 								},
-								default: '',
-								description: 'ID of the field to set.',
+								default: [],
+								description: 'ID of the field to set',
 							},
 						],
 					},
@@ -295,6 +295,7 @@ export const contactFields = [
 		displayName: 'Contact IDs',
 		name: 'ids',
 		type: 'string',
+		default: '',
 		displayOptions: {
 			show: {
 				resource: [
@@ -325,7 +326,7 @@ export const contactFields = [
 			},
 		},
 		default: false,
-		description: 'If set to true, all contacts will be deleted.',
+		description: 'If set to true, all contacts will be deleted',
 	},
 
 	/* -------------------------------------------------------------------------- */
@@ -357,7 +358,7 @@ export const contactFields = [
 			},
 		},
 		default: 'id',
-		description: 'Search the user by ID or email.',
+		description: 'Search the user by ID or email',
 	},
 	{
 		displayName: 'Contact ID',
@@ -378,7 +379,7 @@ export const contactFields = [
 			},
 		},
 		default: '',
-		description: 'ID of the contact.',
+		description: 'ID of the contact',
 	},
 	{
 		displayName: 'Email',
@@ -399,6 +400,6 @@ export const contactFields = [
 			},
 		},
 		default: '',
-		description: 'Email of the contact.',
+		description: 'Email of the contact',
 	},
-] as INodeProperties[];
+];

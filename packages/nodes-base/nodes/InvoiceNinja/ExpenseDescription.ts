@@ -1,10 +1,11 @@
 import { INodeProperties } from 'n8n-workflow';
 
-export const expenseOperations = [
+export const expenseOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -35,11 +36,10 @@ export const expenseOperations = [
 			},
 		],
 		default: 'create',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const expenseFields = [
+export const expenseFields: INodeProperties[] = [
 /* -------------------------------------------------------------------------- */
 /*                                 expense:create                             */
 /* -------------------------------------------------------------------------- */
@@ -208,14 +208,6 @@ export const expenseFields = [
 						value: 22,
 					},
 					{
-						name: 'Solo',
-						value: 22,
-					},
-					{
-						name: 'Swich',
-						value: 23,
-					},
-					{
 						name: 'Swich',
 						value: 23,
 					},
@@ -324,6 +316,7 @@ export const expenseFields = [
 		displayName: 'Expense ID',
 		name: 'expenseId',
 		type: 'string',
+		default: '',
 		required: true,
 		displayOptions: {
 			show: {
@@ -343,6 +336,7 @@ export const expenseFields = [
 		displayName: 'Expense ID',
 		name: 'expenseId',
 		type: 'string',
+		default: '',
 		required: true,
 		displayOptions: {
 			show: {
@@ -373,7 +367,7 @@ export const expenseFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -397,6 +391,6 @@ export const expenseFields = [
 			maxValue: 60,
 		},
 		default: 50,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
-] as INodeProperties[];
+];

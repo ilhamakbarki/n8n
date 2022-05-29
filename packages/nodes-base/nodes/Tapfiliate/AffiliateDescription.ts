@@ -2,11 +2,12 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export const affiliateOperations = [
+export const affiliateOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -37,11 +38,10 @@ export const affiliateOperations = [
 			},
 		],
 		default: 'create',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const affiliateFields = [
+export const affiliateFields: INodeProperties[] = [
 	/* -------------------------------------------------------------------------- */
 	/*                                 affiliate:create                           */
 	/* -------------------------------------------------------------------------- */
@@ -61,7 +61,7 @@ export const affiliateFields = [
 				],
 			},
 		},
-		description: `The affiliate’s email.`,
+		description: 'The affiliate’s email',
 	},
 	{
 		displayName: 'First Name',
@@ -79,7 +79,7 @@ export const affiliateFields = [
 			},
 		},
 		default: '',
-		description: `The affiliate’s firstname.`,
+		description: 'The affiliate’s firstname',
 	},
 	{
 		displayName: 'Last Name',
@@ -97,7 +97,7 @@ export const affiliateFields = [
 			},
 		},
 		default: '',
-		description: `The affiliate’s lastname.`,
+		description: 'The affiliate’s lastname',
 	},
 	{
 		displayName: 'Additional Fields',
@@ -165,7 +165,7 @@ export const affiliateFields = [
 								name: 'country',
 								type: 'string',
 								default: '',
-								description: `The country’s ISO_3166-1 code. <a target="_blank" href="https://en.wikipedia.org/wiki/ISO_3166-1">Codes</a>.`,
+								description: 'The country’s ISO_3166-1 code. <a href="https://en.wikipedia.org/wiki/ISO_3166-1">Codes</a>.',
 							},
 						],
 					},
@@ -176,7 +176,7 @@ export const affiliateFields = [
 				name: 'companyName',
 				type: 'string',
 				default: '',
-				description: `The affiliate’s company data,`,
+				description: 'The affiliate’s company data',
 			},
 		],
 	},
@@ -189,6 +189,7 @@ export const affiliateFields = [
 		name: 'affiliateId',
 		required: true,
 		type: 'string',
+		default: '',
 		displayOptions: {
 			show: {
 				resource: [
@@ -199,7 +200,7 @@ export const affiliateFields = [
 				],
 			},
 		},
-		description: 'The ID of the affiliate.',
+		description: 'The ID of the affiliate',
 	},
 
 	/* -------------------------------------------------------------------------- */
@@ -210,6 +211,7 @@ export const affiliateFields = [
 		name: 'affiliateId',
 		type: 'string',
 		required: true,
+		default: '',
 		displayOptions: {
 			show: {
 				resource: [
@@ -220,7 +222,7 @@ export const affiliateFields = [
 				],
 			},
 		},
-		description: 'The ID of the affiliate.',
+		description: 'The ID of the affiliate',
 	},
 
 	/* -------------------------------------------------------------------------- */
@@ -241,7 +243,7 @@ export const affiliateFields = [
 			},
 		},
 		default: false,
-		description: 'If set to true, all the results will be returned.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -265,7 +267,7 @@ export const affiliateFields = [
 			maxValue: 1000,
 		},
 		default: 100,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	{
 		displayName: 'Filters',
@@ -289,14 +291,13 @@ export const affiliateFields = [
 				name: 'affiliate_group_id',
 				type: 'string',
 				default: '',
-				description: 'Retrieves affiliates for a certain affiliate group.',
+				description: 'Retrieves affiliates for a certain affiliate group',
 			},
 			{
 				displayName: 'Click ID',
 				name: 'click_id',
 				type: 'string',
 				default: '',
-				description: 'Click ID.',
 			},
 			{
 				displayName: 'Email',
@@ -310,7 +311,7 @@ export const affiliateFields = [
 				name: 'parentId',
 				type: 'string',
 				default: '',
-				description: 'Retrieves children for a certain parent affiliate.',
+				description: 'Retrieves children for a certain parent affiliate',
 			},
 			{
 				displayName: 'Referral Code',
@@ -324,8 +325,7 @@ export const affiliateFields = [
 				name: 'source_id',
 				type: 'string',
 				default: '',
-				description: 'The Source ID.',
 			},
 		],
 	},
-] as INodeProperties[];
+];

@@ -59,7 +59,6 @@ export class Rocketchat implements INodeType {
 		description: 'Consume RocketChat API',
 		defaults: {
 			name: 'RocketChat',
-			color: '#c02428',
 		},
 		inputs: ['main'],
 		outputs: ['main'],
@@ -74,6 +73,7 @@ export class Rocketchat implements INodeType {
 				displayName: 'Resource',
 				name: 'resource',
 				type: 'options',
+				noDataExpression: true,
 				options: [
 					{
 						name: 'Chat',
@@ -81,12 +81,12 @@ export class Rocketchat implements INodeType {
 					},
 				],
 				default: 'chat',
-				description: 'The resource to operate on.',
 			},
 			{
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				displayOptions: {
 					show: {
 						resource: [
@@ -102,7 +102,6 @@ export class Rocketchat implements INodeType {
 					},
 				],
 				default: 'postMessage',
-				description: 'The operation to perform.',
 			},
 			{
 				displayName: 'Channel',
@@ -120,7 +119,7 @@ export class Rocketchat implements INodeType {
 					},
 				},
 				default: '',
-				description: 'The channel name with the prefix in front of it.',
+				description: 'The channel name with the prefix in front of it',
 			},
 			{
 				displayName: 'Text',
@@ -137,14 +136,13 @@ export class Rocketchat implements INodeType {
 					},
 				},
 				default: '',
-				description: 'The text of the message to send, is optional because of attachments.',
+				description: 'The text of the message to send, is optional because of attachments',
 			},
 			{
 				displayName: 'JSON Parameters',
 				name: 'jsonParameters',
 				type: 'boolean',
 				default: false,
-				description: '',
 				displayOptions: {
 					show: {
 						resource: [
@@ -178,21 +176,21 @@ export class Rocketchat implements INodeType {
 						name: 'alias',
 						type: 'string',
 						default: '',
-						description: 'This will cause the message’s name to appear as the given alias, but your username will still display.',
+						description: 'This will cause the message’s name to appear as the given alias, but your username will still display',
 					},
 					{
 						displayName: 'Avatar',
 						name: 'avatar',
 						type: 'string',
 						default: '',
-						description: 'If provided, this will make the avatar use the provided image url.',
+						description: 'If provided, this will make the avatar use the provided image url',
 					},
 					{
 						displayName: 'Emoji',
 						name: 'emoji',
 						type: 'string',
 						default: '',
-						description: 'This will cause the message’s name to appear as the given alias, but your username will still display.',
+						description: 'This will cause the message’s name to appear as the given alias, but your username will still display',
 					},
 				],
 			},
@@ -226,56 +224,56 @@ export class Rocketchat implements INodeType {
 						name: 'color',
 						type: 'color',
 						default: '#ff0000',
-						description: 'The color you want the order on the left side to be, any value background-css supports.',
+						description: 'The color you want the order on the left side to be, any value background-css supports',
 					},
 					{
 						displayName: 'Text',
 						name: 'text',
 						type: 'string',
 						default: '',
-						description: 'The text to display for this attachment, it is different than the message’s text.',
+						description: 'The text to display for this attachment, it is different than the message’s text',
 					},
 					{
 						displayName: 'Timestamp',
 						name: 'ts',
 						type: 'dateTime',
 						default: '',
-						description: 'Displays the time next to the text portion.',
+						description: 'Displays the time next to the text portion',
 					},
 					{
 						displayName: 'Thumb URL',
 						name: 'thumbUrl',
 						type: 'string',
 						default: '',
-						description: 'An image that displays to the left of the text, looks better when this is relatively small.',
+						description: 'An image that displays to the left of the text, looks better when this is relatively small',
 					},
 					{
 						displayName: 'Message Link',
 						name: 'messageLink',
 						type: 'string',
 						default: '',
-						description: 'Only applicable if the timestamp is provided, as it makes the time clickable to this link.',
+						description: 'Only applicable if the timestamp is provided, as it makes the time clickable to this link',
 					},
 					{
 						displayName: 'Collapsed',
 						name: 'collapsed',
 						type: 'boolean',
 						default: false,
-						description: 'Causes the image, audio, and video sections to be hiding when collapsed is true.',
+						description: 'Causes the image, audio, and video sections to be hiding when collapsed is true',
 					},
 					{
 						displayName: 'Author Name',
 						name: 'authorName',
 						type: 'string',
 						default: '',
-						description: 'Name of the author.',
+						description: 'Name of the author',
 					},
 					{
 						displayName: 'Author Link',
 						name: 'authorLink',
 						type: 'string',
 						default: '',
-						description: 'Providing this makes the author name clickable and points to this link.',
+						description: 'Providing this makes the author name clickable and points to this link',
 					},
 					{
 						displayName: 'Author Icon',
@@ -283,35 +281,35 @@ export class Rocketchat implements INodeType {
 						type: 'string',
 						default: '',
 						placeholder: 'https://site.com/img.png',
-						description: 'Displays a tiny icon to the left of the Author’s name.',
+						description: 'Displays a tiny icon to the left of the Author’s name',
 					},
 					{
 						displayName: 'Title',
 						name: 'title',
 						type: 'string',
 						default: '',
-						description: 'Title to display for this attachment, displays under the author.',
+						description: 'Title to display for this attachment, displays under the author',
 					},
 					{
 						displayName: 'Title Link',
 						name: 'titleLink',
 						type: 'string',
 						default: '',
-						description: 'Providing this makes the title clickable, pointing to this link.',
+						description: 'Providing this makes the title clickable, pointing to this link',
 					},
 					{
 						displayName: 'Title Link Download',
 						name: 'titleLinkDownload',
 						type: 'boolean',
 						default: false,
-						description: 'When this is true, a download icon appears and clicking this saves the link to file.',
+						description: 'When this is true, a download icon appears and clicking this saves the link to file',
 					},
 					{
 						displayName: 'Image URL',
 						name: 'imageUrl',
 						type: 'string',
 						default: '',
-						description: 'The image to display, will be “big” and easy to see.',
+						description: 'The image to display, will be “big” and easy to see',
 					},
 					{
 						displayName: 'Audio URL',
@@ -319,7 +317,7 @@ export class Rocketchat implements INodeType {
 						type: 'string',
 						default: '',
 						placeholder: 'https://site.com/aud.mp3',
-						description: 'Audio file to play, only supports what html audio does.',
+						description: 'Audio file to play, only supports what html audio does',
 					},
 					{
 						displayName: 'video URL',
@@ -327,7 +325,7 @@ export class Rocketchat implements INodeType {
 						type: 'string',
 						default: '',
 						placeholder: 'https://site.com/vid.mp4',
-						description: 'Video file to play, only supports what html video does.',
+						description: 'Video file to play, only supports what html video does',
 					},
 					{
 						displayName: 'Fields',
@@ -337,7 +335,7 @@ export class Rocketchat implements INodeType {
 						typeOptions: {
 							multipleValues: true,
 						},
-						default: '',
+						default: {},
 						options: [
 							{
 								name: 'fieldsValues',
@@ -348,21 +346,21 @@ export class Rocketchat implements INodeType {
 										name: 'short',
 										type: 'boolean',
 										default: false,
-										description: 'Whether this field should be a short field.',
+										description: 'Whether this field should be a short field',
 									},
 									{
 										displayName: 'Title',
 										name: 'title',
 										type: 'string',
 										default: '',
-										description: 'The title of this field.',
+										description: 'The title of this field',
 									},
 									{
 										displayName: 'Value',
 										name: 'value',
 										type: 'string',
 										default: '',
-										description: 'The value of this field, displayed underneath the title value.',
+										description: 'The value of this field, displayed underneath the title value',
 									},
 								],
 							},
@@ -391,116 +389,122 @@ export class Rocketchat implements INodeType {
 					},
 				},
 				default: '',
-				required: false,
-				description: '',
 			},
 		],
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
-		const length = (items.length as unknown) as number;
+		const length = items.length;
 		let responseData;
 		const returnData: IDataObject[] = [];
 		const resource = this.getNodeParameter('resource', 0) as string;
 		const operation = this.getNodeParameter('operation', 0) as string;
 		for (let i = 0; i < length; i++) {
-			if (resource === 'chat') {
-				//https://rocket.chat/docs/developer-guides/rest-api/chat/postmessage
-				if (operation === 'postMessage') {
-					const channel = this.getNodeParameter('channel', i) as string;
-					const text = this.getNodeParameter('text', i) as string;
-					const options = this.getNodeParameter('options', i) as IDataObject;
-					const jsonActive = this.getNodeParameter('jsonParameters', i) as boolean;
+			try {
+				if (resource === 'chat') {
+					//https://rocket.chat/docs/developer-guides/rest-api/chat/postmessage
+					if (operation === 'postMessage') {
+						const channel = this.getNodeParameter('channel', i) as string;
+						const text = this.getNodeParameter('text', i) as string;
+						const options = this.getNodeParameter('options', i) as IDataObject;
+						const jsonActive = this.getNodeParameter('jsonParameters', i) as boolean;
 
-					const body: IPostMessageBody = {
-						channel,
-						text,
-					};
+						const body: IPostMessageBody = {
+							channel,
+							text,
+						};
 
-					if (options.alias) {
-						body.alias = options.alias as string;
-					}
-					if (options.avatar) {
-						body.avatar = options.avatar as string;
-					}
-					if (options.emoji) {
-						body.emoji = options.emoji as string;
-					}
+						if (options.alias) {
+							body.alias = options.alias as string;
+						}
+						if (options.avatar) {
+							body.avatar = options.avatar as string;
+						}
+						if (options.emoji) {
+							body.emoji = options.emoji as string;
+						}
 
-					if (!jsonActive) {
-						const optionsAttachments = this.getNodeParameter('attachments', i) as IDataObject[];
-						if (optionsAttachments.length > 0) {
-							const attachments: IAttachment[] = [];
-							for (let i = 0; i < optionsAttachments.length; i++) {
-								const attachment: IAttachment = {};
-								for (const option of Object.keys(optionsAttachments[i])) {
-									if (option === 'color') {
-										attachment.color = optionsAttachments[i][option] as string;
-									} else if (option === 'text') {
-										attachment.text = optionsAttachments[i][option] as string;
-									} else if (option === 'ts') {
-										attachment.ts = optionsAttachments[i][option] as string;
-									} else if (option === 'messageLinks') {
-										attachment.message_link = optionsAttachments[i][option] as string;
-									} else if (option === 'thumbUrl') {
-										attachment.thumb_url = optionsAttachments[i][option] as string;
-									} else if (option === 'collapsed') {
-										attachment.collapsed = optionsAttachments[i][option] as boolean;
-									} else if (option === 'authorName') {
-										attachment.author_name = optionsAttachments[i][option] as string;
-									} else if (option === 'authorLink') {
-										attachment.author_link = optionsAttachments[i][option] as string;
-									} else if (option === 'authorIcon') {
-										attachment.author_icon = optionsAttachments[i][option] as string;
-									} else if (option === 'title') {
-										attachment.title = optionsAttachments[i][option] as string;
-									} else if (option === 'titleLink') {
-										attachment.title_link = optionsAttachments[i][option] as string;
-									} else if (option === 'titleLinkDownload') {
-										attachment.title_link_download = optionsAttachments[i][option] as boolean;
-									} else if (option === 'imageUrl') {
-										attachment.image_url = optionsAttachments[i][option] as string;
-									} else if (option === 'audioUrl') {
-										attachment.audio_url = optionsAttachments[i][option] as string;
-									} else if (option === 'videoUrl') {
-										attachment.video_url = optionsAttachments[i][option] as string;
-									} else if (option === 'fields') {
-										const fieldsValues = (optionsAttachments[i][option] as IDataObject).fieldsValues as IDataObject[];
-										if (fieldsValues.length > 0) {
-											const fields: IField[] = [];
-											for (let i = 0; i < fieldsValues.length; i++) {
-												const field: IField = {};
-												for (const key of Object.keys(fieldsValues[i])) {
-													if (key === 'short') {
-														field.short = fieldsValues[i][key] as boolean;
-													} else if (key === 'title') {
-														field.title = fieldsValues[i][key] as string;
-													} else if (key === 'value') {
-														field.value = fieldsValues[i][key] as string;
+						if (!jsonActive) {
+							const optionsAttachments = this.getNodeParameter('attachments', i) as IDataObject[];
+							if (optionsAttachments.length > 0) {
+								const attachments: IAttachment[] = [];
+								for (let i = 0; i < optionsAttachments.length; i++) {
+									const attachment: IAttachment = {};
+									for (const option of Object.keys(optionsAttachments[i])) {
+										if (option === 'color') {
+											attachment.color = optionsAttachments[i][option] as string;
+										} else if (option === 'text') {
+											attachment.text = optionsAttachments[i][option] as string;
+										} else if (option === 'ts') {
+											attachment.ts = optionsAttachments[i][option] as string;
+										} else if (option === 'messageLinks') {
+											attachment.message_link = optionsAttachments[i][option] as string;
+										} else if (option === 'thumbUrl') {
+											attachment.thumb_url = optionsAttachments[i][option] as string;
+										} else if (option === 'collapsed') {
+											attachment.collapsed = optionsAttachments[i][option] as boolean;
+										} else if (option === 'authorName') {
+											attachment.author_name = optionsAttachments[i][option] as string;
+										} else if (option === 'authorLink') {
+											attachment.author_link = optionsAttachments[i][option] as string;
+										} else if (option === 'authorIcon') {
+											attachment.author_icon = optionsAttachments[i][option] as string;
+										} else if (option === 'title') {
+											attachment.title = optionsAttachments[i][option] as string;
+										} else if (option === 'titleLink') {
+											attachment.title_link = optionsAttachments[i][option] as string;
+										} else if (option === 'titleLinkDownload') {
+											attachment.title_link_download = optionsAttachments[i][option] as boolean;
+										} else if (option === 'imageUrl') {
+											attachment.image_url = optionsAttachments[i][option] as string;
+										} else if (option === 'audioUrl') {
+											attachment.audio_url = optionsAttachments[i][option] as string;
+										} else if (option === 'videoUrl') {
+											attachment.video_url = optionsAttachments[i][option] as string;
+										} else if (option === 'fields') {
+											const fieldsValues = (optionsAttachments[i][option] as IDataObject).fieldsValues as IDataObject[];
+											if (fieldsValues.length > 0) {
+												const fields: IField[] = [];
+												for (let i = 0; i < fieldsValues.length; i++) {
+													const field: IField = {};
+													for (const key of Object.keys(fieldsValues[i])) {
+														if (key === 'short') {
+															field.short = fieldsValues[i][key] as boolean;
+														} else if (key === 'title') {
+															field.title = fieldsValues[i][key] as string;
+														} else if (key === 'value') {
+															field.value = fieldsValues[i][key] as string;
+														}
 													}
+													fields.push(field);
+													attachment.fields = fields;
 												}
-												fields.push(field);
-												attachment.fields = fields;
 											}
 										}
 									}
+									attachments.push(attachment);
 								}
-								attachments.push(attachment);
+								body.attachments = attachments;
 							}
-							body.attachments = attachments;
+						} else {
+							body.attachments = validateJSON(this.getNodeParameter('attachmentsJson', i) as string);
 						}
-					} else {
-						body.attachments = validateJSON(this.getNodeParameter('attachmentsJson', i) as string);
-					}
 
-					responseData = await rocketchatApiRequest.call(this, '/chat', 'POST', 'postMessage', body);
+						responseData = await rocketchatApiRequest.call(this, '/chat', 'POST', 'postMessage', body);
+					}
 				}
-			}
-			if (Array.isArray(responseData)) {
-				returnData.push.apply(returnData, responseData as IDataObject[]);
-			} else if (responseData !== undefined) {
-				returnData.push(responseData as IDataObject);
+				if (Array.isArray(responseData)) {
+					returnData.push.apply(returnData, responseData as IDataObject[]);
+				} else if (responseData !== undefined) {
+					returnData.push(responseData as IDataObject);
+				}
+			} catch (error) {
+				if (this.continueOnFail()) {
+					returnData.push({ error: error.message });
+					continue;
+				}
+				throw error;
 			}
 		}
 

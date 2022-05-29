@@ -2,11 +2,12 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export const accountOperations = [
+export const accountOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -26,6 +27,16 @@ export const accountOperations = [
 				description: 'Create an account',
 			},
 			{
+				name: 'Create or Update',
+				value: 'upsert',
+				description: 'Create a new account, or update the current one if it already exists (upsert)',
+			},
+			{
+				name: 'Delete',
+				value: 'delete',
+				description: 'Delete an account',
+			},
+			{
 				name: 'Get',
 				value: 'get',
 				description: 'Get an account',
@@ -38,12 +49,7 @@ export const accountOperations = [
 			{
 				name: 'Get Summary',
 				value: 'getSummary',
-				description: `Returns an overview of account's metadata.`,
-			},
-			{
-				name: 'Delete',
-				value: 'delete',
-				description: 'Delete an account',
+				description: 'Returns an overview of account\'s metadata',
 			},
 			{
 				name: 'Update',
@@ -52,15 +58,56 @@ export const accountOperations = [
 			},
 		],
 		default: 'create',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const accountFields = [
+export const accountFields: INodeProperties[] = [
 
 	/* -------------------------------------------------------------------------- */
 	/*                                account:create                              */
 	/* -------------------------------------------------------------------------- */
+	{
+		displayName: 'Match Against',
+		name: 'externalId',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'getExternalIdFields',
+			loadOptionsDependsOn: [
+				'resource',
+			],
+		},
+		required: true,
+		default: '',
+		displayOptions: {
+			show: {
+				resource: [
+					'account',
+				],
+				operation: [
+					'upsert',
+				],
+			},
+		},
+		description: 'The field to check to see if the account already exists',
+	},
+	{
+		displayName: 'Value to Match',
+		name: 'externalIdValue',
+		type: 'string',
+		required: true,
+		default: '',
+		displayOptions: {
+			show: {
+				resource: [
+					'account',
+				],
+				operation: [
+					'upsert',
+				],
+			},
+		},
+		description: 'If this value exists in the \'match against\' field, update the account. Otherwise create a new one.',
+	},
 	{
 		displayName: 'Name',
 		name: 'name',
@@ -74,6 +121,7 @@ export const accountFields = [
 				],
 				operation: [
 					'create',
+					'upsert',
 				],
 			},
 		},
@@ -92,19 +140,17 @@ export const accountFields = [
 				],
 				operation: [
 					'create',
+					'upsert',
 				],
 			},
 		},
 		options: [
 			{
-				displayName: 'Account Source',
-				name: 'accountSource',
-				type: 'options',
-				typeOptions: {
-					loadOptionsMethod: 'getAccountSources',
-				},
+				displayName: 'Account Number',
+				name: 'accountNumber',
+				type: 'string',
 				default: '',
-				description: 'The source of the account record.',
+				description: 'Account number assigned to this account (not the unique ID). Maximum size is 40 characters.',
 			},
 			{
 				displayName: 'Annual Revenue',
@@ -114,7 +160,17 @@ export const accountFields = [
 					numberPrecision: 2,
 				},
 				default: '',
-				description: 'Estimated annual revenue of the account.',
+				description: 'Estimated annual revenue of the account',
+			},
+			{
+				displayName: 'Account Source',
+				name: 'accountSource',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getAccountSources',
+				},
+				default: '',
+				description: 'The source of the account record',
 			},
 			{
 				displayName: 'Billing City',
@@ -149,7 +205,7 @@ export const accountFields = [
 				name: 'billingStreet',
 				type: 'string',
 				default: '',
-				description: 'Street address for the billing address of this account.',
+				description: 'Street address for the billing address of this account',
 			},
 			{
 				displayName: 'Custom Fields',
@@ -159,7 +215,7 @@ export const accountFields = [
 				typeOptions: {
 					multipleValues: true,
 				},
-				description: 'Filter by custom fields ',
+				description: 'Filter by custom fields',
 				default: {},
 				options: [
 					{
@@ -171,17 +227,17 @@ export const accountFields = [
 								name: 'fieldId',
 								type: 'options',
 								typeOptions: {
-									loadOptionsMethod: 'getLeadCustomFields',
+									loadOptionsMethod: 'getCustomFields',
 								},
 								default: '',
-								description: 'The ID of the field to add custom field to.',
+								description: 'The ID of the field to add custom field to',
 							},
 							{
 								displayName: 'Value',
 								name: 'value',
 								type: 'string',
 								default: '',
-								description: 'The value to set on custom field.',
+								description: 'The value to set on custom field',
 							},
 						],
 					},
@@ -202,7 +258,7 @@ export const accountFields = [
 				name: 'fax',
 				type: 'string',
 				default: '',
-				description: 'Fax number for the account.',
+				description: 'Fax number for the account',
 			},
 			{
 				displayName: 'Jigsaw',
@@ -221,9 +277,8 @@ export const accountFields = [
 			{
 				displayName: 'Number Of Employees',
 				name: 'numberOfEmployees',
-				type: 'integer',
+				type: 'number',
 				default: '',
-				description: 'Number of employees',
 			},
 			{
 				displayName: 'Owner',
@@ -233,23 +288,40 @@ export const accountFields = [
 					loadOptionsMethod: 'getUsers',
 				},
 				default: '',
-				description: 'The owner of the account.',
+				description: 'The owner of the account',
+			},
+			{
+				displayName: 'Parent ID',
+				name: 'parentId',
+				type: 'string',
+				default: '',
+				description: 'ID of the parent object, if any',
 			},
 			{
 				displayName: 'Phone',
 				name: 'phone',
 				type: 'string',
 				default: '',
-				description: 'Phone number for the account.',
+				description: 'Phone number for the account',
+			},
+			{
+				displayName: 'Record Type ID',
+				name: 'recordTypeId',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getRecordTypes',
+				},
+				default: '',
 			},
 			{
 				displayName: 'SicDesc',
 				name: 'sicDesc',
 				type: 'string',
+				default: '',
 				typeOptions: {
 					alwaysOpenEditWindow: true,
 				},
-				description: 'A brief description of an organization’s line of business, based on its SIC code.',
+				description: 'A brief description of an organization’s line of business, based on its SIC code',
 			},
 			{
 				displayName: 'Type',
@@ -262,18 +334,11 @@ export const accountFields = [
 				description: 'Type of account',
 			},
 			{
-				displayName: 'Parent ID',
-				name: 'parentId',
-				type: 'string',
-				default: '',
-				description: 'ID of the parent object, if any.',
-			},
-			{
 				displayName: 'Shipping City',
 				name: 'shippingCity',
 				type: 'string',
 				default: '',
-				description: 'Details of the shipping address for this account. City maximum size is 40 characters',
+				description: 'Details of the shipping address for this account. City maximum size is 40 characters.',
 			},
 			{
 				displayName: 'Shipping Country',
@@ -332,7 +397,7 @@ export const accountFields = [
 				],
 			},
 		},
-		description: 'ID of account that needs to be fetched.',
+		description: 'ID of account that needs to be fetched',
 	},
 	{
 		displayName: 'Update Fields',
@@ -352,6 +417,13 @@ export const accountFields = [
 		},
 		options: [
 			{
+				displayName: 'Account Number',
+				name: 'accountNumber',
+				type: 'string',
+				default: '',
+				description: 'Account number assigned to this account (not the unique ID). Maximum size is 40 characters.',
+			},
+			{
 				displayName: 'Account Source',
 				name: 'accountSource',
 				type: 'options',
@@ -359,7 +431,7 @@ export const accountFields = [
 					loadOptionsMethod: 'getAccountSources',
 				},
 				default: '',
-				description: 'The source of the account record.',
+				description: 'The source of the account record',
 			},
 			{
 				displayName: 'Annual Revenue',
@@ -369,7 +441,7 @@ export const accountFields = [
 					numberPrecision: 2,
 				},
 				default: '',
-				description: 'Estimated annual revenue of the account.',
+				description: 'Estimated annual revenue of the account',
 			},
 			{
 				displayName: 'Billing City',
@@ -404,7 +476,7 @@ export const accountFields = [
 				name: 'billingStreet',
 				type: 'string',
 				default: '',
-				description: 'Street address for the billing address of this account.',
+				description: 'Street address for the billing address of this account',
 			},
 			{
 				displayName: 'Custom Fields',
@@ -414,7 +486,7 @@ export const accountFields = [
 				typeOptions: {
 					multipleValues: true,
 				},
-				description: 'Filter by custom fields ',
+				description: 'Filter by custom fields',
 				default: {},
 				options: [
 					{
@@ -426,17 +498,17 @@ export const accountFields = [
 								name: 'fieldId',
 								type: 'options',
 								typeOptions: {
-									loadOptionsMethod: 'getLeadCustomFields',
+									loadOptionsMethod: 'getCustomFields',
 								},
 								default: '',
-								description: 'The ID of the field to add custom field to.',
+								description: 'The ID of the field to add custom field to',
 							},
 							{
 								displayName: 'Value',
 								name: 'value',
 								type: 'string',
 								default: '',
-								description: 'The value to set on custom field.',
+								description: 'The value to set on custom field',
 							},
 						],
 					},
@@ -457,7 +529,7 @@ export const accountFields = [
 				name: 'fax',
 				type: 'string',
 				default: '',
-				description: 'Fax number for the account.',
+				description: 'Fax number for the account',
 			},
 			{
 				displayName: 'Industry',
@@ -474,33 +546,6 @@ export const accountFields = [
 				description: 'References the ID of a company in Data.com',
 			},
 			{
-				displayName: 'Owner',
-				name: 'ownerId',
-				type: 'options',
-				typeOptions: {
-					loadOptionsMethod: 'getUsers',
-				},
-				default: '',
-				description: 'The owner of the account.',
-			},
-			{
-				displayName: 'Phone',
-				name: 'phone',
-				type: 'string',
-				default: '',
-				description: 'Phone number for the account.',
-			},
-			{
-				displayName: 'Type',
-				name: 'type',
-				type: 'options',
-				default: '',
-				typeOptions: {
-					loadOptionsMethod: 'getAccountTypes',
-				},
-				description: 'Type of account',
-			},
-			{
 				displayName: 'Name',
 				name: 'name',
 				type: 'string',
@@ -510,32 +555,58 @@ export const accountFields = [
 			{
 				displayName: 'Number Of Employees',
 				name: 'numberOfEmployees',
-				type: 'integer',
+				type: 'number',
 				default: '',
-				description: 'Number of employees',
+			},
+			{
+				displayName: 'Owner',
+				name: 'ownerId',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getUsers',
+				},
+				default: '',
+				description: 'The owner of the account',
 			},
 			{
 				displayName: 'Parent ID',
 				name: 'parentId',
 				type: 'string',
 				default: '',
-				description: 'ID of the parent object, if any.',
+				description: 'ID of the parent object, if any',
+			},
+			{
+				displayName: 'Phone',
+				name: 'phone',
+				type: 'string',
+				default: '',
+				description: 'Phone number for the account',
+			},
+			{
+				displayName: 'Record Type ID',
+				name: 'recordTypeId',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getRecordTypes',
+				},
+				default: '',
 			},
 			{
 				displayName: 'SicDesc',
 				name: 'sicDesc',
 				type: 'string',
+				default: '',
 				typeOptions: {
 					alwaysOpenEditWindow: true,
 				},
-				description: 'A brief description of an organization’s line of business, based on its SIC code.',
+				description: 'A brief description of an organization’s line of business, based on its SIC code',
 			},
 			{
 				displayName: 'Shipping City',
 				name: 'shippingCity',
 				type: 'string',
 				default: '',
-				description: 'Details of the shipping address for this account. City maximum size is 40 characters',
+				description: 'Details of the shipping address for this account. City maximum size is 40 characters.',
 			},
 			{
 				displayName: 'Shipping Country',
@@ -566,6 +637,16 @@ export const accountFields = [
 				description: 'The street address of the shipping address for this account. Maximum of 255 characters.',
 			},
 			{
+				displayName: 'Type',
+				name: 'type',
+				type: 'options',
+				default: '',
+				typeOptions: {
+					loadOptionsMethod: 'getAccountTypes',
+				},
+				description: 'Type of account',
+			},
+			{
 				displayName: 'Website',
 				name: 'website',
 				type: 'string',
@@ -594,7 +675,7 @@ export const accountFields = [
 				],
 			},
 		},
-		description: 'ID of account that needs to be fetched.',
+		description: 'ID of account that needs to be fetched',
 	},
 
 	/* -------------------------------------------------------------------------- */
@@ -616,7 +697,7 @@ export const accountFields = [
 				],
 			},
 		},
-		description: 'ID of account that needs to be fetched.',
+		description: 'ID of account that needs to be fetched',
 	},
 
 	/* -------------------------------------------------------------------------- */
@@ -637,7 +718,7 @@ export const accountFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -661,7 +742,7 @@ export const accountFields = [
 			maxValue: 100,
 		},
 		default: 50,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	{
 		displayName: 'Options',
@@ -695,7 +776,7 @@ export const accountFields = [
 				typeOptions: {
 					multipleValues: true,
 				},
-				description: 'The condition to set.',
+				description: 'The condition to set',
 				default: {},
 				options: [
 					{
@@ -716,6 +797,7 @@ export const accountFields = [
 								displayName: 'Operation',
 								name: 'operation',
 								type: 'options',
+								noDataExpression: true,
 								options: [
 									{
 										name: '=',
@@ -772,7 +854,7 @@ export const accountFields = [
 				],
 			},
 		},
-		description: 'ID of account that needs to be fetched.',
+		description: 'ID of account that needs to be fetched',
 	},
 	{
 		displayName: 'Title',
@@ -790,7 +872,7 @@ export const accountFields = [
 				],
 			},
 		},
-		description: 'Title of the note.',
+		description: 'Title of the note',
 	},
 	{
 		displayName: 'Options',
@@ -824,7 +906,7 @@ export const accountFields = [
 				name: 'isPrivate',
 				type: 'boolean',
 				default: false,
-				description: 'If true, only the note owner or a user with the “Modify All Data” permission can view the note or query it via the API',
+				description: 'Whether true, only the note owner or a user with the “Modify All Data” permission can view the note or query it via the API',
 			},
 			{
 				displayName: 'Owner',
@@ -834,8 +916,8 @@ export const accountFields = [
 					loadOptionsMethod: 'getUsers',
 				},
 				default: '',
-				description: 'ID of the user who owns the note.',
+				description: 'ID of the user who owns the note',
 			},
 		],
 	},
-] as INodeProperties[];
+];

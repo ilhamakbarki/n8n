@@ -1,12 +1,17 @@
-import { INodeProperties } from 'n8n-workflow';
+import {
+	INodeProperties,
+} from 'n8n-workflow';
 
-const resource = ['invoice'];
+const resource = [
+	'invoice',
+];
 
-export const invoiceOperations = [
+export const invoiceOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource,
@@ -26,29 +31,28 @@ export const invoiceOperations = [
 			{
 				name: 'Create',
 				value: 'create',
-				description: `Create an invoice`,
+				description: 'Create an invoice',
 			},
 			{
 				name: 'Update',
 				value: 'update',
-				description: `Update an invoice`,
+				description: 'Update an invoice',
 			},
 			{
 				name: 'Delete',
 				value: 'delete',
-				description: `Delete an invoice`,
+				description: 'Delete an invoice',
 			},
 		],
 		default: 'getAll',
-		description: 'The operation to perform.',
 	},
 
-] as INodeProperties[];
+];
 
-export const invoiceFields = [
+export const invoiceFields: INodeProperties[] = [
 
 	/* -------------------------------------------------------------------------- */
-	/*                                invoice:getAll                            */
+	/*                                invoice:getAll                              */
 	/* -------------------------------------------------------------------------- */
 
 	{
@@ -64,7 +68,7 @@ export const invoiceFields = [
 			},
 		},
 		default: false,
-		description: 'Returns a list of your invoices.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -86,7 +90,7 @@ export const invoiceFields = [
 			maxValue: 100,
 		},
 		default: 100,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	{
 		displayName: 'Filters',
@@ -108,35 +112,31 @@ export const invoiceFields = [
 				name: 'client_id',
 				type: 'string',
 				default: '',
-				description: 'Only return time entries belonging to the client with the given ID.',
-			},
-			{
-				displayName: 'Project ID',
-				name: 'project_id',
-				type: 'string',
-				default: '',
-				description: 'Only return time entries belonging to the client with the given ID.',
-			},
-			{
-				displayName: 'Updated Since',
-				name: 'updated_since',
-				type: 'dateTime',
-				default: '',
-				description: 'Only return time entries that have been updated since the given date and time.',
+				description: 'Only return time entries belonging to the client with the given ID',
 			},
 			{
 				displayName: 'From',
 				name: 'from',
 				type: 'dateTime',
 				default: '',
-				description: 'Only return time entries with a spent_date on or after the given date.',
+				description: 'Only return time entries with a spent_date on or after the given date',
 			},
 			{
-				displayName: 'To',
-				name: 'to',
-				type: 'dateTime',
+				displayName: 'Page',
+				name: 'page',
+				type: 'number',
+				typeOptions: {
+					minValue: 1,
+				},
+				default: 1,
+				description: 'The page number to use in pagination. For instance, if you make a list request and receive 100 records, your subsequent call can include page=2 to retrieve the next page of the list. (Default: 1)',
+			},
+			{
+				displayName: 'Project ID',
+				name: 'project_id',
+				type: 'string',
 				default: '',
-				description: 'Only return time entries with a spent_date on or before the given date.',
+				description: 'Only return time entries belonging to the client with the given ID',
 			},
 			{
 				displayName: 'State',
@@ -164,23 +164,28 @@ export const invoiceFields = [
 				description: 'Only return invoices with a state matching the value provided. Options: draft, open, paid, or closed.',
 			},
 			{
-				displayName: 'Page',
-				name: 'page',
-				type: 'number',
-				typeOptions: {
-					minValue: 1,
-				},
-				default: 1,
-				description: 'The page number to use in pagination. For instance, if you make a list request and receive 100 records, your subsequent call can include page=2 to retrieve the next page of the list. (Default: 1)',
+				displayName: 'To',
+				name: 'to',
+				type: 'dateTime',
+				default: '',
+				description: 'Only return time entries with a spent_date on or before the given date',
+			},
+
+			{
+				displayName: 'Updated Since',
+				name: 'updated_since',
+				type: 'dateTime',
+				default: '',
+				description: 'Only return time entries that have been updated since the given date and time',
 			},
 		],
 	},
 
 	/* -------------------------------------------------------------------------- */
-	/*                                invoice:get                            */
+	/*                                invoice:get                                 */
 	/* -------------------------------------------------------------------------- */
 	{
-		displayName: 'Invoice Id',
+		displayName: 'Invoice ID',
 		name: 'id',
 		type: 'string',
 		default: '',
@@ -193,14 +198,14 @@ export const invoiceFields = [
 				resource,
 			},
 		},
-		description: 'The ID of the invoice you are retrieving.',
+		description: 'The ID of the invoice you are retrieving',
 	},
 
 	/* -------------------------------------------------------------------------- */
-	/*                                invoice:delete                            */
+	/*                                invoice:delete                              */
 	/* -------------------------------------------------------------------------- */
 	{
-		displayName: 'Invoice Id',
+		displayName: 'Invoice ID',
 		name: 'id',
 		type: 'string',
 		default: '',
@@ -213,14 +218,14 @@ export const invoiceFields = [
 				resource,
 			},
 		},
-		description: 'The ID of the invoice want to delete.',
+		description: 'The ID of the invoice want to delete',
 	},
 
 	/* -------------------------------------------------------------------------- */
-	/*                                invoice:create                           */
+	/*                                invoice:create                              */
 	/* -------------------------------------------------------------------------- */
 	{
-		displayName: 'Client Id',
+		displayName: 'Client ID',
 		name: 'clientId',
 		type: 'string',
 		displayOptions: {
@@ -233,7 +238,7 @@ export const invoiceFields = [
 		},
 		default: '',
 		required: true,
-		description: 'The ID of the retainer associated with this invoice..',
+		description: 'The ID of the retainer associated with this invoice',
 	},
 	{
 		displayName: 'Additional Fields',
@@ -272,11 +277,11 @@ export const invoiceFields = [
 				description: 'Date the invoice is due. Defaults to the issue_date if no payment_term is specified.',
 			},
 			{
-				displayName: 'Estimate Id',
+				displayName: 'Estimate ID',
 				name: 'estimate_id',
 				type: 'string',
 				default: '',
-				description: 'The ID of the estimate associated with this invoice.',
+				description: 'The ID of the estimate associated with this invoice',
 			},
 			{
 				displayName: 'Issue Date',
@@ -290,14 +295,14 @@ export const invoiceFields = [
 				name: 'notes',
 				type: 'string',
 				default: '',
-				description: 'Notes about the project.',
+				description: 'Notes about the project',
 			},
 			{
 				displayName: 'Number',
 				name: 'number',
 				type: 'string',
 				default: '',
-				description: 'If no value is set, the number will be automatically generated.',
+				description: 'If no value is set, the number will be automatically generated',
 			},
 			{
 				displayName: 'Payment Term',
@@ -311,21 +316,21 @@ export const invoiceFields = [
 				name: 'purchase_order',
 				type: 'string',
 				default: '',
-				description: 'The purchase order number.',
+				description: 'The purchase order number',
 			},
 			{
-				displayName: 'Retainer Id',
+				displayName: 'Retainer ID',
 				name: 'retainer_id',
 				type: 'boolean',
 				default: true,
-				description: 'The ID of the retainer associated with this invoice.',
+				description: 'The ID of the retainer associated with this invoice',
 			},
 			{
 				displayName: 'Subject',
 				name: 'subject',
 				type: 'string',
 				default: '',
-				description: 'The invoice subject.',
+				description: 'The invoice subject',
 			},
 			{
 				displayName: 'Tax',
@@ -345,10 +350,10 @@ export const invoiceFields = [
 	},
 
 	/* -------------------------------------------------------------------------- */
-	/*                                invoice:update                           */
+	/*                                invoice:update                              */
 	/* -------------------------------------------------------------------------- */
 	{
-		displayName: 'Invoice Id',
+		displayName: 'Invoice ID',
 		name: 'id',
 		type: 'string',
 		default: '',
@@ -361,7 +366,7 @@ export const invoiceFields = [
 				resource,
 			},
 		},
-		description: 'The ID of the invoice want to update.',
+		description: 'The ID of the invoice want to update',
 	},
 	{
 		displayName: 'Update Fields',
@@ -379,11 +384,11 @@ export const invoiceFields = [
 		default: {},
 		options: [
 			{
-				displayName: 'Client Id',
+				displayName: 'Client ID',
 				name: 'client_id',
 				type: 'string',
 				default: '',
-				description: 'The ID of the retainer associated with this invoice..',
+				description: 'The ID of the retainer associated with this invoice',
 			},
 			{
 				displayName: 'Currency',
@@ -407,11 +412,11 @@ export const invoiceFields = [
 				description: 'Date the invoice is due. Defaults to the issue_date if no payment_term is specified.',
 			},
 			{
-				displayName: 'Estimate Id',
+				displayName: 'Estimate ID',
 				name: 'estimate_id',
 				type: 'string',
 				default: '',
-				description: 'The ID of the estimate associated with this invoice.',
+				description: 'The ID of the estimate associated with this invoice',
 			},
 			{
 				displayName: 'Issue Date',
@@ -425,14 +430,14 @@ export const invoiceFields = [
 				name: 'notes',
 				type: 'string',
 				default: '',
-				description: 'Notes about the project.',
+				description: 'Notes about the project',
 			},
 			{
 				displayName: 'Number',
 				name: 'number',
 				type: 'string',
 				default: '',
-				description: 'If no value is set, the number will be automatically generated.',
+				description: 'If no value is set, the number will be automatically generated',
 			},
 			{
 				displayName: 'Payment Term',
@@ -446,21 +451,21 @@ export const invoiceFields = [
 				name: 'purchase_order',
 				type: 'string',
 				default: '',
-				description: 'The purchase order number.',
+				description: 'The purchase order number',
 			},
 			{
-				displayName: 'Retainer Id',
+				displayName: 'Retainer ID',
 				name: 'retainer_id',
 				type: 'boolean',
 				default: true,
-				description: 'The ID of the retainer associated with this invoice.',
+				description: 'The ID of the retainer associated with this invoice',
 			},
 			{
 				displayName: 'Subject',
 				name: 'subject',
 				type: 'string',
 				default: '',
-				description: 'The invoice subject.',
+				description: 'The invoice subject',
 			},
 			{
 				displayName: 'Tax',
@@ -478,4 +483,4 @@ export const invoiceFields = [
 			},
 		],
 	},
-] as INodeProperties[];
+];

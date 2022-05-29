@@ -2,11 +2,12 @@ import {
 	INodeProperties,
  } from 'n8n-workflow';
 
-export const contactNoteOperations = [
+export const contactNoteOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -42,11 +43,10 @@ export const contactNoteOperations = [
 			},
 		],
 		default: 'create',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const contactNoteFields = [
+export const contactNoteFields: INodeProperties[] = [
 
 /* -------------------------------------------------------------------------- */
 /*                                 contactNote:create                         */
@@ -211,7 +211,7 @@ export const contactNoteFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -235,7 +235,7 @@ export const contactNoteFields = [
 			maxValue: 200,
 		},
 		default: 100,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	{
 		displayName: 'Filters',
@@ -379,4 +379,4 @@ export const contactNoteFields = [
 			},
 		],
 	},
-] as INodeProperties[];
+];

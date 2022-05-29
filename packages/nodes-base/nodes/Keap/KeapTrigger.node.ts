@@ -28,10 +28,9 @@ export class KeapTrigger implements INodeType {
 		group: ['trigger'],
 		version: 1,
 		subtitle: '={{$parameter["eventId"]}}',
-		description: 'Starts the workflow when Infusionsoft events occure.',
+		description: 'Starts the workflow when Infusionsoft events occur',
 		defaults: {
 			name: 'Keap Trigger',
-			color: '#79af53',
 		},
 		inputs: [],
 		outputs: ['main'],
@@ -65,7 +64,7 @@ export class KeapTrigger implements INodeType {
 				name: 'rawData',
 				type: 'boolean',
 				default: false,
-				description: `Returns the data exactly in the way it got received from the API.`,
+				description: 'Returns the data exactly in the way it got received from the API',
 			},
 		],
 	};
@@ -140,7 +139,7 @@ export class KeapTrigger implements INodeType {
 
 					try {
 						await keapApiRequest.call(this, 'DELETE', `/hooks/${webhookData.webhookId}`);
-					} catch (e) {
+					} catch (error) {
 						return false;
 					}
 

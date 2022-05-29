@@ -25,8 +25,7 @@ export class RabbitMQTrigger implements INodeType {
 		version: 1,
 		description: 'Listens to RabbitMQ messages',
 		defaults: {
-			name: 'RabbitMQ',
-			color: '#ff6600',
+			name: 'RabbitMQ Trigger',
 		},
 		inputs: [],
 		outputs: ['main'],
@@ -43,7 +42,7 @@ export class RabbitMQTrigger implements INodeType {
 				type: 'string',
 				default: '',
 				placeholder: 'queue-name',
-				description: 'Name of the queue to publish to.',
+				description: 'Name of the queue to publish to',
 			},
 
 			{
@@ -58,7 +57,7 @@ export class RabbitMQTrigger implements INodeType {
 						name: 'contentIsBinary',
 						type: 'boolean',
 						default: false,
-						description: 'Saves the content as binary.',
+						description: 'Saves the content as binary',
 					},
 					{
 						displayName: 'JSON Parse Body',
@@ -72,7 +71,7 @@ export class RabbitMQTrigger implements INodeType {
 							},
 						},
 						default: false,
-						description: 'Parse the body to an object.',
+						description: 'Parse the body to an object',
 					},
 					{
 						displayName: 'Only Content',
@@ -86,7 +85,7 @@ export class RabbitMQTrigger implements INodeType {
 							},
 						},
 						default: false,
-						description: 'Returns only the content property.',
+						description: 'Returns only the content property',
 					},
 					...rabbitDefaultOptions,
 				].sort((a, b) => {
@@ -107,14 +106,14 @@ export class RabbitMQTrigger implements INodeType {
 
 		const self = this;
 
-		const item: INodeExecutionData = {
-			json: {},
-		};
-
 		const startConsumer = async () => {
 			await channel.consume(queue, async (message: IDataObject) => {
 				if (message !== null) {
 					let content: IDataObject | string = message!.content!.toString();
+
+					const item: INodeExecutionData = {
+						json: {},
+					};
 
 					if (options.contentIsBinary === true) {
 						item.binary = {
@@ -151,6 +150,7 @@ export class RabbitMQTrigger implements INodeType {
 		// the workflow gets deactivated and can so clean up.
 		async function closeFunction() {
 			await channel.close();
+			await channel.connection.close();
 		}
 
 		// The "manualTriggerFunction" function gets called by n8n

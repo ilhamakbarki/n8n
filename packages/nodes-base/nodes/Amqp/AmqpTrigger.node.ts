@@ -12,6 +12,7 @@ import {
 	INodeType,
 	INodeTypeDescription,
 	ITriggerResponse,
+	NodeOperationError,
 } from 'n8n-workflow';
 
 
@@ -25,7 +26,6 @@ export class AmqpTrigger implements INodeType {
 		description: 'Listens to AMQP 1.0 Messages',
 		defaults: {
 			name: 'AMQP Trigger',
-			color: '#00FF00',
 		},
 		inputs: [],
 		outputs: ['main'],
@@ -50,7 +50,7 @@ export class AmqpTrigger implements INodeType {
 				type: 'string',
 				default: '',
 				placeholder: 'for durable/persistent topic subscriptions, example: "n8n"',
-				description: 'Leave empty for non-durable topic subscriptions or queues. ',
+				description: 'Leave empty for non-durable topic subscriptions or queues',
 			},
 			{
 				displayName: 'Subscription',
@@ -86,7 +86,7 @@ export class AmqpTrigger implements INodeType {
 						name: 'jsonParseBody',
 						type: 'boolean',
 						default: false,
-						description: 'Parse the body to an object.',
+						description: 'Parse the body to an object',
 					},
 					{
 						displayName: 'Messages per Cicle',
@@ -100,7 +100,7 @@ export class AmqpTrigger implements INodeType {
 						name: 'onlyBody',
 						type: 'boolean',
 						default: false,
-						description: 'Returns only the body property.',
+						description: 'Returns only the body property',
 					},
 					{
 						displayName: 'Reconnect',
@@ -121,7 +121,7 @@ export class AmqpTrigger implements INodeType {
 						name: 'sleepTime',
 						type: 'number',
 						default: 10,
-						description: 'Milliseconds to sleep after every cicle.',
+						description: 'Milliseconds to sleep after every cicle',
 					},
 				],
 			},
@@ -131,10 +131,7 @@ export class AmqpTrigger implements INodeType {
 
 	async trigger(this: ITriggerFunctions): Promise<ITriggerResponse> {
 
-		const credentials = this.getCredentials('amqp');
-		if (!credentials) {
-			throw new Error('Credentials are mandatory!');
-		}
+		const credentials = await this.getCredentials('amqp');
 
 		const sink = this.getNodeParameter('sink', '') as string;
 		const clientname = this.getNodeParameter('clientname', '') as string;
@@ -146,7 +143,7 @@ export class AmqpTrigger implements INodeType {
 		const containerReconnectLimit = options.reconnectLimit as number || 50;
 
 		if (sink === '') {
-			throw new Error('Queue or Topic required!');
+			throw new NodeOperationError(this.getNode(), 'Queue or Topic required!');
 		}
 
 		let durable = false;

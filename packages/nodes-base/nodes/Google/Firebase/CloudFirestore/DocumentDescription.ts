@@ -2,11 +2,12 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export const documentOperations = [
+export const documentOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -23,7 +24,7 @@ export const documentOperations = [
 			{
 				name: 'Create/Update',
 				value: 'upsert',
-				description: 'Create/Update a document',
+				description: 'Create a new document, or update the current one if it already exists (upsert)',
 			},
 			{
 				name: 'Delete',
@@ -52,11 +53,10 @@ export const documentOperations = [
 			},
 		],
 		default: 'get',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const documentFields = [
+export const documentFields: INodeProperties[] = [
 	/* -------------------------------------------------------------------------- */
 	/*                                document:create                             */
 	/* -------------------------------------------------------------------------- */
@@ -78,7 +78,7 @@ export const documentFields = [
 				],
 			},
 		},
-		description: 'As displayed in firebase console URL.',
+		description: 'As displayed in firebase console URL',
 		required: true,
 	},
 	{
@@ -137,7 +137,7 @@ export const documentFields = [
 		placeholder: 'productId, modelName, description',
 	},
 	{
-		displayName: 'Simple',
+		displayName: 'Simplify',
 		name: 'simple',
 		type: 'boolean',
 		displayOptions: {
@@ -151,7 +151,7 @@ export const documentFields = [
 			},
 		},
 		default: true,
-		description: 'When set to true a simplify version of the response will be used else the raw data.',
+		description: 'Whether to return a simplified version of the response instead of the raw data',
 	},
 
 	/* -------------------------------------------------------------------------- */
@@ -229,11 +229,10 @@ export const documentFields = [
 			},
 		},
 		default: '',
-		description: 'Document ID',
 		required: true,
 	},
 	{
-		displayName: 'Simple',
+		displayName: 'Simplify',
 		name: 'simple',
 		type: 'boolean',
 		displayOptions: {
@@ -247,7 +246,7 @@ export const documentFields = [
 			},
 		},
 		default: true,
-		description: 'When set to true a simplify version of the response will be used else the raw data.',
+		description: 'Whether to return a simplified version of the response instead of the raw data',
 	},
 
 	/* -------------------------------------------------------------------------- */
@@ -325,7 +324,7 @@ export const documentFields = [
 				],
 			},
 		},
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 		required: true,
 	},
 	{
@@ -350,10 +349,10 @@ export const documentFields = [
 			maxValue: 500,
 		},
 		default: 100,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	{
-		displayName: 'Simple',
+		displayName: 'Simplify',
 		name: 'simple',
 		type: 'boolean',
 		displayOptions: {
@@ -367,7 +366,7 @@ export const documentFields = [
 			},
 		},
 		default: true,
-		description: 'When set to true a simplify version of the response will be used else the raw data.',
+		description: 'Whether to return a simplified version of the response instead of the raw data',
 	},
 
 	/* -------------------------------------------------------------------------- */
@@ -445,7 +444,6 @@ export const documentFields = [
 			},
 		},
 		default: '',
-		description: 'Document ID',
 		required: true,
 	},
 	// 	/* ---------------------------------------------------------------------- */
@@ -726,7 +724,7 @@ export const documentFields = [
 		placeholder: '{"structuredQuery": {"where": {"fieldFilter": {"field": {"fieldPath": "age"},"op": "EQUAL", "value": {"integerValue": 28}}}, "from": [{"collectionId": "users-collection"}]}}',
 	},
 	{
-		displayName: 'Simple',
+		displayName: 'Simplify',
 		name: 'simple',
 		type: 'boolean',
 		displayOptions: {
@@ -740,6 +738,6 @@ export const documentFields = [
 			},
 		},
 		default: true,
-		description: 'When set to true a simplify version of the response will be used else the raw data.',
+		description: 'Whether to return a simplified version of the response instead of the raw data',
 	},
-] as INodeProperties[];
+];

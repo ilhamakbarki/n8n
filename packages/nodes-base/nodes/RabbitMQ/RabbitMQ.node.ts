@@ -7,6 +7,9 @@ import {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
+	JsonObject,
+	NodeApiError,
+	NodeOperationError,
 } from 'n8n-workflow';
 
 import {
@@ -24,7 +27,6 @@ export class RabbitMQ implements INodeType {
 		description: 'Sends messages to a RabbitMQ topic',
 		defaults: {
 			name: 'RabbitMQ',
-			color: '#ff6600',
 		},
 		inputs: ['main'],
 		outputs: ['main'],
@@ -43,16 +45,16 @@ export class RabbitMQ implements INodeType {
 					{
 						name: 'Queue',
 						value: 'queue',
-						description: 'Publish data to queue.',
+						description: 'Publish data to queue',
 					},
 					{
 						name: 'Exchange',
 						value: 'exchange',
-						description: 'Publish data to exchange.',
+						description: 'Publish data to exchange',
 					},
 				],
 				default: 'queue',
-				description: 'To where data should be moved.',
+				description: 'To where data should be moved',
 			},
 
 			// ----------------------------------
@@ -71,7 +73,7 @@ export class RabbitMQ implements INodeType {
 				},
 				default: '',
 				placeholder: 'queue-name',
-				description: 'Name of the queue to publish to.',
+				description: 'Name of the queue to publish to',
 			},
 
 			// ----------------------------------
@@ -91,7 +93,7 @@ export class RabbitMQ implements INodeType {
 				},
 				default: '',
 				placeholder: 'exchange-name',
-				description: 'Name of the exchange to publish to.',
+				description: 'Name of the exchange to publish to',
 			},
 			{
 				displayName: 'Type',
@@ -108,26 +110,26 @@ export class RabbitMQ implements INodeType {
 					{
 						name: 'Direct',
 						value: 'direct',
-						description: 'Direct exchange type.',
+						description: 'Direct exchange type',
 					},
 					{
 						name: 'Topic',
 						value: 'topic',
-						description: 'Topic exchange type.',
+						description: 'Topic exchange type',
 					},
 					{
 						name: 'Headers',
 						value: 'headers',
-						description: 'Headers exchange type.',
+						description: 'Headers exchange type',
 					},
 					{
 						name: 'Fanout',
 						value: 'fanout',
-						description: 'Fanout exchange type.',
+						description: 'Fanout exchange type',
 					},
 				],
 				default: 'fanout',
-				description: 'Type of exchange.',
+				description: 'Type of exchange',
 			},
 			{
 				displayName: 'Routing key',
@@ -142,7 +144,7 @@ export class RabbitMQ implements INodeType {
 				},
 				default: '',
 				placeholder: 'routing-key',
-				description: 'The routing key for the message.',
+				description: 'The routing key for the message',
 			},
 
 			// ----------------------------------
@@ -154,7 +156,7 @@ export class RabbitMQ implements INodeType {
 				name: 'sendInputData',
 				type: 'boolean',
 				default: true,
-				description: 'Send the the data the node receives as JSON.',
+				description: 'Send the the data the node receives as JSON',
 			},
 			{
 				displayName: 'Message',
@@ -168,7 +170,7 @@ export class RabbitMQ implements INodeType {
 					},
 				},
 				default: '',
-				description: 'The message to be sent.',
+				description: 'The message to be sent',
 			},
 			{
 				displayName: 'Options',
@@ -178,10 +180,24 @@ export class RabbitMQ implements INodeType {
 				placeholder: 'Add Option',
 				options: [
 					{
+						displayName: 'Alternate Exchange',
+						name: 'alternateExchange',
+						type: 'string',
+						displayOptions: {
+							show: {
+								'/mode': [
+									'exchange',
+								],
+							},
+						},
+						default: '',
+						description: 'An exchange to send messages to if this exchange can’t route them to any queues',
+					},
+					{
 						displayName: 'Arguments',
 						name: 'arguments',
 						placeholder: 'Add Argument',
-						description: 'Arguments to add.',
+						description: 'Arguments to add',
 						type: 'fixedCollection',
 						typeOptions: {
 							multipleValues: true,
@@ -213,14 +229,14 @@ export class RabbitMQ implements INodeType {
 						name: 'autoDelete',
 						type: 'boolean',
 						default: false,
-						description: 'The queue will be deleted when the number of consumers drops to zero .',
+						description: 'The queue will be deleted when the number of consumers drops to zero',
 					},
 					{
 						displayName: 'Durable',
 						name: 'durable',
 						type: 'boolean',
 						default: true,
-						description: 'The queue will survive broker restarts.',
+						description: 'The queue will survive broker restarts',
 					},
 					{
 						displayName: 'Exclusive',
@@ -234,21 +250,38 @@ export class RabbitMQ implements INodeType {
 							},
 						},
 						default: false,
-						description: 'Scopes the queue to the connection.',
+						description: 'Scopes the queue to the connection',
 					},
 					{
-						displayName: 'Alternate Exchange',
-						name: 'alternateExchange',
-						type: 'string',
-						displayOptions: {
-							show: {
-								'/mode': [
-									'exchange',
+						displayName: 'Headers',
+						name: 'headers',
+						placeholder: 'Add Header',
+						description: 'Headers to add',
+						type: 'fixedCollection',
+						typeOptions: {
+							multipleValues: true,
+						},
+						default: {},
+						options: [
+							{
+								name: 'header',
+								displayName: 'Header',
+								values: [
+									{
+										displayName: 'Key',
+										name: 'key',
+										type: 'string',
+										default: '',
+									},
+									{
+										displayName: 'Value',
+										name: 'value',
+										type: 'string',
+										default: '',
+									},
 								],
 							},
-						},
-						default: '',
-						description: 'An exchange to send messages to if this exchange can’t route them to any queues',
+						],
 					},
 				],
 			},
@@ -256,7 +289,7 @@ export class RabbitMQ implements INodeType {
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
-		let channel;
+		let channel, options: IDataObject;
 		try {
 			const items = this.getInputData();
 			const mode = this.getNodeParameter('mode', 0) as string;
@@ -266,7 +299,7 @@ export class RabbitMQ implements INodeType {
 			if (mode === 'queue') {
 				const queue = this.getNodeParameter('queue', 0) as string;
 
-				const options = this.getNodeParameter('options', 0, {}) as IDataObject;
+				options = this.getNodeParameter('options', 0, {}) as IDataObject;
 
 				channel = await rabbitmqConnectQueue.call(this, queue, options);
 
@@ -282,17 +315,27 @@ export class RabbitMQ implements INodeType {
 						message = this.getNodeParameter('message', i) as string;
 					}
 
-					queuePromises.push(channel.sendToQueue(queue, Buffer.from(message)));
+					let headers: IDataObject = {};
+					if (options.headers && ((options.headers as IDataObject).header! as IDataObject[]).length) {
+						const itemOptions = this.getNodeParameter('options', i, {}) as IDataObject;
+						const additionalHeaders: IDataObject = {};
+						((itemOptions.headers as IDataObject).header as IDataObject[]).forEach((header: IDataObject) => {
+							additionalHeaders[header.key as string] = header.value;
+						});
+						headers = additionalHeaders;
+					}
+
+					queuePromises.push(channel.sendToQueue(queue, Buffer.from(message), { headers }));
 				}
 
 				// @ts-ignore
 				const promisesResponses = await Promise.allSettled(queuePromises);
 
-				promisesResponses.forEach((response: IDataObject) => {
+				promisesResponses.forEach((response: JsonObject) => {
 					if (response!.status !== 'fulfilled') {
 
 						if (this.continueOnFail() !== true) {
-							throw new Error(response!.reason as string);
+							throw new NodeApiError(this.getNode(), response);
 						} else {
 							// Return the actual reason as error
 							returnItems.push(
@@ -314,13 +357,14 @@ export class RabbitMQ implements INodeType {
 				});
 
 				await channel.close();
+				await channel.connection.close();
 			}
 			else if (mode === 'exchange') {
 				const exchange = this.getNodeParameter('exchange', 0) as string;
 				const type = this.getNodeParameter('exchangeType', 0) as string;
 				const routingKey = this.getNodeParameter('routingKey', 0) as string;
 
-				const options = this.getNodeParameter('options', 0, {}) as IDataObject;
+				options = this.getNodeParameter('options', 0, {}) as IDataObject;
 
 				channel = await rabbitmqConnectExchange.call(this, exchange, type, options);
 
@@ -336,17 +380,27 @@ export class RabbitMQ implements INodeType {
 						message = this.getNodeParameter('message', i) as string;
 					}
 
-					exchangePromises.push(channel.publish(exchange, routingKey, Buffer.from(message)));
+					let headers: IDataObject = {};
+					if (options.headers && ((options.headers as IDataObject).header! as IDataObject[]).length) {
+						const itemOptions = this.getNodeParameter('options', i, {}) as IDataObject;
+						const additionalHeaders: IDataObject = {};
+						((itemOptions.headers as IDataObject).header as IDataObject[]).forEach((header: IDataObject) => {
+							additionalHeaders[header.key as string] = header.value;
+						});
+						headers = additionalHeaders;
+					}
+
+					exchangePromises.push(channel.publish(exchange, routingKey, Buffer.from(message), { headers }));
 				}
 
 				// @ts-ignore
 				const promisesResponses = await Promise.allSettled(exchangePromises);
 
-				promisesResponses.forEach((response: IDataObject) => {
+				promisesResponses.forEach((response: JsonObject) => {
 					if (response!.status !== 'fulfilled') {
 
 						if (this.continueOnFail() !== true) {
-							throw new Error(response!.reason as string);
+							throw new NodeApiError(this.getNode(), response);
 						} else {
 							// Return the actual reason as error
 							returnItems.push(
@@ -368,8 +422,9 @@ export class RabbitMQ implements INodeType {
 				});
 
 				await channel.close();
+				await channel.connection.close();
 			} else {
-				throw new Error(`The operation "${mode}" is not known!`);
+				throw new NodeOperationError(this.getNode(), `The operation "${mode}" is not known!`);
 			}
 
 			return this.prepareOutputData(returnItems);
@@ -377,6 +432,7 @@ export class RabbitMQ implements INodeType {
 		catch (error) {
 			if (channel) {
 				await channel.close();
+				await channel.connection.close();
 			}
 			throw error;
 		}

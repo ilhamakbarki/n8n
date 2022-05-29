@@ -11,10 +11,9 @@ export const nodeDescription: INodeTypeDescription = {
 	icon: 'file:mongodb.svg',
 	group: ['input'],
 	version: 1,
-	description: 'Find, insert and update documents in MongoDB.',
+	description: 'Find, insert and update documents in MongoDB',
 	defaults: {
 		name: 'MongoDB',
-		color: '#13AA52',
 	},
 	inputs: ['main'],
 	outputs: ['main'],
@@ -29,30 +28,35 @@ export const nodeDescription: INodeTypeDescription = {
 			displayName: 'Operation',
 			name: 'operation',
 			type: 'options',
+			noDataExpression: true,
 			options: [
+				{
+					name: 'Aggregate',
+					value: 'aggregate',
+					description: 'Aggregate documents',
+				},
 				{
 					name: 'Delete',
 					value: 'delete',
-					description: 'Delete documents.',
+					description: 'Delete documents',
 				},
 				{
 					name: 'Find',
 					value: 'find',
-					description: 'Find documents.',
+					description: 'Find documents',
 				},
 				{
 					name: 'Insert',
 					value: 'insert',
-					description: 'Insert documents.',
+					description: 'Insert documents',
 				},
 				{
 					name: 'Update',
 					value: 'update',
-					description: 'Update documents.',
+					description: 'Update documents',
 				},
 			],
 			default: 'find',
-			description: 'The operation to perform.',
 		},
 
 		{
@@ -62,6 +66,30 @@ export const nodeDescription: INodeTypeDescription = {
 			required: true,
 			default: '',
 			description: 'MongoDB Collection',
+		},
+
+		// ----------------------------------
+		//         aggregate
+		// ----------------------------------
+		{
+			displayName: 'Query',
+			name: 'query',
+			type: 'json',
+			typeOptions: {
+				alwaysOpenEditWindow: true,
+			},
+			displayOptions: {
+				show: {
+					operation: [
+						'aggregate',
+					],
+				},
+			},
+			default: '',
+			placeholder: `[{ "$match": { "$gt": "1950-01-01" }, ... }]`,
+			hint: 'Learn more about aggregation pipeline <a href="https://docs.mongodb.com/manual/core/aggregation-pipeline/">here</a>',
+			required: true,
+			description: 'MongoDB aggregation pipeline query in JSON format',
 		},
 
 		// ----------------------------------
@@ -84,12 +112,57 @@ export const nodeDescription: INodeTypeDescription = {
 			default: '{}',
 			placeholder: `{ "birth": { "$gt": "1950-01-01" } }`,
 			required: true,
-			description: 'MongoDB Delete query.',
+			description: 'MongoDB Delete query',
 		},
 
 		// ----------------------------------
 		//         find
 		// ----------------------------------
+		{
+			displayName: 'Options',
+			name: 'options',
+			type: 'collection',
+			displayOptions: {
+				show: {
+					operation: ['find'],
+				},
+			},
+			default: {},
+			placeholder: 'Add options',
+			description: 'Add query options',
+			options: [
+				{
+					displayName: 'Limit',
+					name: 'limit',
+					type: 'number',
+					typeOptions: {
+						minValue: 1,
+					},
+					default: 0,
+					// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-limit
+					description: 'Use limit to specify the maximum number of documents or 0 for unlimited documents',
+				},
+				{
+					displayName: 'Skip',
+					name: 'skip',
+					type: 'number',
+					default: 0,
+					description: 'The number of documents to skip in the results set',
+				},
+				{
+					displayName: 'Sort (JSON format)',
+					name: 'sort',
+					type: 'json',
+					typeOptions: {
+						rows: 2,
+					},
+					default: '{}',
+					placeholder: '{ "field": -1 }',
+					required: true,
+					description: 'A JSON that defines the sort order of the result set',
+				},
+			],
+		},
 		{
 			displayName: 'Query (JSON format)',
 			name: 'query',
@@ -107,7 +180,7 @@ export const nodeDescription: INodeTypeDescription = {
 			default: '{}',
 			placeholder: `{ "birth": { "$gt": "1950-01-01" } }`,
 			required: true,
-			description: 'MongoDB Find query.',
+			description: 'MongoDB Find query',
 		},
 
 		// ----------------------------------
@@ -126,8 +199,7 @@ export const nodeDescription: INodeTypeDescription = {
 			},
 			default: '',
 			placeholder: 'name,description',
-			description:
-				'Comma separated list of the fields to be included into the new document.',
+			description: 'Comma-separated list of the fields to be included into the new document',
 		},
 
 		// ----------------------------------
@@ -146,8 +218,8 @@ export const nodeDescription: INodeTypeDescription = {
 			},
 			default: 'id',
 			required: true,
-			description:
-				'Name of the property which decides which rows in the database should be updated. Normally that would be "id".',
+			// eslint-disable-next-line n8n-nodes-base/node-param-description-miscased-id
+			description: 'Name of the property which decides which rows in the database should be updated. Normally that would be "id".',
 		},
 		{
 			displayName: 'Fields',
@@ -162,8 +234,19 @@ export const nodeDescription: INodeTypeDescription = {
 			},
 			default: '',
 			placeholder: 'name,description',
-			description:
-				'Comma separated list of the fields to be included into the new document.',
+			description: 'Comma-separated list of the fields to be included into the new document',
+		},
+		{
+			displayName: 'Upsert',
+			name: 'upsert',
+			type: 'boolean',
+			displayOptions: {
+				show: {
+					operation: ['update'],
+				},
+			},
+			default: false,
+			description: 'Perform an insert if no documents match the update key',
 		},
 		{
 			displayName: 'Options',
@@ -185,7 +268,14 @@ export const nodeDescription: INodeTypeDescription = {
 					name: 'dateFields',
 					type: 'string',
 					default: '',
-					description: 'Comma separeted list of fields that will be parse as Mongo Date type.',
+					description: 'Comma separeted list of fields that will be parse as Mongo Date type',
+				},
+				{
+					displayName:'Use Dot Notation',
+					name: 'useDotNotation',
+					type: 'boolean',
+					default: false,
+					description: 'Wheather to use dot notation to access date fields',
 				},
 			],
 		},

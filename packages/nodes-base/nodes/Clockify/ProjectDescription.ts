@@ -2,11 +2,12 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export const projectOperations = [
+export const projectOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -42,11 +43,10 @@ export const projectOperations = [
 			},
 		],
 		default: 'create',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const projectFields = [
+export const projectFields: INodeProperties[] = [
 
 	/* -------------------------------------------------------------------------- */
 	/*                                 project:create                             */
@@ -57,7 +57,7 @@ export const projectFields = [
 		type: 'string',
 		required: true,
 		default: '',
-		description: 'Name of project being created.',
+		description: 'Name of project being created',
 		displayOptions: {
 			show: {
 				resource: [
@@ -223,7 +223,7 @@ export const projectFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -247,7 +247,7 @@ export const projectFields = [
 			maxValue: 500,
 		},
 		default: 100,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	{
 		displayName: 'Additional Fields',
@@ -295,7 +295,7 @@ export const projectFields = [
 				name: 'contains-client',
 				type: 'boolean',
 				default: false,
-				description: 'If provided, projects will be filtered by whether they have a client.;			',
+				description: 'If provided, projects will be filtered by whether they have a client',
 			},
 			{
 				displayName: 'Client Status',
@@ -312,21 +312,21 @@ export const projectFields = [
 					},
 				],
 				default: '',
-				description: 'If provided, projects will be filtered by whether they have a client.',
+				description: 'If provided, projects will be filtered by whether they have a client',
 			},
 			{
 				displayName: 'Contains User',
 				name: 'contains-user',
 				type: 'boolean',
 				default: false,
-				description: 'If provided, projects will be filtered by whether they have users.',
+				description: 'If provided, projects will be filtered by whether they have users',
 			},
 			{
 				displayName: 'Is Template',
 				name: 'is-template',
 				type: 'boolean',
 				default: false,
-				description: 'If provided, projects will be filtered by whether they are used as a template.',
+				description: 'If provided, projects will be filtered by whether they are used as a template',
 			},
 			{
 				displayName: 'Name',
@@ -397,7 +397,7 @@ export const projectFields = [
 					},
 				],
 				default: '',
-				description: 'If provided, projects will be filtered by whether they have a client.',
+				description: 'If provided, projects will be filtered by whether they have a client',
 			},
 		],
 	},
@@ -525,4 +525,4 @@ export const projectFields = [
 		],
 	},
 
-] as INodeProperties[];
+];

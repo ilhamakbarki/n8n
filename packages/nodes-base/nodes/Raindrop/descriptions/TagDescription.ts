@@ -2,13 +2,13 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export const tagOperations = [
+export const tagOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		default: 'get',
-		description: 'Operation to perform',
 		options: [
 			{
 				name: 'Delete',
@@ -27,9 +27,9 @@ export const tagOperations = [
 			},
 		},
 	},
-] as INodeProperties[];
+];
 
-export const tagFields = [
+export const tagFields: INodeProperties[] = [
 	// ----------------------------------
 	//       tag: delete
 	// ----------------------------------
@@ -76,7 +76,7 @@ export const tagFields = [
 					loadOptionsMethod: 'getCollections',
 				},
 				default: '',
-				description: `It's possible to restrict remove action to just one collection. It's optional`,
+				description: 'It\'s possible to restrict remove action to just one collection. It\'s optional.',
 			},
 		],
 	},
@@ -98,7 +98,7 @@ export const tagFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -122,7 +122,7 @@ export const tagFields = [
 			maxValue: 10,
 		},
 		default: 5,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	{
 		displayName: 'Filters',
@@ -152,4 +152,4 @@ export const tagFields = [
 			},
 		],
 	},
-] as INodeProperties[];
+];

@@ -1,10 +1,11 @@
 import { INodeProperties } from 'n8n-workflow';
 
-export const caseOperations = [
+export const caseOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -24,6 +25,11 @@ export const caseOperations = [
 				description: 'Create a case',
 			},
 			{
+				name: 'Delete',
+				value: 'delete',
+				description: 'Delete a case',
+			},
+			{
 				name: 'Get',
 				value: 'get',
 				description: 'Get a case',
@@ -36,12 +42,7 @@ export const caseOperations = [
 			{
 				name: 'Get Summary',
 				value: 'getSummary',
-				description: `Returns an overview of case's metadata`,
-			},
-			{
-				name: 'Delete',
-				value: 'delete',
-				description: 'Delete a case',
+				description: 'Returns an overview of case\'s metadata',
 			},
 			{
 				name: 'Update',
@@ -50,11 +51,10 @@ export const caseOperations = [
 			},
 		],
 		default: 'create',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const caseFields = [
+export const caseFields: INodeProperties[] = [
 
 	/* -------------------------------------------------------------------------- */
 	/*                                case:create                                 */
@@ -102,14 +102,50 @@ export const caseFields = [
 				name: 'accountId',
 				type: 'string',
 				default: '',
-				description: 'ID of the account associated with this case.',
+				description: 'ID of the account associated with this case',
 			},
 			{
 				displayName: 'Contact ID',
 				name: 'contactId',
 				type: 'string',
 				default: '',
-				description: 'ID of the associated Contact.',
+				description: 'ID of the associated Contact',
+			},
+			{
+				displayName: 'Custom Fields',
+				name: 'customFieldsUi',
+				placeholder: 'Add Custom Field',
+				type: 'fixedCollection',
+				typeOptions: {
+					multipleValues: true,
+				},
+				description: 'Filter by custom fields',
+				default: {},
+				options: [
+					{
+						name: 'customFieldsValues',
+						displayName: 'Custom Field',
+						values: [
+							{
+								displayName: 'Field ID',
+								name: 'fieldId',
+								type: 'options',
+								typeOptions: {
+									loadOptionsMethod: 'getCustomFields',
+								},
+								default: '',
+								description: 'The ID of the field to add custom field to',
+							},
+							{
+								displayName: 'Value',
+								name: 'value',
+								type: 'string',
+								default: '',
+								description: 'The value to set on custom field',
+							},
+						],
+					},
+				],
 			},
 			{
 				displayName: 'Description',
@@ -123,7 +159,7 @@ export const caseFields = [
 				name: 'isEscalated',
 				type: 'boolean',
 				default: false,
-				description: 'Indicates whether the case has been escalated (true) or not.',
+				description: 'Whether indicates whether the case has been escalated (true) or not',
 			},
 			{
 				displayName: 'Origin',
@@ -140,10 +176,10 @@ export const caseFields = [
 				name: 'owner',
 				type: 'options',
 				typeOptions: {
-					loadOptionsMethod: 'getUsers',
+					loadOptionsMethod: 'getCaseOwners',
 				},
 				default: '',
-				description: 'The owner of the case.',
+				description: 'The owner of the case',
 			},
 			{
 				displayName: 'Parent ID',
@@ -160,7 +196,7 @@ export const caseFields = [
 					loadOptionsMethod: 'getCasePriorities',
 				},
 				default: '',
-				description: 'The importance or urgency of the case, such as High, Medium, or Low.',
+				description: 'The importance or urgency of the case, such as High, Medium, or Low',
 			},
 			{
 				displayName: 'Reason',
@@ -170,7 +206,16 @@ export const caseFields = [
 					loadOptionsMethod: 'getCaseReasons',
 				},
 				default: '',
-				description: 'The reason why the case was created, such as Instructions not clear, or User didn’t attend training.',
+				description: 'The reason why the case was created, such as Instructions not clear, or User didn’t attend training',
+			},
+			{
+				displayName: 'Record Type ID',
+				name: 'recordTypeId',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getRecordTypes',
+				},
+				default: '',
 			},
 			{
 				displayName: 'Status',
@@ -194,28 +239,28 @@ export const caseFields = [
 				name: 'suppliedCompany',
 				type: 'string',
 				default: '',
-				description: `The company name that was entered when the case was created. This field can't be updated after the case has been created..`,
+				description: 'The company name that was entered when the case was created. This field can\'t be updated after the case has been created..',
 			},
 			{
 				displayName: 'Supplied Email',
 				name: 'suppliedEmail',
 				type: 'string',
 				default: '',
-				description: `The email address that was entered when the case was created. This field can't be updated after the case has been created.`,
+				description: 'The email address that was entered when the case was created. This field can\'t be updated after the case has been created.',
 			},
 			{
 				displayName: 'Supplied Name',
 				name: 'suppliedName',
 				type: 'string',
 				default: '',
-				description: `The name that was entered when the case was created. This field can't be updated after the case has been created`,
+				description: 'The name that was entered when the case was created. This field can\'t be updated after the case has been created.',
 			},
 			{
 				displayName: 'Supplied Phone',
 				name: 'suppliedPhone',
 				type: 'string',
 				default: '',
-				description: `The phone number that was entered when the case was created. This field can't be updated after the case has been created.`,
+				description: 'The phone number that was entered when the case was created. This field can\'t be updated after the case has been created.',
 			},
 		],
 	},
@@ -239,7 +284,7 @@ export const caseFields = [
 				],
 			},
 		},
-		description: 'Id of case that needs to be fetched',
+		description: 'ID of case that needs to be fetched',
 	},
 	{
 		displayName: 'Update Fields',
@@ -259,14 +304,68 @@ export const caseFields = [
 		},
 		options: [
 			{
-				displayName: 'Type',
-				name: 'type',
-				type: 'options',
-				typeOptions: {
-					loadOptionsMethod: 'getCaseTypes',
-				},
+				displayName: 'Account ID',
+				name: 'accountId',
+				type: 'string',
 				default: '',
-				description: 'The type of case',
+				description: 'ID of the account associated with this case',
+			},
+			{
+				displayName: 'Contact ID',
+				name: 'contactId',
+				type: 'string',
+				default: '',
+				description: 'ID of the associated Contact',
+			},
+			{
+				displayName: 'Custom Fields',
+				name: 'customFieldsUi',
+				placeholder: 'Add Custom Field',
+				type: 'fixedCollection',
+				typeOptions: {
+					multipleValues: true,
+				},
+				description: 'Filter by custom fields',
+				default: {},
+				options: [
+					{
+						name: 'customFieldsValues',
+						displayName: 'Custom Field',
+						values: [
+							{
+								displayName: 'Field ID',
+								name: 'fieldId',
+								type: 'options',
+								typeOptions: {
+									loadOptionsMethod: 'getCustomFields',
+								},
+								default: '',
+								description: 'The ID of the field to add custom field to',
+							},
+							{
+								displayName: 'Value',
+								name: 'value',
+								type: 'string',
+								default: '',
+								description: 'The value to set on custom field',
+							},
+						],
+					},
+				],
+			},
+			{
+				displayName: 'Description',
+				name: 'description',
+				type: 'string',
+				default: '',
+				description: 'A text description of the case. Limit: 32 KB.',
+			},
+			{
+				displayName: 'Is Escalated',
+				name: 'isEscalated',
+				type: 'boolean',
+				default: false,
+				description: 'Whether the case has been escalated (true) or not',
 			},
 			{
 				displayName: 'Origin',
@@ -279,41 +378,14 @@ export const caseFields = [
 				description: 'The source of the case, such as Email, Phone, or Web. Label is Case Origin.',
 			},
 			{
-				displayName: 'Reason',
-				name: 'reason',
-				type: 'options',
-				typeOptions: {
-					loadOptionsMethod: 'getCaseReasons',
-				},
-				default: '',
-				description: 'The reason why the case was created, such as Instructions not clear, or User didn’t attend training.',
-			},
-			{
-				displayName: 'Status',
-				name: 'status',
-				type: 'options',
-				typeOptions: {
-					loadOptionsMethod: 'getCaseStatuses',
-				},
-				default: '',
-				description: 'The status of the case, such as “New,” “Closed,” or “Escalated.” This field directly controls the IsClosed flag',
-			},
-			{
 				displayName: 'Owner',
 				name: 'owner',
 				type: 'options',
 				typeOptions: {
-					loadOptionsMethod: 'getUsers',
+					loadOptionsMethod: 'getCaseOwners',
 				},
 				default: '',
-				description: 'The owner of the case.',
-			},
-			{
-				displayName: 'Subject',
-				name: 'subject',
-				type: 'string',
-				default: '',
-				description: 'The subject of the case. Limit: 255 characters.',
+				description: 'The owner of the case',
 			},
 			{
 				displayName: 'Parent ID',
@@ -330,63 +402,81 @@ export const caseFields = [
 					loadOptionsMethod: 'getCasePriorities',
 				},
 				default: '',
-				description: 'The importance or urgency of the case, such as High, Medium, or Low.',
+				description: 'The importance or urgency of the case, such as High, Medium, or Low',
 			},
 			{
-				displayName: 'Account ID',
-				name: 'accountId',
+				displayName: 'Reason',
+				name: 'reason',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getCaseReasons',
+				},
+				default: '',
+				description: 'The reason why the case was created, such as Instructions not clear, or User didn’t attend training',
+			},
+			{
+				displayName: 'Record Type ID',
+				name: 'recordTypeId',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getRecordTypes',
+				},
+				default: '',
+			},
+			{
+				displayName: 'Status',
+				name: 'status',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getCaseStatuses',
+				},
+				default: '',
+				description: 'The status of the case, such as “New,” “Closed,” or “Escalated.” This field directly controls the IsClosed flag',
+			},
+			{
+				displayName: 'Subject',
+				name: 'subject',
 				type: 'string',
 				default: '',
-				description: 'ID of the account associated with this case.',
-			},
-			{
-				displayName: 'Contact ID',
-				name: 'contactId',
-				type: 'string',
-				default: '',
-				description: 'ID of the associated Contact.',
-			},
-			{
-				displayName: 'Description',
-				name: 'description',
-				type: 'string',
-				default: '',
-				description: 'A text description of the case. Limit: 32 KB.',
-			},
-			{
-				displayName: 'Is Escalated',
-				name: 'isEscalated',
-				type: 'boolean',
-				default: false,
-				description: 'Indicates whether the case has been escalated (true) or not.',
-			},
-			{
-				displayName: 'Supplied Name',
-				name: 'suppliedName',
-				type: 'string',
-				default: '',
-				description: `The name that was entered when the case was created. This field can't be updated after the case has been created`,
-			},
-			{
-				displayName: 'Supplied Email',
-				name: 'suppliedEmail',
-				type: 'string',
-				default: '',
-				description: `The email address that was entered when the case was created. This field can't be updated after the case has been created.`,
-			},
-			{
-				displayName: 'Supplied Phone',
-				name: 'suppliedPhone',
-				type: 'string',
-				default: '',
-				description: `The phone number that was entered when the case was created. This field can't be updated after the case has been created.`,
+				description: 'The subject of the case. Limit: 255 characters.',
 			},
 			{
 				displayName: 'Supplied Company',
 				name: 'suppliedCompany',
 				type: 'string',
 				default: '',
-				description: `The company name that was entered when the case was created. This field can't be updated after the case has been created..`,
+				description: 'The company name that was entered when the case was created. This field can\'t be updated after the case has been created..',
+			},
+			{
+				displayName: 'Supplied Email',
+				name: 'suppliedEmail',
+				type: 'string',
+				default: '',
+				description: 'The email address that was entered when the case was created. This field can\'t be updated after the case has been created.',
+			},
+			{
+				displayName: 'Supplied Name',
+				name: 'suppliedName',
+				type: 'string',
+				default: '',
+				description: 'The name that was entered when the case was created. This field can\'t be updated after the case has been created.',
+			},
+			{
+				displayName: 'Supplied Phone',
+				name: 'suppliedPhone',
+				type: 'string',
+				default: '',
+				description: 'The phone number that was entered when the case was created. This field can\'t be updated after the case has been created.',
+			},
+			{
+				displayName: 'Type',
+				name: 'type',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getCaseTypes',
+				},
+				default: '',
+				description: 'The type of case',
 			},
 		],
 	},
@@ -410,7 +500,7 @@ export const caseFields = [
 				],
 			},
 		},
-		description: 'ID of case that needs to be fetched.',
+		description: 'ID of case that needs to be fetched',
 	},
 
 	/* -------------------------------------------------------------------------- */
@@ -432,7 +522,7 @@ export const caseFields = [
 				],
 			},
 		},
-		description: 'ID of case that needs to be fetched.',
+		description: 'ID of case that needs to be fetched',
 	},
 
 	/* -------------------------------------------------------------------------- */
@@ -453,7 +543,7 @@ export const caseFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -477,7 +567,7 @@ export const caseFields = [
 			maxValue: 100,
 		},
 		default: 50,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	{
 		displayName: 'Options',
@@ -504,7 +594,7 @@ export const caseFields = [
 				typeOptions: {
 					multipleValues: true,
 				},
-				description: 'The condition to set.',
+				description: 'The condition to set',
 				default: {},
 				options: [
 					{
@@ -519,8 +609,9 @@ export const caseFields = [
 									loadOptionsMethod: 'getCaseFields',
 								},
 								default: '',
-								description: 'For date, number, or boolean, please use expressions.',
+								description: 'For date, number, or boolean, please use expressions',
 							},
+							// eslint-disable-next-line n8n-nodes-base/node-param-operation-without-no-data-expression
 							{
 								displayName: 'Operation',
 								name: 'operation',
@@ -588,7 +679,7 @@ export const caseFields = [
 				],
 			},
 		},
-		description: 'ID of case that needs to be fetched.',
+		description: 'ID of case that needs to be fetched',
 	},
 	{
 		displayName: 'Options',
@@ -622,8 +713,8 @@ export const caseFields = [
 				name: 'isPublished',
 				type: 'boolean',
 				default: false,
-				description: 'Indicates whether the CaseComment is visible to customers in the Self-Service portal (true) or not (false). ',
+				description: 'Whether the CaseComment is visible to customers in the Self-Service portal (true) or not (false)',
 			},
 		],
 	},
-] as INodeProperties[];
+];

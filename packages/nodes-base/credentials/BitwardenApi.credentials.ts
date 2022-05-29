@@ -1,6 +1,6 @@
 import {
 	ICredentialType,
-	NodePropertyTypes,
+	INodeProperties,
 } from 'n8n-workflow';
 
 // https://bitwarden.com/help/article/public-api/#authentication
@@ -9,39 +9,39 @@ export class BitwardenApi implements ICredentialType {
 	name = 'bitwardenApi';
 	displayName = 'Bitwarden API';
 	documentationUrl = 'bitwarden';
-	properties = [
+	properties: INodeProperties[] = [
 		{
 			displayName: 'Client ID',
 			name: 'clientId',
-			type: 'string' as NodePropertyTypes,
+			type: 'string',
 			default: '',
 		},
 		{
 			displayName: 'Client Secret',
 			name: 'clientSecret',
-			type: 'string' as NodePropertyTypes,
+			type: 'string',
 			default: '',
 		},
 		{
 			displayName: 'Environment',
 			name: 'environment',
-			type: 'options' as NodePropertyTypes,
+			type: 'options',
 			default: 'cloudHosted',
 			options: [
 				{
-					name: 'Cloud-hosted',
+					name: 'Cloud-Hosted',
 					value: 'cloudHosted',
 				},
 				{
-					name: 'Self-hosted',
+					name: 'Self-Hosted',
 					value: 'selfHosted',
 				},
 			],
 		},
 		{
-			displayName: 'Self-hosted domain',
+			displayName: 'Self-Hosted Domain',
 			name: 'domain',
-			type: 'string' as NodePropertyTypes,
+			type: 'string',
 			default: '',
 			placeholder: 'https://www.mydomain.com',
 			displayOptions: {

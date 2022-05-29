@@ -6,6 +6,7 @@ import {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
+	NodeOperationError,
 } from 'n8n-workflow';
 
 import {
@@ -16,14 +17,13 @@ export class Twilio implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Twilio',
 		name: 'twilio',
-		icon: 'file:twilio.png',
+		icon: 'file:twilio.svg',
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		description: 'Send SMS and WhatsApp messages or make phone calls',
 		defaults: {
 			name: 'Twilio',
-			color: '#cf272d',
 		},
 		inputs: ['main'],
 		outputs: ['main'],
@@ -38,20 +38,22 @@ export class Twilio implements INodeType {
 				displayName: 'Resource',
 				name: 'resource',
 				type: 'options',
+				noDataExpression: true,
 				options: [
 					{
+						// eslint-disable-next-line n8n-nodes-base/node-param-resource-with-plural-option
 						name: 'SMS',
 						value: 'sms',
 					},
 				],
 				default: 'sms',
-				description: 'The resource to operate on.',
 			},
 
 			{
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				displayOptions: {
 					show: {
 						resource: [
@@ -67,7 +69,6 @@ export class Twilio implements INodeType {
 					},
 				],
 				default: 'send',
-				description: 'The operation to perform.',
 			},
 
 
@@ -151,9 +152,24 @@ export class Twilio implements INodeType {
 				},
 				description: 'The message to send',
 			},
+			{
+				displayName: 'Options',
+				name: 'options',
+				type: 'collection',
+				placeholder: 'Add Field',
+				default: {},
+				options: [
+					{
+						displayName: 'Status Callback',
+						name: 'statusCallback',
+						type: 'string',
+						default: '',
+						description: 'Status Callbacks allow you to receive events related to the REST resources managed by Twilio: Rooms, Recordings and Compositions',
+					},
+				],
+			},
 		],
 	};
-
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
@@ -171,43 +187,52 @@ export class Twilio implements INodeType {
 		let endpoint: string;
 
 		for (let i = 0; i < items.length; i++) {
-			requestMethod = 'GET';
-			endpoint = '';
-			body = {};
-			qs = {};
+			try {
+				requestMethod = 'GET';
+				endpoint = '';
+				body = {};
+				qs = {};
 
-			resource = this.getNodeParameter('resource', i) as string;
-			operation = this.getNodeParameter('operation', i) as string;
+				resource = this.getNodeParameter('resource', i) as string;
+				operation = this.getNodeParameter('operation', i) as string;
 
-			if (resource === 'sms') {
-				if (operation === 'send') {
-					// ----------------------------------
-					//         sms:send
-					// ----------------------------------
+				if (resource === 'sms') {
+					if (operation === 'send') {
+						// ----------------------------------
+						//         sms:send
+						// ----------------------------------
 
-					requestMethod = 'POST';
-					endpoint = '/Messages.json';
+						requestMethod = 'POST';
+						endpoint = '/Messages.json';
 
-					body.From = this.getNodeParameter('from', i) as string;
-					body.To = this.getNodeParameter('to', i) as string;
-					body.Body = this.getNodeParameter('message', i) as string;
+						body.From = this.getNodeParameter('from', i) as string;
+						body.To = this.getNodeParameter('to', i) as string;
+						body.Body = this.getNodeParameter('message', i) as string;
+						body.StatusCallback = this.getNodeParameter('options.statusCallback', i, '') as string;
 
-					const toWhatsapp = this.getNodeParameter('toWhatsapp', i) as boolean;
+						const toWhatsapp = this.getNodeParameter('toWhatsapp', i) as boolean;
 
-					if (toWhatsapp === true) {
-						body.From = `whatsapp:${body.From}`;
-						body.To = `whatsapp:${body.To}`;
+						if (toWhatsapp === true) {
+							body.From = `whatsapp:${body.From}`;
+							body.To = `whatsapp:${body.To}`;
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), `The operation "${operation}" is not known!`);
 					}
 				} else {
-					throw new Error(`The operation "${operation}" is not known!`);
+					throw new NodeOperationError(this.getNode(), `The resource "${resource}" is not known!`);
 				}
-			} else {
-				throw new Error(`The resource "${resource}" is not known!`);
+
+				const responseData = await twilioApiRequest.call(this, requestMethod, endpoint, body, qs);
+
+				returnData.push(responseData as IDataObject);
+			} catch (error) {
+				if (this.continueOnFail()) {
+					returnData.push({ error: error.message });
+					continue;
+				}
+				throw error;
 			}
-
-			const responseData = await twilioApiRequest.call(this, requestMethod, endpoint, body, qs);
-
-			returnData.push(responseData as IDataObject);
 		}
 
 		return [this.helpers.returnJsonArray(returnData)];

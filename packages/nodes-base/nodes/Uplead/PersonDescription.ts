@@ -1,10 +1,11 @@
 import { INodeProperties } from 'n8n-workflow';
 
-export const personOperations = [
+export const personOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -19,11 +20,10 @@ export const personOperations = [
 			},
 		],
 		default: 'enrich',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const personFields = [
+export const personFields: INodeProperties[] = [
 
 /* -------------------------------------------------------------------------- */
 /*                                 person:enrich                              */
@@ -96,4 +96,4 @@ export const personFields = [
 		},
 		description: 'The domain name (e.g – salesforce.com)',
 	},
-] as INodeProperties[];
+];

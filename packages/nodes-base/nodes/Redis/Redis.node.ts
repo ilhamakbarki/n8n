@@ -5,24 +5,24 @@ import {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
+	NodeOperationError,
 } from 'n8n-workflow';
 
 import { set } from 'lodash';
-import * as redis from 'redis';
+import redis from 'redis';
 
-import * as util from 'util';
+import util from 'util';
 
 export class Redis implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Redis',
 		name: 'redis',
-		icon: 'file:redis.png',
+		icon: 'file:redis.svg',
 		group: ['input'],
 		version: 1,
-		description: 'Get, send and update data in Redis.',
+		description: 'Get, send and update data in Redis',
 		defaults: {
 			name: 'Redis',
-			color: '#0033AA',
 		},
 		inputs: ['main'],
 		outputs: ['main'],
@@ -37,35 +37,45 @@ export class Redis implements INodeType {
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				options: [
 					{
 						name: 'Delete',
 						value: 'delete',
-						description: 'Delete a key from Redis.',
+						description: 'Delete a key from Redis',
 					},
 					{
 						name: 'Get',
 						value: 'get',
-						description: 'Get the value of a key from Redis.',
+						description: 'Get the value of a key from Redis',
 					},
 					{
 						name: 'Info',
 						value: 'info',
-						description: 'Returns generic information about the Redis instance.',
+						description: 'Returns generic information about the Redis instance',
+					},
+					{
+						name: 'Increment',
+						value: 'incr',
+						description: 'Atomically increments a key by 1. Creates the key if it does not exist.',
 					},
 					{
 						name: 'Keys',
 						value: 'keys',
-						description: 'Returns all the keys matching a pattern.',
+						description: 'Returns all the keys matching a pattern',
 					},
 					{
 						name: 'Set',
 						value: 'set',
-						description: 'Set the value of a key in redis.',
+						description: 'Set the value of a key in redis',
+					},
+					{
+						name: 'Publish',
+						value: 'publish',
+						description: 'Publish message to redis channel',
 					},
 				],
 				default: 'info',
-				description: 'The operation to perform.',
 			},
 
 			// ----------------------------------
@@ -84,7 +94,7 @@ export class Redis implements INodeType {
 				},
 				default: 'propertyName',
 				required: true,
-				description: 'Name of the property to write received data to.<br />Supports dot-notation.<br />Example: "data.person[0].name"',
+				description: 'Name of the property to write received data to. Supports dot-notation. Example: "data.person[0].name"',
 			},
 			{
 				displayName: 'Key',
@@ -99,7 +109,7 @@ export class Redis implements INodeType {
 				},
 				default: '',
 				required: true,
-				description: 'Name of the key to delete from Redis.',
+				description: 'Name of the key to delete from Redis',
 			},
 			{
 				displayName: 'Key',
@@ -114,7 +124,7 @@ export class Redis implements INodeType {
 				},
 				default: '',
 				required: true,
-				description: 'Name of the key to get from Redis.',
+				description: 'Name of the key to get from Redis',
 			},
 			{
 				displayName: 'Key Type',
@@ -131,31 +141,31 @@ export class Redis implements INodeType {
 					{
 						name: 'Automatic',
 						value: 'automatic',
-						description: 'Requests the type before requesting the data (slower).',
+						description: 'Requests the type before requesting the data (slower)',
 					},
 					{
 						name: 'Hash',
 						value: 'hash',
-						description: 'Data in key is of type "hash".',
+						description: 'Data in key is of type "hash"',
 					},
 					{
 						name: 'String',
 						value: 'string',
-						description: 'Data in key is of type "string".',
+						description: 'Data in key is of type "string"',
 					},
 					{
 						name: 'List',
 						value: 'list',
-						description: 'Data in key is of type "lists".',
+						description: 'Data in key is of type "lists"',
 					},
 					{
 						name: 'Sets',
 						value: 'sets',
-						description: 'Data in key is of type "sets".',
+						description: 'Data in key is of type "sets"',
 					},
 				],
 				default: 'automatic',
-				description: 'The type of the key to get.',
+				description: 'The type of the key to get',
 			},
 
 			{
@@ -177,12 +187,63 @@ export class Redis implements INodeType {
 						name: 'dotNotation',
 						type: 'boolean',
 						default: true,
-						description: `By default does dot-notation get used in property names.<br />
-						This means that "a.b" will set the property "b" underneath "a" so { "a": { "b": value} }.<br />
-						If that is not intended this can be deactivated, it will then set { "a.b": value } instead.
-						`,
+						description: '<p>By default, dot-notation is used in property names. This means that "a.b" will set the property "b" underneath "a" so { "a": { "b": value} }.<p></p>If that is not intended this can be deactivated, it will then set { "a.b": value } instead.</p>.',
 					},
 				],
+			},
+
+
+			// ----------------------------------
+			//         incr
+			// ----------------------------------
+			{
+				displayName: 'Key',
+				name: 'key',
+				type: 'string',
+				displayOptions: {
+					show: {
+						operation: [
+							'incr',
+						],
+					},
+				},
+				default: '',
+				required: true,
+				description: 'Name of the key to increment',
+			},
+			{
+				displayName: 'Expire',
+				name: 'expire',
+				type: 'boolean',
+				displayOptions: {
+					show: {
+						operation: [
+							'incr',
+						],
+					},
+				},
+				default: false,
+				description: 'Set a timeout on key?',
+			},
+			{
+				displayName: 'TTL',
+				name: 'ttl',
+				type: 'number',
+				typeOptions: {
+					minValue: 1,
+				},
+				displayOptions: {
+					show: {
+						operation: [
+							'incr',
+						],
+						expire: [
+							true,
+						],
+					},
+				},
+				default: 60,
+				description: 'Number of seconds before key expiration',
 			},
 
 			// ----------------------------------
@@ -201,7 +262,7 @@ export class Redis implements INodeType {
 				},
 				default: '',
 				required: true,
-				description: 'The key pattern for the keys to return.',
+				description: 'The key pattern for the keys to return',
 			},
 
 			// ----------------------------------
@@ -220,7 +281,7 @@ export class Redis implements INodeType {
 				},
 				default: '',
 				required: true,
-				description: 'Name of the key to set in Redis.',
+				description: 'Name of the key to set in Redis',
 			},
 			{
 				displayName: 'Value',
@@ -234,7 +295,7 @@ export class Redis implements INodeType {
 					},
 				},
 				default: '',
-				description: 'The value to write in Redis.',
+				description: 'The value to write in Redis',
 			},
 			{
 				displayName: 'Key Type',
@@ -251,31 +312,31 @@ export class Redis implements INodeType {
 					{
 						name: 'Automatic',
 						value: 'automatic',
-						description: 'Tries to figure out the type automatically depending on the data.',
+						description: 'Tries to figure out the type automatically depending on the data',
 					},
 					{
 						name: 'Hash',
 						value: 'hash',
-						description: 'Data in key is of type "hash".',
+						description: 'Data in key is of type "hash"',
 					},
 					{
 						name: 'String',
 						value: 'string',
-						description: 'Data in key is of type "string".',
+						description: 'Data in key is of type "string"',
 					},
 					{
 						name: 'List',
 						value: 'list',
-						description: 'Data in key is of type "lists".',
+						description: 'Data in key is of type "lists"',
 					},
 					{
 						name: 'Sets',
 						value: 'sets',
-						description: 'Data in key is of type "sets".',
+						description: 'Data in key is of type "sets"',
 					},
 				],
 				default: 'automatic',
-				description: 'The type of the key to set.',
+				description: 'The type of the key to set',
 			},
 
 			{
@@ -311,7 +372,43 @@ export class Redis implements INodeType {
 					},
 				},
 				default: 60,
-				description: 'Number of seconds before key expiration.',
+				description: 'Number of seconds before key expiration',
+			},
+			// ----------------------------------
+			//         publish
+			// ----------------------------------
+			{
+				displayName: 'Channel',
+				name: 'channel',
+				type: 'string',
+				displayOptions: {
+					show: {
+						operation: [
+							'publish',
+						],
+					},
+				},
+				default: '',
+				required: true,
+				description: 'Channel name',
+			},
+			{
+				displayName: 'Data',
+				name: 'messageData',
+				type: 'string',
+				displayOptions: {
+					show: {
+						operation: [
+							'publish',
+						],
+					},
+				},
+				typeOptions: {
+					alwaysOpenEditWindow: true,
+				},
+				default: '',
+				required: true,
+				description: 'Data to publish',
 			},
 		],
 	};
@@ -382,7 +479,7 @@ export class Redis implements INodeType {
 		}
 
 
-		async function setValue(client: redis.RedisClient, keyName: string, value: string | number | object | string[] | number[], expire: boolean, ttl: number, type?: string) {
+		const setValue = async (client: redis.RedisClient, keyName: string, value: string | number | object | string[] | number[], expire: boolean, ttl: number, type?: string) => {
 			if (type === undefined || type === 'automatic') {
 				// Request the type first
 				if (typeof value === 'string') {
@@ -392,7 +489,7 @@ export class Redis implements INodeType {
 				} else if (typeof value === 'object') {
 					type = 'hash';
 				} else {
-					throw new Error('Could not identify the type to set. Please set it manually!');
+					throw new NodeOperationError(this.getNode(), 'Could not identify the type to set. Please set it manually!');
 				}
 			}
 
@@ -417,23 +514,20 @@ export class Redis implements INodeType {
 				await clientExpire(keyName, ttl);
 			}
 			return;
-		}
+		};
 
 
-		return new Promise((resolve, reject) => {
+		return new Promise(async (resolve, reject) => {
 			// TODO: For array and object fields it should not have a "value" field it should
 			//       have a parameter field for a path. Because it is not possible to set
 			//       array, object via parameter directly (should maybe be possible?!?!)
 			//       Should maybe have a parameter which is JSON.
-			const credentials = this.getCredentials('redis');
-
-			if (credentials === undefined) {
-				throw new Error('No credentials got returned!');
-			}
+			const credentials = await this.getCredentials('redis');
 
 			const redisOptions: redis.ClientOpts = {
 				host: credentials.host as string,
 				port: credentials.port as number,
+				db: credentials.database as number,
 			};
 
 			if (credentials.password) {
@@ -445,80 +539,105 @@ export class Redis implements INodeType {
 			const operation = this.getNodeParameter('operation', 0) as string;
 
 			client.on('error', (err: Error) => {
+				client.quit();
 				reject(err);
 			});
 
 			client.on('ready', async (err: Error | null) => {
+				client.select(credentials.database as number);
+				try {
+					if (operation === 'info') {
+						const clientInfo = util.promisify(client.info).bind(client);
+						const result = await clientInfo();
 
-				if (operation === 'info') {
-					const clientInfo = util.promisify(client.info).bind(client);
-					const result = await clientInfo();
+						resolve(this.prepareOutputData([{ json: convertInfoToObject(result as unknown as string) }]));
+						client.quit();
 
-					resolve(this.prepareOutputData([{ json: convertInfoToObject(result as unknown as string) }]));
-					client.quit();
+					} else if (['delete', 'get', 'keys', 'set', 'incr', 'publish'].includes(operation)) {
+						const items = this.getInputData();
+						const returnItems: INodeExecutionData[] = [];
 
-				} else if (['delete', 'get', 'keys', 'set'].includes(operation)) {
-					const items = this.getInputData();
-					const returnItems: INodeExecutionData[] = [];
+						let item: INodeExecutionData;
+						for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
+							item = { json: {} };
 
-					let item: INodeExecutionData;
-					for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
-						item = { json: {} };
+							if (operation === 'delete') {
+								const keyDelete = this.getNodeParameter('key', itemIndex) as string;
 
-						if (operation === 'delete') {
-							const keyDelete = this.getNodeParameter('key', itemIndex) as string;
+								const clientDel = util.promisify(client.del).bind(client);
+								// @ts-ignore
+								await clientDel(keyDelete);
+								returnItems.push(items[itemIndex]);
+							} else if (operation === 'get') {
+								const propertyName = this.getNodeParameter('propertyName', itemIndex) as string;
+								const keyGet = this.getNodeParameter('key', itemIndex) as string;
+								const keyType = this.getNodeParameter('keyType', itemIndex) as string;
 
-							const clientDel = util.promisify(client.del).bind(client);
-							// @ts-ignore
-							await clientDel(keyDelete);
-							returnItems.push(items[itemIndex]);
-						} else if (operation === 'get') {
-							const propertyName = this.getNodeParameter('propertyName', itemIndex) as string;
-							const keyGet = this.getNodeParameter('key', itemIndex) as string;
-							const keyType = this.getNodeParameter('keyType', itemIndex) as string;
+								const value = await getValue(client, keyGet, keyType) || null;
 
-							const value = await getValue(client, keyGet, keyType) || null;
+								const options = this.getNodeParameter('options', itemIndex, {}) as IDataObject;
 
-							const options = this.getNodeParameter('options', itemIndex, {}) as IDataObject;
+								if (options.dotNotation === false) {
+									item.json[propertyName] = value;
+								} else {
+									set(item.json, propertyName, value);
+								}
 
-							if (options.dotNotation === false) {
-								item.json[propertyName] = value;
-							} else {
-								set(item.json, propertyName, value);
+								returnItems.push(item);
+							} else if (operation === 'keys') {
+								const keyPattern = this.getNodeParameter('keyPattern', itemIndex) as string;
+
+								const clientKeys = util.promisify(client.keys).bind(client);
+								const keys = await clientKeys(keyPattern);
+
+								const promises: {
+									[key: string]: GenericValue;
+								} = {};
+
+								for (const keyName of keys) {
+									promises[keyName] = await getValue(client, keyName);
+								}
+
+								for (const keyName of keys) {
+									item.json[keyName] = await promises[keyName];
+								}
+								returnItems.push(item);
+							} else if (operation === 'set') {
+								const keySet = this.getNodeParameter('key', itemIndex) as string;
+								const value = this.getNodeParameter('value', itemIndex) as string;
+								const keyType = this.getNodeParameter('keyType', itemIndex) as string;
+								const expire = this.getNodeParameter('expire', itemIndex, false) as boolean;
+								const ttl = this.getNodeParameter('ttl', itemIndex, -1) as number;
+
+								await setValue(client, keySet, value, expire, ttl, keyType);
+								returnItems.push(items[itemIndex]);
+							} else if (operation === 'incr') {
+
+								const keyIncr = this.getNodeParameter('key', itemIndex) as string;
+								const expire = this.getNodeParameter('expire', itemIndex, false) as boolean;
+								const ttl = this.getNodeParameter('ttl', itemIndex, -1) as number;
+								const clientIncr = util.promisify(client.incr).bind(client);
+								// @ts-ignore
+								const incrementVal = await clientIncr(keyIncr);
+								if (expire === true && ttl > 0) {
+									const clientExpire = util.promisify(client.expire).bind(client);
+									await clientExpire(keyIncr, ttl);
+								}
+								returnItems.push({json: {[keyIncr]: incrementVal}});
+							} else if (operation === 'publish'){
+								const channel = this.getNodeParameter('channel', itemIndex) as string;
+								const messageData = this.getNodeParameter('messageData', itemIndex) as string;
+								const clientPublish = util.promisify(client.publish).bind(client);
+								await clientPublish(channel, messageData);
+								returnItems.push(items[itemIndex]);
 							}
-
-							returnItems.push(item);
-						} else if (operation === 'keys') {
-							const keyPattern = this.getNodeParameter('keyPattern', itemIndex) as string;
-
-							const clientKeys = util.promisify(client.keys).bind(client);
-							const keys = await clientKeys(keyPattern);
-
-							const promises: {
-								[key: string]: GenericValue;
-							} = {};
-
-							for (const keyName of keys) {
-								promises[keyName] = await getValue(client, keyName);
-							}
-
-							for (const keyName of keys) {
-								item.json[keyName] = await promises[keyName];
-							}
-							returnItems.push(item);
-						} else if (operation === 'set') {
-							const keySet = this.getNodeParameter('key', itemIndex) as string;
-							const value = this.getNodeParameter('value', itemIndex) as string;
-							const keyType = this.getNodeParameter('keyType', itemIndex) as string;
-							const expire = this.getNodeParameter('expire', itemIndex, false) as boolean;
-							const ttl = this.getNodeParameter('ttl', itemIndex, -1) as number;
-
-							await setValue(client, keySet, value, expire, ttl, keyType);
-							returnItems.push(items[itemIndex]);
 						}
-					}
 
-					resolve(this.prepareOutputData(returnItems));
+						client.quit();
+						resolve(this.prepareOutputData(returnItems));
+					}
+				} catch (error) {
+					reject(error);
 				}
 			});
 		});

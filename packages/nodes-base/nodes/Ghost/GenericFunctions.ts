@@ -11,9 +11,9 @@ import {
 
 import {
 	IDataObject,
+	JsonObject,
+	NodeApiError,
 } from 'n8n-workflow';
-
-import * as jwt from 'jsonwebtoken';
 
 export async function ghostApiRequest(this: IHookFunctions | IExecuteFunctions | IExecuteSingleFunctions | ILoadOptionsFunctions, method: string, endpoint: string, body: any = {}, query: IDataObject = {}, uri?: string): Promise<any> { // tslint:disable-line:no-any
 
@@ -21,26 +21,18 @@ export async function ghostApiRequest(this: IHookFunctions | IExecuteFunctions |
 
 	let credentials;
 	let version;
-	let token;
+	let credentialType;
 
 	if (source === 'contentApi') {
 		//https://ghost.org/faq/api-versioning/
 		version = 'v3';
-		credentials = this.getCredentials('ghostContentApi') as IDataObject;
-		query.key = credentials.apiKey as string;
+		credentialType = 'ghostContentApi';
 	} else {
 		version = 'v2';
-		credentials = this.getCredentials('ghostAdminApi') as IDataObject;
-		// Create the token (including decoding secret)
-		const [id, secret] = (credentials.apiKey as string).split(':');
-
-		token = jwt.sign({}, Buffer.from(secret, 'hex'), {
-			keyid: id,
-			algorithm: 'HS256',
-			expiresIn: '5m',
-			audience: `/${version}/admin/`,
-		});
+		credentialType = 'ghostAdminApi';
 	}
+
+	credentials = await this.getCredentials(credentialType);
 
 	const options: OptionsWithUri = {
 		method,
@@ -50,31 +42,10 @@ export async function ghostApiRequest(this: IHookFunctions | IExecuteFunctions |
 		json: true,
 	};
 
-	if (token) {
-		options.headers = {
-			Authorization: `Ghost ${token}`,
-		};
-	}
-
 	try {
-		return await this.helpers.request!(options);
-
-	} catch (error) {
-		let errorMessages;
-
-		if (error.response && error.response.body && error.response.body.errors) {
-
-			if (Array.isArray(error.response.body.errors)) {
-
-				const errors = error.response.body.errors;
-
-				errorMessages = errors.map((e: IDataObject) => e.message);
-			}
-
-			throw new Error(`Ghost error response [${error.statusCode}]: ${errorMessages?.join('|')}`);
-		}
-
-		throw error;
+		return await this.helpers.requestWithAuthentication.call(this, credentialType, options);
+	} catch(error) {
+		throw new NodeApiError(this.getNode(), error as JsonObject);
 	}
 }
 
@@ -84,16 +55,15 @@ export async function ghostApiRequestAllItems(this: IHookFunctions | IExecuteFun
 
 	let responseData;
 
-	query.limit = 20;
-
-	let uri: string | undefined;
+	query.limit = 50;
+	query.page = 1;
 
 	do {
-		responseData = await ghostApiRequest.call(this, method, endpoint, body, query, uri);
-		uri = responseData.meta.pagination.next;
+		responseData = await ghostApiRequest.call(this, method, endpoint, body, query);
+		query.page = responseData.meta.pagination.next;
 		returnData.push.apply(returnData, responseData[propertyName]);
 	} while (
-		responseData.meta.pagination.next !== null
+		query.page !== null
 	);
 	return returnData;
 }

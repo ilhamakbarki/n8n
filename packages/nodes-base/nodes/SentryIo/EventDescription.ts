@@ -2,11 +2,12 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export const eventOperations = [
+export const eventOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -27,11 +28,10 @@ export const eventOperations = [
 			},
 		],
 		default: 'get',
-		description: 'The operation to perform',
 	},
-] as INodeProperties[];
+];
 
-export const eventFields = [
+export const eventFields: INodeProperties[] = [
 	/* -------------------------------------------------------------------------- */
 	/*                                event:getAll                                */
 	/* -------------------------------------------------------------------------- */
@@ -112,7 +112,7 @@ export const eventFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -136,8 +136,9 @@ export const eventFields = [
 			maxValue: 500,
 		},
 		default: 100,
-		description: 'How many results to return',
+		description: 'Max number of results to return',
 	},
+
 	/* -------------------------------------------------------------------------- */
 	/*                                event:get                                   */
 	/* -------------------------------------------------------------------------- */
@@ -199,6 +200,6 @@ export const eventFields = [
 			},
 		},
 		required: true,
-		description: 'The id of the event to retrieve (either the numeric primary-key or the hexadecimal id as reported by the raven client).',
+		description: 'The ID of the event to retrieve (either the numeric primary-key or the hexadecimal ID as reported by the raven client)',
 	},
-] as INodeProperties[];
+];

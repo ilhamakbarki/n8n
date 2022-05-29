@@ -2,11 +2,12 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export const contactJourneyOperations = [
+export const contactJourneyOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -22,11 +23,10 @@ export const contactJourneyOperations = [
 			},
 		],
 		default: 'add',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const contactJourneyFields = [
+export const contactJourneyFields: INodeProperties[] = [
 
 	/* -------------------------------------------------------------------------- */
 	/*                                 contactJourney:add                         */
@@ -50,7 +50,7 @@ export const contactJourneyFields = [
 			},
 		},
 		default: '',
-		description: 'List ID.',
+		description: 'List ID',
 	},
 	{
 		displayName: 'Contact ID',
@@ -68,6 +68,6 @@ export const contactJourneyFields = [
 			},
 		},
 		default: '',
-		description: 'Can be ID or email.',
+		description: 'Can be ID or email',
 	},
-] as INodeProperties[];
+];

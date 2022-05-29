@@ -11,6 +11,8 @@ import {
 	INodeType,
 	INodeTypeDescription,
 	IWebhookResponseData,
+	NodeApiError,
+	NodeOperationError,
 } from 'n8n-workflow';
 
 import {
@@ -35,13 +37,12 @@ export class SurveyMonkeyTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'SurveyMonkey Trigger',
 		name: 'surveyMonkeyTrigger',
-		icon: 'file:surveyMonkey.png',
+		icon: 'file:surveyMonkey.svg',
 		group: ['trigger'],
 		version: 1,
-		description: 'Starts the workflow when Survey Monkey events occure.',
+		description: 'Starts the workflow when Survey Monkey events occur',
 		defaults: {
 			name: 'SurveyMonkey Trigger',
-			color: '#53b675',
 		},
 		inputs: [],
 		outputs: ['main'],
@@ -99,7 +100,6 @@ export class SurveyMonkeyTrigger implements INodeType {
 					},
 				],
 				default: 'accessToken',
-				description: 'Method of authentication.',
 			},
 			{
 				displayName: 'Type',
@@ -163,12 +163,12 @@ export class SurveyMonkeyTrigger implements INodeType {
 					{
 						name: 'Response Disqualified',
 						value: 'response_disqualified',
-						description: 'A survey response is disqualified ',
+						description: 'A survey response is disqualified',
 					},
 					{
 						name: 'Response Overquota',
 						value: 'response_overquota',
-						description: `A response is over a survey’s quota`,
+						description: 'A response is over a survey’s quota',
 					},
 					{
 						name: 'Response Updated',
@@ -234,12 +234,12 @@ export class SurveyMonkeyTrigger implements INodeType {
 					{
 						name: 'Response Disqualified',
 						value: 'response_disqualified',
-						description: 'A survey response is disqualified ',
+						description: 'A survey response is disqualified',
 					},
 					{
 						name: 'Response Overquota',
 						value: 'response_overquota',
-						description: `A response is over a survey’s quota`,
+						description: 'A response is over a survey’s quota',
 					},
 					{
 						name: 'Response Updated',
@@ -323,7 +323,7 @@ export class SurveyMonkeyTrigger implements INodeType {
 					},
 				},
 				default: true,
-				description: 'By default the webhook-data only contain the IDs. If this option gets activated it<br />will resolve the data automatically.',
+				description: 'By default the webhook-data only contain the IDs. If this option gets activated, it will resolve the data automatically.',
 			},
 			{
 				displayName: 'Only Answers',
@@ -340,7 +340,7 @@ export class SurveyMonkeyTrigger implements INodeType {
 				},
 				type: 'boolean',
 				default: true,
-				description: 'Returns only the answers of the form and not any of the other data.',
+				description: 'Returns only the answers of the form and not any of the other data',
 			},
 		],
 	};
@@ -471,7 +471,7 @@ export class SurveyMonkeyTrigger implements INodeType {
 
 					try {
 						await surveyMonkeyApiRequest.call(this, 'DELETE', endpoint);
-					} catch (e) {
+					} catch (error) {
 						return false;
 					}
 
@@ -495,9 +495,9 @@ export class SurveyMonkeyTrigger implements INodeType {
 		const webhookName = this.getWebhookName();
 
 		if (authenticationMethod === 'accessToken') {
-			credentials = this.getCredentials('surveyMonkeyApi') as IDataObject;
+			credentials = await this.getCredentials('surveyMonkeyApi');
 		} else {
-			credentials = this.getCredentials('surveyMonkeyOAuth2Api') as IDataObject;
+			credentials = await this.getCredentials('surveyMonkeyOAuth2Api');
 		}
 
 		if (webhookName === 'setup') {
@@ -737,8 +737,8 @@ export class SurveyMonkeyTrigger implements INodeType {
 				});
 			});
 
-			req.on('error', (err) => {
-				throw new Error(err.message);
+			req.on('error', (error) => {
+				throw new NodeOperationError(this.getNode(), error);
 			});
 		});
 	}

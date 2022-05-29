@@ -1,10 +1,11 @@
 import { INodeProperties } from 'n8n-workflow';
 
-export const reportOperations = [
+export const reportOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -20,11 +21,10 @@ export const reportOperations = [
 			},
 		],
 		default: 'get',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const reportFields = [
+export const reportFields: INodeProperties[] = [
 
 	/* -------------------------------------------------------------------------- */
 	/*                                   report:get                               */
@@ -47,7 +47,6 @@ export const reportFields = [
 			},
 		},
 		default: '',
-		description: 'Event ID',
 	},
 	{
 		displayName: 'Session ID',
@@ -121,4 +120,4 @@ export const reportFields = [
 			},
 		],
 	},
-] as INodeProperties[];
+];

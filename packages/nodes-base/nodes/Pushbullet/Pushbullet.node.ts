@@ -1,5 +1,4 @@
 import {
-	BINARY_ENCODING,
 	IExecuteFunctions,
 } from 'n8n-core';
 
@@ -11,6 +10,7 @@ import {
 	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
+	NodeOperationError,
 } from 'n8n-workflow';
 
 import {
@@ -18,7 +18,7 @@ import {
 	pushbulletApiRequestAllItems,
 } from './GenericFunctions';
 
-import * as moment from 'moment-timezone';
+import moment from 'moment-timezone';
 
 export class Pushbullet implements INodeType {
 	description: INodeTypeDescription = {
@@ -28,10 +28,9 @@ export class Pushbullet implements INodeType {
 		group: ['input'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-		description: 'Consume Pushbullet API.',
+		description: 'Consume Pushbullet API',
 		defaults: {
 			name: 'Pushbullet',
-			color: '#457854',
 		},
 		inputs: ['main'],
 		outputs: ['main'],
@@ -46,6 +45,7 @@ export class Pushbullet implements INodeType {
 				displayName: 'Resource',
 				name: 'resource',
 				type: 'options',
+				noDataExpression: true,
 				options: [
 					{
 						name: 'Push',
@@ -53,12 +53,12 @@ export class Pushbullet implements INodeType {
 					},
 				],
 				default: 'push',
-				description: 'The resource to operate on.',
 			},
 			{
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				displayOptions: {
 					show: {
 						resource: [
@@ -89,7 +89,6 @@ export class Pushbullet implements INodeType {
 					},
 				],
 				default: 'create',
-				description: 'The operation to perform.',
 			},
 			{
 				displayName: 'Type',
@@ -142,7 +141,7 @@ export class Pushbullet implements INodeType {
 					},
 				},
 				default: '',
-				description: `Title of the push.`,
+				description: 'Title of the push',
 			},
 			{
 				displayName: 'Body',
@@ -165,7 +164,7 @@ export class Pushbullet implements INodeType {
 					},
 				},
 				default: '',
-				description: `Body of the push.`,
+				description: 'Body of the push',
 			},
 			{
 				displayName: 'URL',
@@ -186,7 +185,7 @@ export class Pushbullet implements INodeType {
 					},
 				},
 				default: '',
-				description: `URL of the push.`,
+				description: 'URL of the push',
 			},
 			{
 				displayName: 'Binary Property',
@@ -208,7 +207,7 @@ export class Pushbullet implements INodeType {
 					},
 				},
 				placeholder: '',
-				description: 'Name of the binary property which contains<br />the data for the file to be created.',
+				description: 'Name of the binary property which contains the data for the file to be created',
 			},
 			{
 				displayName: 'Target',
@@ -223,7 +222,7 @@ export class Pushbullet implements INodeType {
 					{
 						name: 'Default',
 						value: 'default',
-						description: `Broadcast it to all of the user's devices`,
+						description: 'Broadcast it to all of the user\'s devices',
 					},
 					{
 						name: 'Device ID',
@@ -248,7 +247,7 @@ export class Pushbullet implements INodeType {
 					},
 				},
 				default: 'default',
-				description: 'Define the medium that will be used to send the push.',
+				description: 'Define the medium that will be used to send the push',
 			},
 			{
 				displayName: 'Value',
@@ -272,9 +271,7 @@ export class Pushbullet implements INodeType {
 					},
 				},
 				default: '',
-				description: `The value to be set depending on the target selected.<br>
-				For example, if the target selected is email then this field would take the email address<br>
-				of the person you are trying to send the push to.`,
+				description: 'The value to be set depending on the target selected. For example, if the target selected is email then this field would take the email address of the person you are trying to send the push to.',
 			},
 			{
 				displayName: 'Value',
@@ -332,7 +329,7 @@ export class Pushbullet implements INodeType {
 					},
 				},
 				default: false,
-				description: 'If all results should be returned or only up to a given limit.',
+				description: 'Whether to return all results or only up to a given limit',
 			},
 			{
 				displayName: 'Limit',
@@ -356,7 +353,7 @@ export class Pushbullet implements INodeType {
 					maxValue: 500,
 				},
 				default: 100,
-				description: 'How many results to return.',
+				description: 'Max number of results to return',
 			},
 			{
 				displayName: 'Filters',
@@ -380,14 +377,14 @@ export class Pushbullet implements INodeType {
 						name: 'active',
 						type: 'boolean',
 						default: false,
-						description: `Don't return deleted pushes.`,
+						description: 'Don\'t return deleted pushes',
 					},
 					{
 						displayName: 'Modified After',
 						name: 'modified_after',
 						type: 'dateTime',
 						default: '',
-						description: `Request pushes modified after this timestamp.`,
+						description: 'Request pushes modified after this timestamp',
 					},
 				],
 			},
@@ -424,7 +421,7 @@ export class Pushbullet implements INodeType {
 					},
 				},
 				default: false,
-				description: 'Marks a push as having been dismissed by the user, will cause any notifications for the push to be hidden if possible.',
+				description: 'Marks a push as having been dismissed by the user, will cause any notifications for the push to be hidden if possible',
 			},
 		],
 	};
@@ -449,160 +446,169 @@ export class Pushbullet implements INodeType {
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 		const returnData: IDataObject[] = [];
-		const length = (items.length as unknown) as number;
+		const length = items.length;
 		const qs: IDataObject = {};
 		let responseData;
 		const resource = this.getNodeParameter('resource', 0) as string;
 		const operation = this.getNodeParameter('operation', 0) as string;
 		for (let i = 0; i < length; i++) {
+			try {
+				if (resource === 'push') {
+					if (operation === 'create') {
+						const type = this.getNodeParameter('type', i) as string;
 
-			if (resource === 'push') {
-				if (operation === 'create') {
-					const type = this.getNodeParameter('type', i) as string;
+						const message = this.getNodeParameter('body', i) as string;
 
-					const message = this.getNodeParameter('body', i) as string;
+						const target = this.getNodeParameter('target', i) as string;
 
-					const target = this.getNodeParameter('target', i) as string;
+						const body: IDataObject = {
+							type,
+							body: message,
+						};
 
-					const body: IDataObject = {
-						type,
-						body: message,
-					};
-
-					if (target !== 'default') {
-						const value = this.getNodeParameter('value', i) as string;
-						body[target as string] = value;
-					}
-
-					if (['note', 'link'].includes(type)) {
-						body.title = this.getNodeParameter('title', i) as string;
-
-						if (type === 'link') {
-							body.url = this.getNodeParameter('url', i) as string;
-						}
-					}
-
-					if (type === 'file') {
-						const binaryPropertyName = this.getNodeParameter('binaryPropertyName', 0) as string;
-
-						if (items[i].binary === undefined) {
-							throw new Error('No binary data exists on item!');
-						}
-						//@ts-ignore
-						if (items[i].binary[binaryPropertyName] === undefined) {
-							throw new Error(`No binary data property "${binaryPropertyName}" does not exists on item!`);
+						if (target !== 'default') {
+							const value = this.getNodeParameter('value', i) as string;
+							body[target as string] = value;
 						}
 
-						const binaryData = (items[i].binary as IBinaryKeyData)[binaryPropertyName];
+						if (['note', 'link'].includes(type)) {
+							body.title = this.getNodeParameter('title', i) as string;
 
-						//create upload url
-						const {
-							upload_url: uploadUrl,
-							file_name,
-							file_type,
-							file_url,
-						} = await pushbulletApiRequest.call(
-							this,
-							'POST',
-							`/upload-request`,
-							{
-								file_name: binaryData.fileName,
-								file_type: binaryData.mimeType,
-							},
-						);
+							if (type === 'link') {
+								body.url = this.getNodeParameter('url', i) as string;
+							}
+						}
 
-						//upload the file
-						await pushbulletApiRequest.call(
-							this,
-							'POST',
-							'',
-							{},
-							{},
-							uploadUrl,
-							{
-								formData: {
-									file: {
-										value: Buffer.from(binaryData.data, BINARY_ENCODING),
-										options: {
-											filename: binaryData.fileName,
+						if (type === 'file') {
+							const binaryPropertyName = this.getNodeParameter('binaryPropertyName', 0) as string;
+
+							if (items[i].binary === undefined) {
+								throw new NodeOperationError(this.getNode(), 'No binary data exists on item!');
+							}
+							//@ts-ignore
+							if (items[i].binary[binaryPropertyName] === undefined) {
+								throw new NodeOperationError(this.getNode(), `No binary data property "${binaryPropertyName}" does not exists on item!`);
+							}
+
+							const binaryData = (items[i].binary as IBinaryKeyData)[binaryPropertyName];
+							const dataBuffer = await this.helpers.getBinaryDataBuffer(i, binaryPropertyName);
+
+							//create upload url
+							const {
+								upload_url: uploadUrl,
+								file_name,
+								file_type,
+								file_url,
+							} = await pushbulletApiRequest.call(
+								this,
+								'POST',
+								`/upload-request`,
+								{
+									file_name: binaryData.fileName,
+									file_type: binaryData.mimeType,
+								},
+							);
+
+							//upload the file
+							await pushbulletApiRequest.call(
+								this,
+								'POST',
+								'',
+								{},
+								{},
+								uploadUrl,
+								{
+									formData: {
+										file: {
+											value: dataBuffer,
+											options: {
+												filename: binaryData.fileName,
+											},
 										},
 									},
+									json: false,
 								},
-								json: false,
-							},
+							);
+
+							body.file_name = file_name;
+							body.file_type = file_type;
+							body.file_url = file_url;
+						}
+
+						responseData = await pushbulletApiRequest.call(
+							this,
+							'POST',
+							`/pushes`,
+							body,
+						);
+					}
+
+					if (operation === 'getAll') {
+						const returnAll = this.getNodeParameter('returnAll', 0) as boolean;
+
+						const filters = this.getNodeParameter('filters', i) as IDataObject;
+
+						Object.assign(qs, filters);
+
+						if (qs.modified_after) {
+							qs.modified_after = moment(qs.modified_after as string).unix();
+						}
+
+						if (returnAll) {
+							responseData = await pushbulletApiRequestAllItems.call(this, 'pushes', 'GET', '/pushes', {}, qs);
+
+						} else {
+							qs.limit = this.getNodeParameter('limit', 0) as number;
+
+							responseData = await pushbulletApiRequest.call(this, 'GET', '/pushes', {}, qs);
+
+							responseData = responseData.pushes;
+						}
+					}
+
+					if (operation === 'delete') {
+						const pushId = this.getNodeParameter('pushId', i) as string;
+
+						responseData = await pushbulletApiRequest.call(
+							this,
+							'DELETE',
+							`/pushes/${pushId}`,
 						);
 
-						body.file_name = file_name;
-						body.file_type = file_type;
-						body.file_url = file_url;
+						responseData = { success: true };
 					}
 
-					responseData = await pushbulletApiRequest.call(
-						this,
-						'POST',
-						`/pushes`,
-						body,
-					);
-				}
+					if (operation === 'update') {
+						const pushId = this.getNodeParameter('pushId', i) as string;
 
-				if (operation === 'getAll') {
-					const returnAll = this.getNodeParameter('returnAll', 0) as boolean;
+						const dismissed = this.getNodeParameter('dismissed', i) as boolean;
 
-					const filters = this.getNodeParameter('filters', i) as IDataObject;
-
-					Object.assign(qs, filters);
-
-					if (qs.modified_after) {
-						qs.modified_after = moment(qs.modified_after as string).unix();
-					}
-
-					if (returnAll) {
-						responseData = await pushbulletApiRequestAllItems.call(this, 'pushes', 'GET', '/pushes', {}, qs);
-
-					} else {
-						qs.limit = this.getNodeParameter('limit', 0) as number;
-
-						responseData = await pushbulletApiRequest.call(this, 'GET', '/pushes', {}, qs);
-
-						responseData = responseData.pushes;
+						responseData = await pushbulletApiRequest.call(
+							this,
+							'POST',
+							`/pushes/${pushId}`,
+							{
+								dismissed,
+							},
+						);
 					}
 				}
+				if (Array.isArray(responseData)) {
+					returnData.push.apply(returnData, responseData as IDataObject[]);
 
-				if (operation === 'delete') {
-					const pushId = this.getNodeParameter('pushId', i) as string;
+				} else if (responseData !== undefined) {
+					returnData.push(responseData as IDataObject);
 
-					responseData = await pushbulletApiRequest.call(
-						this,
-						'DELETE',
-						`/pushes/${pushId}`,
-					);
-
-					responseData = { success: true };
 				}
-
-				if (operation === 'update') {
-					const pushId = this.getNodeParameter('pushId', i) as string;
-
-					const dismissed = this.getNodeParameter('dismissed', i) as boolean;
-
-					responseData = await pushbulletApiRequest.call(
-						this,
-						'POST',
-						`/pushes/${pushId}`,
-						{
-							dismissed,
-						},
-					);
+			} catch (error) {
+				if (this.continueOnFail()) {
+					returnData.push({ error: error.message });
+					continue;
 				}
+				throw error;
 			}
 		}
-		if (Array.isArray(responseData)) {
-			returnData.push.apply(returnData, responseData as IDataObject[]);
 
-		} else if (responseData !== undefined) {
-			returnData.push(responseData as IDataObject);
-
-		}
 		return [this.helpers.returnJsonArray(returnData)];
 	}
 }

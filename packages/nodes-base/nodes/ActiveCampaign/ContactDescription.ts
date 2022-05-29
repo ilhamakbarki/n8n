@@ -6,11 +6,12 @@ import {
 	activeCampaignDefaultGetAllProperties,
 } from './GenericFunctions';
 
-export const contactOperations = [
+export const contactOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -46,11 +47,10 @@ export const contactOperations = [
 			},
 		],
 		default: 'create',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const contactFields = [
+export const contactFields: INodeProperties[] = [
 	// ----------------------------------
 	//         contact:create
 	// ----------------------------------
@@ -70,7 +70,7 @@ export const contactFields = [
 				],
 			},
 		},
-		description: 'The email of the contact to create.',
+		description: 'The email of the contact to create',
 	},
 	{
 		displayName: 'Update if exists',
@@ -110,7 +110,7 @@ export const contactFields = [
 				displayName: 'Custom Fields',
 				name: 'fieldValues',
 				placeholder: 'Add Custom Fields',
-				description: 'Adds a custom fields to set also values which have not been predefined.',
+				description: 'Adds a custom fields to set also values which have not been predefined',
 				type: 'fixedCollection',
 				typeOptions: {
 					multipleValues: true,
@@ -129,14 +129,14 @@ export const contactFields = [
 									loadOptionsMethod: 'getContactCustomFields',
 								},
 								default: '',
-								description: 'ID of the field to set.',
+								description: 'ID of the field to set',
 							},
 							{
 								displayName: 'Field Value',
 								name: 'value',
 								type: 'string',
 								default: '',
-								description: 'Value of the field to set.',
+								description: 'Value of the field to set',
 							},
 						],
 					},
@@ -147,21 +147,21 @@ export const contactFields = [
 				name: 'firstName',
 				type: 'string',
 				default: '',
-				description: 'The first name of the contact to create.',
+				description: 'The first name of the contact to create',
 			},
 			{
 				displayName: 'Last Name',
 				name: 'lastName',
 				type: 'string',
 				default: '',
-				description: 'The last name of the contact to create.',
+				description: 'The last name of the contact to create',
 			},
 			{
 				displayName: 'Phone',
 				name: 'phone',
 				type: 'string',
 				default: '',
-				description: 'Phone number of the contact.',
+				description: 'Phone number of the contact',
 			},
 		],
 	},
@@ -185,13 +185,13 @@ export const contactFields = [
 		},
 		default: 0,
 		required: true,
-		description: 'ID of the contact to update.',
+		description: 'ID of the contact to update',
 	},
 	{
 		displayName: 'Update Fields',
 		name: 'updateFields',
 		type: 'collection',
-		description: 'The fields to update.',
+		description: 'The fields to update',
 		placeholder: 'Add Field',
 		displayOptions: {
 			show: {
@@ -209,7 +209,7 @@ export const contactFields = [
 				displayName: 'Custom Fields',
 				name: 'fieldValues',
 				placeholder: 'Add Custom Fields',
-				description: 'Adds a custom fields to set also values which have not been predefined.',
+				description: 'Adds a custom fields to set also values which have not been predefined',
 				type: 'fixedCollection',
 				typeOptions: {
 					multipleValues: true,
@@ -228,14 +228,14 @@ export const contactFields = [
 									loadOptionsMethod: 'getContactCustomFields',
 								},
 								default: '',
-								description: 'ID of the field to set.',
+								description: 'ID of the field to set',
 							},
 							{
 								displayName: 'Field Value',
 								name: 'value',
 								type: 'string',
 								default: '',
-								description: 'Value of the field to set.',
+								description: 'Value of the field to set',
 							},
 						],
 					},
@@ -246,28 +246,28 @@ export const contactFields = [
 				name: 'email',
 				type: 'string',
 				default: '',
-				description: 'Email of the contact.',
+				description: 'Email of the contact',
 			},
 			{
 				displayName: 'First Name',
 				name: 'firstName',
 				type: 'string',
 				default: '',
-				description: 'First name of the contact.',
+				description: 'First name of the contact',
 			},
 			{
 				displayName: 'Last Name',
 				name: 'lastName',
 				type: 'string',
 				default: '',
-				description: 'Last name of the contact.',
+				description: 'Last name of the contact',
 			},
 			{
 				displayName: 'Phone',
 				name: 'phone',
 				type: 'string',
 				default: '',
-				description: 'Phone number of the contact.',
+				description: 'Phone number of the contact',
 			},
 		],
 	},
@@ -291,7 +291,7 @@ export const contactFields = [
 		},
 		default: 0,
 		required: true,
-		description: 'ID of the contact to delete.',
+		description: 'ID of the contact to delete',
 	},
 
 	// ----------------------------------
@@ -313,7 +313,7 @@ export const contactFields = [
 		},
 		default: 0,
 		required: true,
-		description: 'ID of the contact to get.',
+		description: 'ID of the contact to get',
 	},
 
 	// ----------------------------------
@@ -510,4 +510,4 @@ export const contactFields = [
 			},
 		],
 	},
-] as INodeProperties[];
+];

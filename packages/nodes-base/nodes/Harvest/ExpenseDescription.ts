@@ -1,12 +1,17 @@
-import { INodeProperties } from 'n8n-workflow';
+import {
+	INodeProperties,
+} from 'n8n-workflow';
 
-const resource = ['expense'];
+const resource = [
+	'expense',
+];
 
-export const expenseOperations = [
+export const expenseOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource,
@@ -26,29 +31,28 @@ export const expenseOperations = [
 			{
 				name: 'Create',
 				value: 'create',
-				description: `Create an expense`,
+				description: 'Create an expense',
 			},
 			{
 				name: 'Update',
 				value: 'update',
-				description: `Update an expense`,
+				description: 'Update an expense',
 			},
 			{
 				name: 'Delete',
 				value: 'delete',
-				description: `Delete an expense`,
+				description: 'Delete an expense',
 			},
 		],
 		default: 'getAll',
-		description: 'The operation to perform.',
 	},
 
-] as INodeProperties[];
+];
 
-export const expenseFields = [
+export const expenseFields: INodeProperties[] = [
 
 	/* -------------------------------------------------------------------------- */
-	/*                                expense:getAll                            */
+	/*                                expense:getAll                              */
 	/* -------------------------------------------------------------------------- */
 
 	{
@@ -64,7 +68,7 @@ export const expenseFields = [
 			},
 		},
 		default: false,
-		description: 'Returns a list of your expenses.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -86,7 +90,7 @@ export const expenseFields = [
 			maxValue: 100,
 		},
 		default: 100,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	{
 		displayName: 'Filters',
@@ -108,21 +112,21 @@ export const expenseFields = [
 				name: 'client_id',
 				type: 'string',
 				default: '',
-				description: 'Only return time entries belonging to the client with the given ID.',
+				description: 'Only return time entries belonging to the client with the given ID',
 			},
 			{
 				displayName: 'From',
 				name: 'from',
 				type: 'dateTime',
 				default: '',
-				description: 'Only return time entries with a spent_date on or after the given date.',
+				description: 'Only return time entries with a spent_date on or after the given date',
 			},
 			{
 				displayName: 'Is Billed',
 				name: 'is_billed',
 				type: 'boolean',
 				default: false,
-				description: 'Pass true to only return time entries that have been invoiced and false to return time entries that have not been invoiced.',
+				description: 'Pass true to only return time entries that have been invoiced and false to return time entries that have not been invoiced',
 			},
 			{
 				displayName: 'Page',
@@ -139,37 +143,37 @@ export const expenseFields = [
 				name: 'project_id',
 				type: 'string',
 				default: '',
-				description: 'Only return time entries belonging to the client with the given ID.',
+				description: 'Only return time entries belonging to the client with the given ID',
 			},
 			{
 				displayName: 'To',
 				name: 'to',
 				type: 'dateTime',
 				default: '',
-				description: 'Only return time entries with a spent_date on or before the given date.',
+				description: 'Only return time entries with a spent_date on or before the given date',
 			},
 			{
 				displayName: 'Updated Since',
 				name: 'updated_since',
 				type: 'dateTime',
 				default: '',
-				description: 'Only return time entries that have been updated since the given date and time.',
+				description: 'Only return time entries that have been updated since the given date and time',
 			},
 			{
 				displayName: 'User ID',
 				name: 'user_id',
 				type: 'string',
 				default: '',
-				description: 'Only return time entries belonging to the user with the given ID.',
+				description: 'Only return time entries belonging to the user with the given ID',
 			},
 		],
 	},
 
 	/* -------------------------------------------------------------------------- */
-	/*                                expense:get                            */
+	/*                                expense:get                                 */
 	/* -------------------------------------------------------------------------- */
 	{
-		displayName: 'Expense Id',
+		displayName: 'Expense ID',
 		name: 'id',
 		type: 'string',
 		default: '',
@@ -182,14 +186,14 @@ export const expenseFields = [
 				resource,
 			},
 		},
-		description: 'The ID of the expense you are retrieving.',
+		description: 'The ID of the expense you are retrieving',
 	},
 
 	/* -------------------------------------------------------------------------- */
-	/*                                expense:delete                            */
+	/*                                expense:delete                              */
 	/* -------------------------------------------------------------------------- */
 	{
-		displayName: 'Expense Id',
+		displayName: 'Expense ID',
 		name: 'id',
 		type: 'string',
 		default: '',
@@ -202,14 +206,14 @@ export const expenseFields = [
 				resource,
 			},
 		},
-		description: 'The ID of the expense you want to delete.',
+		description: 'The ID of the expense you want to delete',
 	},
 
 	/* -------------------------------------------------------------------------- */
-	/*                                expense:create                           */
+	/*                                expense:create                              */
 	/* -------------------------------------------------------------------------- */
 	{
-		displayName: 'Project Id',
+		displayName: 'Project ID',
 		name: 'projectId',
 		type: 'string',
 		displayOptions: {
@@ -222,10 +226,10 @@ export const expenseFields = [
 		},
 		default: '',
 		required: true,
-		description: 'The ID of the project associated with this expense.',
+		description: 'The ID of the project associated with this expense',
 	},
 	{
-		displayName: 'Expense Category Id',
+		displayName: 'Expense Category ID',
 		name: 'expenseCategoryId',
 		type: 'string',
 		displayOptions: {
@@ -238,7 +242,7 @@ export const expenseFields = [
 		},
 		default: '',
 		required: true,
-		description: 'The ID of the expense category this expense is being tracked against.',
+		description: 'The ID of the expense category this expense is being tracked against',
 	},
 	{
 		displayName: 'Spent Date',
@@ -254,7 +258,7 @@ export const expenseFields = [
 		},
 		default: '',
 		required: true,
-		description: 'Date the expense occurred.',
+		description: 'Date the expense occurred',
 	},
 	{
 		displayName: 'Additional Fields',
@@ -283,24 +287,24 @@ export const expenseFields = [
 				name: 'notes',
 				type: 'string',
 				default: '',
-				description: 'Notes about the expense.',
+				description: 'Notes about the expense',
 			},
 			{
 				displayName: 'Total Cost',
 				name: 'total_cost',
 				type: 'string',
 				default: '',
-				description: 'The total amount of the expense.',
+				description: 'The total amount of the expense',
 			},
 			{
 				displayName: 'Units',
 				name: 'units',
 				type: 'string',
 				default: '',
-				description: 'The quantity of units to use in calculating the total_cost of the expense.',
+				description: 'The quantity of units to use in calculating the total_cost of the expense',
 			},
 			{
-				displayName: 'User Id',
+				displayName: 'User ID',
 				name: 'user_id',
 				type: 'boolean',
 				default: true,
@@ -310,10 +314,10 @@ export const expenseFields = [
 	},
 
 	/* -------------------------------------------------------------------------- */
-	/*                                invoice:update                           */
+	/*                                invoice:update                              */
 	/* -------------------------------------------------------------------------- */
 	{
-		displayName: 'Invoice Id',
+		displayName: 'Invoice ID',
 		name: 'id',
 		type: 'string',
 		default: '',
@@ -326,7 +330,7 @@ export const expenseFields = [
 				resource,
 			},
 		},
-		description: 'The ID of the invoice want to update.',
+		description: 'The ID of the invoice want to update',
 	},
 	{
 		displayName: 'Update Fields',
@@ -351,49 +355,49 @@ export const expenseFields = [
 				description: 'Whether this expense is billable or not. Defaults to true.',
 			},
 			{
-				displayName: 'Expense Category Id',
+				displayName: 'Expense Category ID',
 				name: 'expense_category_id',
 				type: 'string',
 				default: '',
-				description: 'The ID of the expense category this expense is being tracked against.',
+				description: 'The ID of the expense category this expense is being tracked against',
 			},
 			{
 				displayName: 'Notes',
 				name: 'notes',
 				type: 'string',
 				default: '',
-				description: 'Notes about the expense.',
+				description: 'Notes about the expense',
 			},
 			{
-				displayName: 'Project Id',
+				displayName: 'Project ID',
 				name: 'project_id',
 				type: 'string',
 				default: '',
-				description: 'The ID of the project associated with this expense.',
+				description: 'The ID of the project associated with this expense',
 			},
 			{
 				displayName: 'Spent Date',
 				name: 'spent_date',
 				type: 'dateTime',
 				default: '',
-				description: 'Date the expense occurred.',
+				description: 'Date the expense occurred',
 			},
 			{
 				displayName: 'Total Cost',
 				name: 'total_cost',
 				type: 'string',
 				default: '',
-				description: 'The total amount of the expense.',
+				description: 'The total amount of the expense',
 			},
 			{
 				displayName: 'Units',
 				name: 'units',
 				type: 'string',
 				default: '',
-				description: 'The quantity of units to use in calculating the total_cost of the expense.',
+				description: 'The quantity of units to use in calculating the total_cost of the expense',
 			},
 			{
-				displayName: 'User Id',
+				displayName: 'User ID',
 				name: 'user_id',
 				type: 'boolean',
 				default: true,
@@ -402,4 +406,4 @@ export const expenseFields = [
 		],
 	},
 
-] as INodeProperties[];
+];

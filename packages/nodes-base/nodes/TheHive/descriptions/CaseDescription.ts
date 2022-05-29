@@ -6,12 +6,13 @@ import {
 	TLP,
 } from '../interfaces/AlertInterface';
 
-export const caseOperations = [
+export const caseOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		default: 'getAll',
 		type: 'options',
+		noDataExpression: true,
 		required: true,
 		displayOptions: {
 			show: {
@@ -27,9 +28,9 @@ export const caseOperations = [
 			loadOptionsMethod: 'loadCaseOptions',
 		},
 	},
-] as INodeProperties[];
+];
 
-export const caseFields = [
+export const caseFields: INodeProperties[] = [
 	{
 		displayName: 'Return All',
 		name: 'returnAll',
@@ -45,7 +46,7 @@ export const caseFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -69,7 +70,7 @@ export const caseFields = [
 			maxValue: 500,
 		},
 		default: 100,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	// Required fields
 	{
@@ -158,7 +159,7 @@ export const caseFields = [
 				],
 			},
 		},
-		description: 'Severity of the alert. Default=Medium',
+		description: 'Severity of the alert. Default=Medium.',
 	},
 	{
 		displayName: 'Start Date',
@@ -247,7 +248,7 @@ export const caseFields = [
 				],
 			},
 		},
-		description: 'Traffict Light Protocol (TLP). Default=Amber',
+		description: 'Traffict Light Protocol (TLP). Default=Amber.',
 	},
 	{
 		displayName: 'Tags',
@@ -295,6 +296,23 @@ export const caseFields = [
 			},
 		},
 	},
+	{
+		displayName: 'JSON Parameters',
+		name: 'jsonParameters',
+		type: 'boolean',
+		default: true,
+		displayOptions: {
+			show: {
+				resource: [
+					'case',
+				],
+				operation: [
+					'create',
+					'update',
+				],
+			},
+		},
+	},
 	// Optional fields (Create operation)
 	{
 		displayName: 'Options',
@@ -311,9 +329,63 @@ export const caseFields = [
 				],
 			},
 		},
-		required: false,
-		default: '',
+		default: {},
 		options: [
+			{
+				displayName: 'Custom Fields',
+				name: 'customFieldsUi',
+				type: 'fixedCollection',
+				default: {},
+				typeOptions: {
+					multipleValues: true,
+				},
+				displayOptions: {
+					show: {
+						'/jsonParameters': [
+							false,
+						],
+					},
+				},
+				placeholder: 'Add Custom Field',
+				options: [
+					{
+						name: 'customFields',
+						displayName: 'Custom Field',
+						values: [
+							{
+								displayName: 'Field',
+								name: 'field',
+								type: 'options',
+								typeOptions: {
+									loadOptionsMethod: 'loadCustomFields',
+								},
+								default: 'Custom Field',
+							},
+							{
+								displayName: 'Value',
+								name: 'value',
+								type: 'string',
+								default: '',
+								description: 'Custom Field value. Use an expression if the type is not a string.',
+							},
+						],
+					},
+				],
+			},
+			{
+				displayName: 'Custom Fields (JSON)',
+				name: 'customFieldsJson',
+				type: 'string',
+				default: '',
+				displayOptions: {
+					show: {
+						'/jsonParameters': [
+							true,
+						],
+					},
+				},
+				description: 'Custom fields in JSON format. Overrides Custom Fields UI if set.',
+			},
 			{
 				displayName: 'End Date',
 				name: 'endDate',
@@ -333,6 +405,13 @@ export const caseFields = [
 				name: 'metrics',
 				default: '[]',
 				type: 'json',
+				displayOptions: {
+					show: {
+						'/jsonParameters': [
+							true,
+						],
+					},
+				},
 				description: 'List of metrics',
 			},
 		],
@@ -353,9 +432,63 @@ export const caseFields = [
 				],
 			},
 		},
-		required: false,
-		default: '',
+		default: {},
 		options: [
+			{
+				displayName: 'Custom Fields',
+				name: 'customFieldsUi',
+				type: 'fixedCollection',
+				default: {},
+				typeOptions: {
+					multipleValues: true,
+				},
+				displayOptions: {
+					show: {
+						'/jsonParameters': [
+							false,
+						],
+					},
+				},
+				placeholder: 'Add Custom Field',
+				options: [
+					{
+						name: 'customFields',
+						displayName: 'Custom Field',
+						values: [
+							{
+								displayName: 'Field',
+								name: 'field',
+								type: 'options',
+								typeOptions: {
+									loadOptionsMethod: 'loadCustomFields',
+								},
+								default: 'Custom Field',
+							},
+							{
+								displayName: 'Value',
+								name: 'value',
+								type: 'string',
+								default: '',
+								description: 'Custom Field value. Use an expression if the type is not a string.',
+							},
+						],
+					},
+				],
+			},
+			{
+				displayName: 'Custom Fields (JSON)',
+				name: 'customFieldsJson',
+				type: 'string',
+				default: '',
+				displayOptions: {
+					show: {
+						'/jsonParameters': [
+							true,
+						],
+					},
+				},
+				description: 'Custom fields in JSON format. Overrides Custom Fields UI if set.',
+			},
 			{
 				displayName: 'Description',
 				name: 'description',
@@ -403,6 +536,13 @@ export const caseFields = [
 				name: 'metrics',
 				type: 'json',
 				default: '[]',
+				displayOptions: {
+					show: {
+						'/jsonParameters': [
+							true,
+						],
+					},
+				},
 				description: 'List of metrics',
 			},
 			{
@@ -459,7 +599,7 @@ export const caseFields = [
 					},
 				],
 				default: 2,
-				description: 'Severity of the alert. Default=Medium',
+				description: 'Severity of the alert. Default=Medium.',
 			},
 			{
 				displayName: 'Start Date',
@@ -531,7 +671,7 @@ export const caseFields = [
 						value: TLP.red,
 					},
 				],
-				description: 'Traffict Light Protocol (TLP). Default=Amber',
+				description: 'Traffict Light Protocol (TLP). Default=Amber.',
 			},
 		],
 	},
@@ -568,7 +708,6 @@ export const caseFields = [
 		displayName: 'Filters',
 		name: 'filters',
 		type: 'collection',
-		required: false,
 		default: {},
 		placeholder: 'Add a Filter',
 		displayOptions: {
@@ -583,6 +722,40 @@ export const caseFields = [
 			},
 		},
 		options: [
+			{
+				displayName: 'Custom Fields',
+				name: 'customFieldsUi',
+				type: 'fixedCollection',
+				default: {},
+				typeOptions: {
+					multipleValues: true,
+				},
+				placeholder: 'Add Custom Field',
+				options: [
+					{
+						name: 'customFields',
+						displayName: 'Custom Field',
+						values: [
+							{
+								displayName: 'Field',
+								name: 'field',
+								type: 'options',
+								typeOptions: {
+									loadOptionsMethod: 'loadCustomFields',
+								},
+								default: 'Custom Field',
+							},
+							{
+								displayName: 'Value',
+								name: 'value',
+								type: 'string',
+								default: '',
+								description: 'Custom Field value. Use an expression if the type is not a string.',
+							},
+						],
+					},
+				],
+			},
 			{
 				displayName: 'Description',
 				name: 'description',
@@ -677,7 +850,7 @@ export const caseFields = [
 					},
 				],
 				default: 2,
-				description: 'Severity of the alert. Default=Medium',
+				description: 'Severity of the alert. Default=Medium.',
 			},
 			{
 				displayName: 'Start Date',
@@ -730,7 +903,6 @@ export const caseFields = [
 				displayName: 'TLP',
 				name: 'tlp',
 				type: 'options',
-				required: false,
 				default: 2,
 				options: [
 					{
@@ -750,8 +922,8 @@ export const caseFields = [
 						value: TLP.red,
 					},
 				],
-				description: 'Traffict Light Protocol (TLP). Default=Amber',
+				description: 'Traffict Light Protocol (TLP). Default=Amber.',
 			},
 		],
 	},
-] as INodeProperties[];
+];

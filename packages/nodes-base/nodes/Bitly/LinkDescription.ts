@@ -1,10 +1,11 @@
 import { INodeProperties } from 'n8n-workflow';
 
-export const linkOperations = [
+export const linkOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -30,11 +31,10 @@ export const linkOperations = [
 			},
 		],
 		default: 'create',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const linkFields = [
+export const linkFields: INodeProperties[] = [
 
 /* -------------------------------------------------------------------------- */
 /*                                link:create                                 */
@@ -313,4 +313,4 @@ export const linkFields = [
 			},
 		},
 	},
-] as INodeProperties[];
+];

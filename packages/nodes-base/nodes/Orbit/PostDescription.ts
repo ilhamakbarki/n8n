@@ -2,11 +2,12 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export const postOperations = [
+export const postOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -32,11 +33,10 @@ export const postOperations = [
 			},
 		],
 		default: 'create',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const postFields = [
+export const postFields: INodeProperties[] = [
 
 	/* -------------------------------------------------------------------------- */
 	/*                                post:create                                 */
@@ -94,7 +94,7 @@ export const postFields = [
 				],
 			},
 		},
-		description: 'Supply any URL and Orbit will do its best job to parse out a title, description, and image.',
+		description: 'Supply any URL and Orbit will do its best job to parse out a title, description, and image',
 	},
 	{
 		displayName: 'Additional Fields',
@@ -114,7 +114,7 @@ export const postFields = [
 		default: {},
 		options: [
 			{
-				displayName: 'Published At',
+				displayName: 'Occurred At',
 				name: 'publishedAt',
 				type: 'dateTime',
 				default: '',
@@ -160,7 +160,7 @@ export const postFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -184,7 +184,7 @@ export const postFields = [
 			maxValue: 500,
 		},
 		default: 100,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	{
 		displayName: 'Filters',
@@ -208,7 +208,7 @@ export const postFields = [
 				name: 'memberId',
 				type: 'string',
 				default: '',
-				description: 'When set the post will be filtered by the member ID.',
+				description: 'When set the post will be filtered by the member ID',
 			},
 		],
 	},
@@ -270,4 +270,4 @@ export const postFields = [
 			},
 		},
 	},
-] as INodeProperties[];
+];

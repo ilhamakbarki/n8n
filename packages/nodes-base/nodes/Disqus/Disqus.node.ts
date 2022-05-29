@@ -6,6 +6,7 @@ import {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
+	NodeOperationError,
 } from 'n8n-workflow';
 
 import { disqusApiRequest, disqusApiRequestAllItems } from './GenericFunctions';
@@ -22,7 +23,6 @@ export class Disqus implements INodeType {
 		description: 'Access data on Disqus',
 		defaults: {
 			name: 'Disqus',
-			color: '#22BB44',
 		},
 		inputs: ['main'],
 		outputs: ['main'],
@@ -37,6 +37,7 @@ export class Disqus implements INodeType {
 				displayName: 'Resource',
 				name: 'resource',
 				type: 'options',
+				noDataExpression: true,
 				options: [
 					{
 						name: 'Forum',
@@ -44,7 +45,6 @@ export class Disqus implements INodeType {
 					},
 				],
 				default: 'forum',
-				description: 'The resource to operate on.',
 			},
 
 			// ----------------------------------
@@ -54,6 +54,7 @@ export class Disqus implements INodeType {
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				displayOptions: {
 					show: {
 						resource: [
@@ -84,7 +85,6 @@ export class Disqus implements INodeType {
 					},
 				],
 				default: 'get',
-				description: 'The operation to perform.',
 			},
 
 			// ----------------------------------
@@ -106,7 +106,7 @@ export class Disqus implements INodeType {
 						],
 					},
 				},
-				description: 'The short name(aka ID) of the forum to get.',
+				description: 'The short name(aka ID) of the forum to get',
 			},
 			{
 				displayName: 'Additional Fields',
@@ -168,7 +168,6 @@ export class Disqus implements INodeType {
 							},
 						],
 						default: [],
-						description: 'The resource to operate on.',
 					},
 					{
 						displayName: 'Related',
@@ -205,7 +204,7 @@ export class Disqus implements INodeType {
 						],
 					},
 				},
-				description: 'The short name(aka ID) of the forum to get.',
+				description: 'The short name(aka ID) of the forum to get',
 			},
 			{
 				displayName: 'Return All',
@@ -222,7 +221,7 @@ export class Disqus implements INodeType {
 					},
 				},
 				default: false,
-				description: 'If all results should be returned or only up to a given limit.',
+				description: 'Whether to return all results or only up to a given limit',
 			},
 			{
 				displayName: 'Limit',
@@ -246,7 +245,7 @@ export class Disqus implements INodeType {
 					maxValue: 100,
 				},
 				default: 100,
-				description: 'How many results to return.',
+				description: 'Max number of results to return',
 			},
 			{
 				displayName: 'Additional Fields',
@@ -316,7 +315,7 @@ export class Disqus implements INodeType {
 							},
 						],
 						default: [],
-						description: 'You may specify filters for your response.',
+						description: 'You may specify filters for your response',
 					},
 					{
 						displayName: 'Include',
@@ -329,7 +328,7 @@ export class Disqus implements INodeType {
 							},
 						],
 						default: [],
-						description: 'You may specify relations to include with your response.',
+						description: 'You may specify relations to include with your response',
 					},
 					{
 						displayName: 'Order',
@@ -346,14 +345,14 @@ export class Disqus implements INodeType {
 							},
 						],
 						default: 'asc',
-						description: 'You may specify order to sort your response.',
+						description: 'You may specify order to sort your response',
 					},
 					{
 						displayName: 'Query',
 						name: 'query',
 						type: 'string',
 						default: '',
-						description: 'You may specify query forChoices: asc, desc your response.',
+						description: 'You may specify query forChoices: asc, desc your response',
 					},
 					{
 						displayName: 'Related',
@@ -397,7 +396,7 @@ export class Disqus implements INodeType {
 						],
 					},
 				},
-				description: 'The short name(aka ID) of the forum to get Categories.',
+				description: 'The short name(aka ID) of the forum to get Categories',
 			},
 			{
 				displayName: 'Return All',
@@ -414,7 +413,7 @@ export class Disqus implements INodeType {
 					},
 				},
 				default: false,
-				description: 'If all results should be returned or only up to a given limit.',
+				description: 'Whether to return all results or only up to a given limit',
 			},
 			{
 				displayName: 'Limit',
@@ -438,7 +437,7 @@ export class Disqus implements INodeType {
 					maxValue: 100,
 				},
 				default: 100,
-				description: 'How many results to return.',
+				description: 'Max number of results to return',
 			},
 			{
 				displayName: 'Additional Fields',
@@ -472,7 +471,7 @@ export class Disqus implements INodeType {
 							},
 						],
 						default: 'asc',
-						description: 'You may specify order to sort your response.',
+						description: 'You may specify order to sort your response',
 					},
 				],
 			},
@@ -496,7 +495,7 @@ export class Disqus implements INodeType {
 						],
 					},
 				},
-				description: 'The short name(aka ID) of the forum to get Threads.',
+				description: 'The short name(aka ID) of the forum to get Threads',
 			},
 			{
 				displayName: 'Return All',
@@ -513,7 +512,7 @@ export class Disqus implements INodeType {
 					},
 				},
 				default: false,
-				description: 'If all results should be returned or only up to a given limit.',
+				description: 'Whether to return all results or only up to a given limit',
 			},
 			{
 				displayName: 'Limit',
@@ -537,7 +536,7 @@ export class Disqus implements INodeType {
 					maxValue: 100,
 				},
 				default: 100,
-				description: 'How many results to return.',
+				description: 'Max number of results to return',
 			},
 			{
 				displayName: 'Additional Fields',
@@ -592,7 +591,7 @@ export class Disqus implements INodeType {
 							},
 						],
 						default: [],
-						description: 'You may specify relations to include with your response.',
+						description: 'You may specify relations to include with your response',
 					},
 					{
 						displayName: 'Order',
@@ -609,7 +608,7 @@ export class Disqus implements INodeType {
 							},
 						],
 						default: 'asc',
-						description: 'You may specify order to sort your response.',
+						description: 'You may specify order to sort your response',
 					},
 					{
 						displayName: 'Since',
@@ -623,7 +622,7 @@ export class Disqus implements INodeType {
 						name: 'threadId',
 						type: 'string',
 						default: '',
-						description: 'Looks up a thread by ID. You may pass us the "ident"<br />query type instead of an ID by including "forum". You may<br />pass us the "link" query type to filter by URL. You must pass<br />the "forum" if you do not have the Pro API Access addon.',
+						description: 'Looks up a thread by ID. You may pass us the "ident" query type instead of an ID by including "forum". You may pass us the "link" query type to filter by URL. You must pass the "forum" if you do not have the Pro API Access addon.',
 					},
 				],
 			},
@@ -646,136 +645,144 @@ export class Disqus implements INodeType {
 
 
 		for (let i = 0; i < items.length; i++) {
-			body = {};
-			qs = {};
+			try {
+				body = {};
+				qs = {};
 
-			if (resource === 'forum') {
-				if (operation === 'get') {
-					// ----------------------------------
-					//         get
-					// ----------------------------------
+				if (resource === 'forum') {
+					if (operation === 'get') {
+						// ----------------------------------
+						//         get
+						// ----------------------------------
 
-					requestMethod = 'GET';
+						requestMethod = 'GET';
 
-					endpoint = 'forums/details.json';
+						endpoint = 'forums/details.json';
 
-					const id = this.getNodeParameter('id', i) as string;
-					qs.forum = id;
+						const id = this.getNodeParameter('id', i) as string;
+						qs.forum = id;
 
-					const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 
-					Object.assign(qs, additionalFields);
+						Object.assign(qs, additionalFields);
 
-					try {
-						const responseData = await disqusApiRequest.call(this, requestMethod, qs, endpoint);
-						returnData.push(responseData.response);
-					} catch (error) {
-						throw error;
-					}
-
-				} else if (operation === 'getPosts') {
-					// ----------------------------------
-					//         getPosts
-					// ----------------------------------
-
-					requestMethod = 'GET';
-
-					endpoint = 'forums/listPosts.json';
-
-					const id = this.getNodeParameter('id', i) as string;
-					const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
-					Object.assign(qs, additionalFields);
-
-					const returnAll = this.getNodeParameter('returnAll', i) as boolean;
-
-					qs.forum = id;
-					qs.limit = 100;
-
-					try {
-						let responseData: IDataObject = {};
-						if(returnAll) {
-							responseData.response = await disqusApiRequestAllItems.call(this, requestMethod, qs, endpoint);
-						} else {
-							const limit = this.getNodeParameter('limit', i) as string;
-							qs.limit = limit;
-							responseData = await disqusApiRequest.call(this, requestMethod, qs, endpoint);
+						try {
+							const responseData = await disqusApiRequest.call(this, requestMethod, qs, endpoint);
+							returnData.push(responseData.response);
+						} catch (error) {
+							throw error;
 						}
-						returnData.push.apply(returnData, responseData.response as IDataObject[]);
-					} catch (error) {
-						throw error;
-					}
 
-				}  else if (operation === 'getCategories') {
-					// ----------------------------------
-					//         getCategories
-					// ----------------------------------
+					} else if (operation === 'getPosts') {
+						// ----------------------------------
+						//         getPosts
+						// ----------------------------------
 
-					requestMethod = 'GET';
+						requestMethod = 'GET';
 
-					endpoint = 'forums/listCategories.json';
+						endpoint = 'forums/listPosts.json';
 
-					const id = this.getNodeParameter('id', i) as string;
-					const returnAll = this.getNodeParameter('returnAll', i) as boolean;
-					const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
-					Object.assign(qs, additionalFields);
+						const id = this.getNodeParameter('id', i) as string;
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						Object.assign(qs, additionalFields);
 
-					qs.forum = id;
-					qs.limit = 100;
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
 
-					try {
-						let responseData: IDataObject = {};
+						qs.forum = id;
+						qs.limit = 100;
 
-						if(returnAll) {
-							responseData.response = await disqusApiRequestAllItems.call(this, requestMethod, qs, endpoint);
-						} else {
-							const limit = this.getNodeParameter('limit', i) as string;
-							qs.limit = limit;
-							responseData = await disqusApiRequest.call(this, requestMethod, qs, endpoint) as IDataObject;
+						try {
+							let responseData: IDataObject = {};
+							if(returnAll) {
+								responseData.response = await disqusApiRequestAllItems.call(this, requestMethod, qs, endpoint);
+							} else {
+								const limit = this.getNodeParameter('limit', i) as string;
+								qs.limit = limit;
+								responseData = await disqusApiRequest.call(this, requestMethod, qs, endpoint);
+							}
+							returnData.push.apply(returnData, responseData.response as IDataObject[]);
+						} catch (error) {
+							throw error;
 						}
-						returnData.push.apply(returnData, responseData.response as IDataObject[]) ;
-					} catch (error) {
-						throw error;
-					}
 
-				}  else if (operation === 'getThreads') {
-					// ----------------------------------
-					//         getThreads
-					// ----------------------------------
+					}  else if (operation === 'getCategories') {
+						// ----------------------------------
+						//         getCategories
+						// ----------------------------------
 
-					requestMethod = 'GET';
+						requestMethod = 'GET';
 
-					endpoint = 'forums/listThreads.json';
+						endpoint = 'forums/listCategories.json';
 
-					const id = this.getNodeParameter('id', i) as string;
-					const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						const id = this.getNodeParameter('id', i) as string;
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						Object.assign(qs, additionalFields);
 
-					qs.forum = id;
-					qs.limit = 100;
+						qs.forum = id;
+						qs.limit = 100;
 
-					const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						try {
+							let responseData: IDataObject = {};
 
-					Object.assign(qs, additionalFields);
-
-					try {
-						let responseData: IDataObject = {};
-						if(returnAll) {
-							responseData.response = await disqusApiRequestAllItems.call(this, requestMethod, qs, endpoint);
-						} else {
-							const limit = this.getNodeParameter('limit', i) as string;
-							qs.limit = limit;
-							responseData = await disqusApiRequest.call(this, requestMethod, qs, endpoint);
+							if(returnAll) {
+								responseData.response = await disqusApiRequestAllItems.call(this, requestMethod, qs, endpoint);
+							} else {
+								const limit = this.getNodeParameter('limit', i) as string;
+								qs.limit = limit;
+								responseData = await disqusApiRequest.call(this, requestMethod, qs, endpoint) as IDataObject;
+							}
+							returnData.push.apply(returnData, responseData.response as IDataObject[]) ;
+						} catch (error) {
+							throw error;
 						}
-						returnData.push.apply(returnData, responseData.response as IDataObject[]);
-					} catch (error) {
-						throw error;
+
+					}  else if (operation === 'getThreads') {
+						// ----------------------------------
+						//         getThreads
+						// ----------------------------------
+
+						requestMethod = 'GET';
+
+						endpoint = 'forums/listThreads.json';
+
+						const id = this.getNodeParameter('id', i) as string;
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+
+						qs.forum = id;
+						qs.limit = 100;
+
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+
+						Object.assign(qs, additionalFields);
+
+						try {
+							let responseData: IDataObject = {};
+							if(returnAll) {
+								responseData.response = await disqusApiRequestAllItems.call(this, requestMethod, qs, endpoint);
+							} else {
+								const limit = this.getNodeParameter('limit', i) as string;
+								qs.limit = limit;
+								responseData = await disqusApiRequest.call(this, requestMethod, qs, endpoint);
+							}
+							returnData.push.apply(returnData, responseData.response as IDataObject[]);
+						} catch (error) {
+							throw error;
+						}
+
+					} else {
+						throw new NodeOperationError(this.getNode(), `The operation "${operation}" is not known!`);
 					}
 
 				} else {
-					throw new Error(`The operation "${operation}" is not known!`);
+					throw new NodeOperationError(this.getNode(), `The resource "${resource}" is not known!`);
 				}
-
-			} else {
-				throw new Error(`The resource "${resource}" is not known!`);
+			} catch (error) {
+				if (this.continueOnFail()) {
+					returnData.push({ error: error.message });
+					continue;
+				}
+				throw error;
 			}
 		}
 

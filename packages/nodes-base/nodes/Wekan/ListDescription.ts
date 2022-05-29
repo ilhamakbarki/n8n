@@ -2,7 +2,7 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export const listOperations = [
+export const listOperations: INodeProperties[] = [
 	// ----------------------------------
 	//         list
 	// ----------------------------------
@@ -10,6 +10,7 @@ export const listOperations = [
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -40,11 +41,10 @@ export const listOperations = [
 			},
 		],
 		default: 'create',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const listFields = [
+export const listFields: INodeProperties[] = [
 	// ----------------------------------
 	//         list:create
 	// ----------------------------------
@@ -86,7 +86,7 @@ export const listFields = [
 				],
 			},
 		},
-		description: 'The title of the list.',
+		description: 'The title of the list',
 	},
 
 	// ----------------------------------
@@ -111,7 +111,7 @@ export const listFields = [
 				],
 			},
 		},
-		description: 'The ID of the board that list belongs to.',
+		description: 'The ID of the board that list belongs to',
 	},
 	{
 		displayName: 'List ID',
@@ -135,7 +135,7 @@ export const listFields = [
 				],
 			},
 		},
-		description: 'The ID of the list to delete.',
+		description: 'The ID of the list to delete',
 	},
 
 	// ----------------------------------
@@ -160,7 +160,7 @@ export const listFields = [
 				],
 			},
 		},
-		description: 'The ID of the board that list belongs to.',
+		description: 'The ID of the board that list belongs to',
 	},
 	{
 		displayName: 'List ID',
@@ -178,7 +178,7 @@ export const listFields = [
 				],
 			},
 		},
-		description: 'The ID of the list to get.',
+		description: 'The ID of the list to get',
 	},
 
 	// ----------------------------------
@@ -203,7 +203,7 @@ export const listFields = [
 				],
 			},
 		},
-		description: 'ID of the board where the lists are in.',
+		description: 'ID of the board where the lists are in',
 	},
 	{
 		displayName: 'Return All',
@@ -220,7 +220,7 @@ export const listFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -244,7 +244,7 @@ export const listFields = [
 			maxValue: 200,
 		},
 		default: 100,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 
-] as INodeProperties[];
+];

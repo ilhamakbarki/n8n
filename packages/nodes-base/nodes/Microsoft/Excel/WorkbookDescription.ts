@@ -1,10 +1,11 @@
 import { INodeProperties } from 'n8n-workflow';
 
-export const workbookOperations = [
+export const workbookOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -16,7 +17,7 @@ export const workbookOperations = [
 			{
 				name: 'Add Worksheet',
 				value: 'addWorksheet',
-				description: 'Adds a new worksheet to the workbook.',
+				description: 'Adds a new worksheet to the workbook',
 			},
 			{
 				name: 'Get All',
@@ -25,11 +26,10 @@ export const workbookOperations = [
 			},
 		],
 		default: 'create',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const workbookFields = [
+export const workbookFields: INodeProperties[] = [
 
 /* -------------------------------------------------------------------------- */
 /*                                 workbook:addWorksheet                      */
@@ -76,8 +76,7 @@ export const workbookFields = [
 				name: 'name',
 				type: 'string',
 				default: '',
-				description: `The name of the worksheet to be added. If specified, name should be unqiue. </BR>
-				If not specified, Excel determines the name of the new worksheet.`,
+				description: 'The name of the worksheet to be added. If specified, name should be unqiue. If not specified, Excel determines the name of the new worksheet.',
 			},
 		],
 	},
@@ -99,7 +98,7 @@ export const workbookFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -123,7 +122,7 @@ export const workbookFields = [
 			maxValue: 500,
 		},
 		default: 100,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	{
 		displayName: 'Filters',
@@ -147,8 +146,8 @@ export const workbookFields = [
 				name: 'fields',
 				type: 'string',
 				default: '',
-				description: `Fields the response will containt. Multiple can be added separated by ,.`,
+				description: 'Fields the response will containt. Multiple can be added separated by ,.',
 			},
 		],
 	},
-] as INodeProperties[];
+];

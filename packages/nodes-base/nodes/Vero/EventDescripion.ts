@@ -1,10 +1,11 @@
 import { INodeProperties } from 'n8n-workflow';
 
-export const eventOperations = [
+export const eventOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -16,15 +17,14 @@ export const eventOperations = [
 			{
 				name: 'Track',
 				value: 'track',
-				description: `Track an event for a specific customer`,
+				description: 'Track an event for a specific customer',
 			},
 		],
 		default: 'track',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const eventFields = [
+export const eventFields: INodeProperties[] = [
 
 /* -------------------------------------------------------------------------- */
 /*                                event:track                                     */
@@ -64,7 +64,6 @@ export const eventFields = [
 				],
 			},
 		},
-		description: 'Email',
 	},
 	{
 		displayName: 'Event Name',
@@ -82,14 +81,13 @@ export const eventFields = [
 				],
 			},
 		},
-		description: 'The name of the event tracked.',
+		description: 'The name of the event tracked',
 	},
 	{
 		displayName: 'JSON Parameters',
 		name: 'jsonParameters',
 		type: 'boolean',
 		default: false,
-		description: '',
 		displayOptions: {
 			show: {
 				resource: [
@@ -134,14 +132,14 @@ export const eventFields = [
 						name: 'key',
 						type: 'string',
 						default: '',
-						description: 'Name of the property to set.',
+						description: 'Name of the property to set',
 					},
 					{
 						displayName: 'Value',
 						name: 'value',
 						type: 'string',
 						default: '',
-						description: 'Value of the property to set.',
+						description: 'Value of the property to set',
 					},
 				],
 			},
@@ -180,14 +178,14 @@ export const eventFields = [
 						name: 'key',
 						type: 'string',
 						default: '',
-						description: 'Name of the property to set.',
+						description: 'Name of the property to set',
 					},
 					{
 						displayName: 'Value',
 						name: 'value',
 						type: 'string',
 						default: '',
-						description: 'Value of the property to set.',
+						description: 'Value of the property to set',
 					},
 				],
 			},
@@ -198,7 +196,6 @@ export const eventFields = [
 		name: 'dataAttributesJson',
 		type: 'json',
 		default: '',
-		required: false,
 		typeOptions: {
 			alwaysOpenEditWindow: true,
 		},
@@ -222,7 +219,6 @@ export const eventFields = [
 		name: 'extraAttributesJson',
 		type: 'json',
 		default: '',
-		required: false,
 		typeOptions: {
 			alwaysOpenEditWindow: true,
 		},
@@ -241,4 +237,4 @@ export const eventFields = [
 			},
 		},
 	},
-] as INodeProperties[];
+];

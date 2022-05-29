@@ -2,11 +2,12 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export const timeEntryOperations = [
+export const timeEntryOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -52,11 +53,10 @@ export const timeEntryOperations = [
 			},
 		],
 		default: 'create',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const timeEntryFields = [
+export const timeEntryFields: INodeProperties[] = [
 
 	/* -------------------------------------------------------------------------- */
 	/*                                timeEntry:getAll                            */
@@ -96,7 +96,7 @@ export const timeEntryFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -120,7 +120,7 @@ export const timeEntryFields = [
 			maxValue: 10,
 		},
 		default: 5,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	{
 		displayName: 'Filters',
@@ -434,11 +434,11 @@ export const timeEntryFields = [
 				displayName: 'Assignee IDs',
 				name: 'assignee',
 				type: 'options',
-				loadOptionsDependsOn: [
-					'list',
-				],
 				typeOptions: {
 					loadOptionsMethod: 'getAssignees',
+					loadOptionsDependsOn: [
+						'list',
+					],
 				},
 				default: [],
 			},
@@ -804,11 +804,11 @@ export const timeEntryFields = [
 				displayName: 'Assignee IDs',
 				name: 'assignee',
 				type: 'options',
-				loadOptionsDependsOn: [
-					'list',
-				],
 				typeOptions: {
 					loadOptionsMethod: 'getAssignees',
+					loadOptionsDependsOn: [
+						'list',
+					],
 				},
 				default: [],
 			},
@@ -865,4 +865,4 @@ export const timeEntryFields = [
 			},
 		],
 	},
-] as INodeProperties[];
+];

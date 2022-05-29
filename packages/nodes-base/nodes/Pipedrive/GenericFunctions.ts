@@ -1,11 +1,14 @@
 import {
 	IExecuteFunctions,
 	IHookFunctions,
+	ILoadOptionsFunctions,
 } from 'n8n-core';
 
 import {
 	IDataObject,
-	ILoadOptionsFunctions,
+	INodePropertyOptions,
+	NodeApiError,
+	NodeOperationError,
 } from 'n8n-workflow';
 
 import {
@@ -15,6 +18,7 @@ import {
 export interface ICustomInterface {
 	name: string;
 	key: string;
+	field_type: string;
 	options?: Array<{
 		id: number;
 		label: string;
@@ -64,23 +68,9 @@ export async function pipedriveApiRequest(this: IHookFunctions | IExecuteFunctio
 		query = {};
 	}
 
-	let responseData;
-
 	try {
-		if (authenticationMethod === 'basicAuth' || authenticationMethod === 'apiToken' || authenticationMethod === 'none') {
-
-			const credentials = this.getCredentials('pipedriveApi');
-			if (credentials === undefined) {
-				throw new Error('No credentials got returned!');
-			}
-
-			query.api_token = credentials.apiToken;
-			//@ts-ignore
-			responseData = await this.helpers.request(options);
-
-		} else {
-			responseData = await this.helpers.requestOAuth2!.call(this, 'pipedriveOAuth2Api', options);
-		}
+		const credentialType = authenticationMethod === 'apiToken' ? 'pipedriveApi' : 'pipedriveOAuth2Api';
+		const responseData = await this.helpers.requestWithAuthentication.call(this, credentialType, options);
 
 		if (downloadFile === true) {
 			return {
@@ -89,30 +79,15 @@ export async function pipedriveApiRequest(this: IHookFunctions | IExecuteFunctio
 		}
 
 		if (responseData.success === false) {
-			throw new Error(`Pipedrive error response: ${responseData.error} (${responseData.error_info})`);
+			throw new NodeApiError(this.getNode(), responseData);
 		}
 
 		return {
 			additionalData: responseData.additional_data,
-			data: responseData.data,
+			data: (responseData.data === null) ? [] : responseData.data,
 		};
-	} catch(error) {
-		if (error.statusCode === 401) {
-			// Return a clear error
-			throw new Error('The Pipedrive credentials are not valid!');
-		}
-
-		if (error.response && error.response.body && error.response.body.error) {
-			// Try to return the error prettier
-			let errorMessage = `Pipedrive error response [${error.statusCode}]: ${error.response.body.error.message}`;
-			if (error.response.body.error_info) {
-				errorMessage += ` - ${error.response.body.error_info}`;
-			}
-			throw new Error(errorMessage);
-		}
-
-		// If that data does not exist for some reason return the actual error
-		throw error;
+	} catch (error) {
+		throw new NodeApiError(this.getNode(), error);
 	}
 }
 
@@ -182,7 +157,7 @@ export async function pipedriveGetCustomProperties(this: IHookFunctions | IExecu
 	};
 
 	if (endpoints[resource] === undefined) {
-		throw new Error(`The resource "${resource}" is not supported for resolving custom values!`);
+		throw new NodeOperationError(this.getNode(), `The resource "${resource}" is not supported for resolving custom values!`);
 	}
 
 	const requestMethod = 'GET';
@@ -197,7 +172,6 @@ export async function pipedriveGetCustomProperties(this: IHookFunctions | IExecu
 	for (const customPropertyData of responseData.data) {
 		customProperties[customPropertyData.key] = customPropertyData;
 	}
-
 	return customProperties;
 }
 
@@ -252,25 +226,65 @@ export function pipedriveResolveCustomProperties(customProperties: ICustomProper
 
 	// Itterate over all keys and replace the custom ones
 	for (const key of Object.keys(item)) {
+
 		if (customProperties[key] !== undefined) {
 			// Is a custom property
 			customPropertyData = customProperties[key];
 
-			// Check if also the value has to be resolved or just the key
-			if (item[key] !== null && item[key] !== undefined && customPropertyData.options !== undefined && Array.isArray(customPropertyData.options)) {
-				// Has an option key so get the actual option-value
-				const propertyOption = customPropertyData.options.find(option => option.id.toString() === item[key]!.toString());
+			// value is not set, so nothing to resolve
+			if (item[key] === null) {
+				item[customPropertyData.name] = item[key];
+				delete item[key];
+				continue;
+			}
 
+			if ([
+				'date',
+				'address',
+				'double',
+				'monetary',
+				'org',
+				'people',
+				'phone',
+				'text',
+				'time',
+				'user',
+				'varchar',
+				'varchar_auto',
+				'int',
+				'time',
+				'timerange',
+			].includes(customPropertyData.field_type)) {
+					item[customPropertyData.name as string] = item[key];
+					delete item[key];
+				// type options
+			} else if (['enum', 'visible_to'].includes(customPropertyData.field_type) && customPropertyData.options) {
+				const propertyOption = customPropertyData.options.find(option => option.id.toString() === item[key]!.toString());
 				if (propertyOption !== undefined) {
 					item[customPropertyData.name as string] = propertyOption.label;
 					delete item[key];
 				}
-			} else {
-				// Does already represent the actual value or is null
-				item[customPropertyData.name as string] = item[key];
+				// type multioptions
+			} else if (['set'].includes(customPropertyData.field_type) && customPropertyData.options) {
+				const selectedIds = (item[key] as string).split(',');
+				const selectedLabels = customPropertyData.options.
+				filter(option => selectedIds.includes(option.id.toString())).
+				map(option => option.label);
+				item[customPropertyData.name] = selectedLabels;
 				delete item[key];
 			}
 		}
 	}
+}
 
+export function sortOptionParameters(optionParameters: INodePropertyOptions[]): INodePropertyOptions[] {
+	optionParameters.sort((a, b) => {
+		const aName = a.name.toLowerCase();
+		const bName = b.name.toLowerCase();
+		if (aName < bName) { return -1; }
+		if (aName > bName) { return 1; }
+		return 0;
+	});
+
+	return optionParameters;
 }

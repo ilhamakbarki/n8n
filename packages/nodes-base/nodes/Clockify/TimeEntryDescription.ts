@@ -2,11 +2,12 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export const timeEntryOperations = [
+export const timeEntryOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -37,11 +38,10 @@ export const timeEntryOperations = [
 			},
 		],
 		default: 'create',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const timeEntryFields = [
+export const timeEntryFields: INodeProperties[] = [
 
 	/* -------------------------------------------------------------------------- */
 	/*                                 timeEntry:create                           */
@@ -94,7 +94,7 @@ export const timeEntryFields = [
 				typeOptions: {
 					multipleValues: true,
 				},
-				description: 'Filter by custom fields ',
+				description: 'Filter by custom fields',
 				default: {},
 				options: [
 					{
@@ -112,14 +112,14 @@ export const timeEntryFields = [
 									loadOptionsMethod: 'loadCustomFieldsForWorkspace',
 								},
 								default: '',
-								description: 'The ID of the field to add custom field to.',
+								description: 'The ID of the field to add custom field to',
 							},
 							{
 								displayName: 'Value',
 								name: 'value',
 								type: 'string',
 								default: '',
-								description: 'The value to set on custom field.',
+								description: 'The value to set on custom field',
 							},
 						],
 					},
@@ -235,14 +235,14 @@ export const timeEntryFields = [
 				name: 'consider-duration-format',
 				type: 'boolean',
 				default: false,
-				description: `If provided, returned timeentry's duration will be rounded to minutes or seconds based on duration format (hh:mm or hh:mm:ss) from workspace settings.`,
+				description: 'If provided, returned timeentry\'s duration will be rounded to minutes or seconds based on duration format (hh:mm or hh:mm:ss) from workspace settings',
 			},
 			{
 				displayName: 'Hydrated',
 				name: 'hydrated',
 				type: 'boolean',
 				default: false,
-				description: `If provided, returned timeentry's project,task and tags will be returned in full and not just their ids`,
+				description: 'If provided, returned timeentry\'s project,task and tags will be returned in full and not just their IDs',
 			},
 		],
 	},
@@ -297,7 +297,7 @@ export const timeEntryFields = [
 				typeOptions: {
 					multipleValues: true,
 				},
-				description: 'Filter by custom fields ',
+				description: 'Filter by custom fields',
 				default: {},
 				options: [
 					{
@@ -315,14 +315,14 @@ export const timeEntryFields = [
 									loadOptionsMethod: 'loadCustomFieldsForWorkspace',
 								},
 								default: '',
-								description: 'The ID of the field to add custom field to.',
+								description: 'The ID of the field to add custom field to',
 							},
 							{
 								displayName: 'Value',
 								name: 'value',
 								type: 'string',
 								default: '',
-								description: 'The value to set on custom field.',
+								description: 'The value to set on custom field',
 							},
 						],
 					},
@@ -381,4 +381,4 @@ export const timeEntryFields = [
 			},
 		],
 	},
-] as INodeProperties[];
+];

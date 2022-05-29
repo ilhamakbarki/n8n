@@ -1,10 +1,17 @@
-import { INodeProperties } from 'n8n-workflow';
-export const resource = ['timeEntry'];
-export const timeEntryOperations = [
+import {
+	INodeProperties,
+} from 'n8n-workflow';
+
+export const resource = [
+	'timeEntry',
+];
+
+export const timeEntryOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource,
@@ -24,12 +31,12 @@ export const timeEntryOperations = [
 			{
 				name: 'Delete',
 				value: 'delete',
-				description: `Delete a time entry`,
+				description: 'Delete a time entry',
 			},
 			{
 				name: 'Delete External Reference',
 				value: 'deleteExternal',
-				description: `Delete a time entry’s external reference.`,
+				description: 'Delete a time entry’s external reference',
 			},
 			{
 				name: 'Get',
@@ -58,11 +65,10 @@ export const timeEntryOperations = [
 			},
 		],
 		default: 'getAll',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const timeEntryFields = [
+export const timeEntryFields: INodeProperties[] = [
 	/* -------------------------------------------------------------------------- */
 	/*                                timeEntry:getAll                            */
 	/* -------------------------------------------------------------------------- */
@@ -80,7 +86,7 @@ export const timeEntryFields = [
 			},
 		},
 		default: false,
-		description: 'Returns a list of your time entries.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -102,7 +108,7 @@ export const timeEntryFields = [
 			maxValue: 100,
 		},
 		default: 100,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	{
 		displayName: 'Filters',
@@ -124,42 +130,28 @@ export const timeEntryFields = [
 				name: 'client_id',
 				type: 'string',
 				default: '',
-				description: 'Only return time entries belonging to the client with the given ID.',
+				description: 'Only return time entries belonging to the client with the given ID',
 			},
 			{
 				displayName: 'From',
 				name: 'from',
 				type: 'dateTime',
 				default: '',
-				description: 'Only return time entries with a spent_date on or after the given date.',
+				description: 'Only return time entries with a spent_date on or after the given date',
 			},
 			{
 				displayName: 'Is Billed',
 				name: 'is_billed',
 				type: 'boolean',
 				default: true,
-				description: 'Pass true to only return time entries that have been invoiced and false to return time entries that have not been invoiced.',
+				description: 'Pass true to only return time entries that have been invoiced and false to return time entries that have not been invoiced',
 			},
 			{
 				displayName: 'Is Running',
 				name: 'is_running',
 				type: 'boolean',
 				default: true,
-				description: 'Pass true to only return running time entries and false to return non-running time entries.',
-			},
-			{
-				displayName: 'To',
-				name: 'to',
-				type: 'dateTime',
-				default: '',
-				description: 'Only return time entries with a spent_date on or before the given date.',
-			},
-			{
-				displayName: 'Updated Since',
-				name: 'updated_since',
-				type: 'dateTime',
-				default: '',
-				description: 'Only return time entries that have been updated since the given date and time.',
+				description: 'Pass true to only return running time entries and false to return non-running time entries',
 			},
 			{
 				displayName: 'Page',
@@ -172,11 +164,25 @@ export const timeEntryFields = [
 				description: 'The page number to use in pagination. For instance, if you make a list request and receive 100 records, your subsequent call can include page=2 to retrieve the next page of the list. (Default: 1)',
 			},
 			{
+				displayName: 'To',
+				name: 'to',
+				type: 'dateTime',
+				default: '',
+				description: 'Only return time entries with a spent_date on or before the given date',
+			},
+			{
+				displayName: 'Updated Since',
+				name: 'updated_since',
+				type: 'dateTime',
+				default: '',
+				description: 'Only return time entries that have been updated since the given date and time',
+			},
+			{
 				displayName: 'User ID',
 				name: 'user_id',
 				type: 'string',
 				default: '',
-				description: 'Only return time entries belonging to the user with the given ID.',
+				description: 'Only return time entries belonging to the user with the given ID',
 			},
 		],
 	},
@@ -185,7 +191,7 @@ export const timeEntryFields = [
 	/*                                timeEntry:get                            */
 	/* -------------------------------------------------------------------------- */
 	{
-		displayName: 'Time Entry Id',
+		displayName: 'Time Entry ID',
 		name: 'id',
 		type: 'string',
 		default: '',
@@ -198,14 +204,14 @@ export const timeEntryFields = [
 				resource,
 			},
 		},
-		description: 'The ID of the time entry you are retrieving.',
+		description: 'The ID of the time entry you are retrieving',
 	},
 
 	/* -------------------------------------------------------------------------- */
 	/*                                timeEntry:delete                            */
 	/* -------------------------------------------------------------------------- */
 	{
-		displayName: 'Time Entry Id',
+		displayName: 'Time Entry ID',
 		name: 'id',
 		type: 'string',
 		default: '',
@@ -218,14 +224,14 @@ export const timeEntryFields = [
 				resource,
 			},
 		},
-		description: 'The ID of the time entry you are deleting.',
+		description: 'The ID of the time entry you are deleting',
 	},
 
 	/* -------------------------------------------------------------------------- */
 	/*                                timeEntry:deleteExternal                           */
 	/* -------------------------------------------------------------------------- */
 	{
-		displayName: 'Time Entry Id',
+		displayName: 'Time Entry ID',
 		name: 'id',
 		type: 'string',
 		default: '',
@@ -238,14 +244,14 @@ export const timeEntryFields = [
 				resource,
 			},
 		},
-		description: 'The ID of the time entry whose external reference you are deleting.',
+		description: 'The ID of the time entry whose external reference you are deleting',
 	},
 
 	/* -------------------------------------------------------------------------- */
 	/*                                timeEntry:stopTime                           */
 	/* -------------------------------------------------------------------------- */
 	{
-		displayName: 'Time Entry Id',
+		displayName: 'Time Entry ID',
 		name: 'id',
 		type: 'string',
 		default: '',
@@ -265,7 +271,7 @@ export const timeEntryFields = [
 	/*                                timeEntry:restartTime                           */
 	/* -------------------------------------------------------------------------- */
 	{
-		displayName: 'Time Entry Id',
+		displayName: 'Time Entry ID',
 		name: 'id',
 		type: 'string',
 		default: '',
@@ -285,7 +291,7 @@ export const timeEntryFields = [
 	/*                                timeEntry:update                           */
 	/* -------------------------------------------------------------------------- */
 	{
-		displayName: 'Time Entry Id',
+		displayName: 'Time Entry ID',
 		name: 'id',
 		type: 'string',
 		default: '',
@@ -298,7 +304,7 @@ export const timeEntryFields = [
 				resource,
 			},
 		},
-		description: 'The ID of the time entry to update.',
+		description: 'The ID of the time entry to update',
 	},
 	{
 		displayName: 'Update Fields',
@@ -321,7 +327,7 @@ export const timeEntryFields = [
 				type: 'string',
 				default: '',
 				placeholder: '3:00pm',
-				description: 'The time the entry ended.',
+				description: 'The time the entry ended',
 			},
 			{
 				displayName: 'Hours',
@@ -331,14 +337,14 @@ export const timeEntryFields = [
 					minValue: 0,
 				},
 				default: 0,
-				description: 'The current amount of time tracked.',
+				description: 'The current amount of time tracked',
 			},
 			{
 				displayName: 'Notes',
 				name: 'notes',
 				type: 'string',
 				default: '',
-				description: 'These are notes about the time entry..',
+				description: 'These are notes about the time entry',
 			},
 			{
 				displayName: 'Started Time',
@@ -355,7 +361,7 @@ export const timeEntryFields = [
 	/*                                timeEntry:createByDuration                           */
 	/* -------------------------------------------------------------------------- */
 	{
-		displayName: 'Project Id',
+		displayName: 'Project ID',
 		name: 'projectId',
 		type: 'string',
 		displayOptions: {
@@ -368,10 +374,10 @@ export const timeEntryFields = [
 		},
 		default: '',
 		required: true,
-		description: 'The ID of the project to associate with the time entry.',
+		description: 'The ID of the project to associate with the time entry',
 	},
 	{
-		displayName: 'Task Id',
+		displayName: 'Task ID',
 		name: 'taskId',
 		type: 'string',
 		displayOptions: {
@@ -384,7 +390,7 @@ export const timeEntryFields = [
 		},
 		default: '',
 		required: true,
-		description: 'The ID of the task to associate with the time entry.',
+		description: 'The ID of the task to associate with the time entry',
 	},
 	{
 		displayName: 'Spent Date',
@@ -400,7 +406,7 @@ export const timeEntryFields = [
 		},
 		default: '',
 		required: true,
-		description: 'The ISO 8601 formatted date the time entry was spent.',
+		description: 'The ISO 8601 formatted date the time entry was spent',
 	},
 	{
 		displayName: 'Additional Fields',
@@ -425,14 +431,14 @@ export const timeEntryFields = [
 					minValue: 0,
 				},
 				default: 0,
-				description: 'The current amount of time tracked.',
+				description: 'The current amount of time tracked',
 			},
 			{
 				displayName: 'Notes',
 				name: 'notes',
 				type: 'string',
 				default: '',
-				description: 'These are notes about the time entry..',
+				description: 'These are notes about the time entry',
 			},
 			{
 				displayName: 'User ID',
@@ -448,7 +454,7 @@ export const timeEntryFields = [
 	/*                                timeEntry:createByStartEnd                           */
 	/* -------------------------------------------------------------------------- */
 	{
-		displayName: 'Project Id',
+		displayName: 'Project ID',
 		name: 'projectId',
 		type: 'string',
 		displayOptions: {
@@ -461,10 +467,10 @@ export const timeEntryFields = [
 		},
 		default: '',
 		required: true,
-		description: 'The ID of the project to associate with the time entry.',
+		description: 'The ID of the project to associate with the time entry',
 	},
 	{
-		displayName: 'Task Id',
+		displayName: 'Task ID',
 		name: 'taskId',
 		type: 'string',
 		displayOptions: {
@@ -477,7 +483,7 @@ export const timeEntryFields = [
 		},
 		default: '',
 		required: true,
-		description: 'The ID of the task to associate with the time entry.',
+		description: 'The ID of the task to associate with the time entry',
 	},
 	{
 		displayName: 'Spent Date',
@@ -493,7 +499,7 @@ export const timeEntryFields = [
 		},
 		default: '',
 		required: true,
-		description: 'The ISO 8601 formatted date the time entry was spent.',
+		description: 'The ISO 8601 formatted date the time entry was spent',
 	},
 	{
 		displayName: 'Additional Fields',
@@ -516,14 +522,14 @@ export const timeEntryFields = [
 				type: 'string',
 				default: '',
 				placeholder: '3:00pm',
-				description: 'The time the entry ended.',
+				description: 'The time the entry ended',
 			},
 			{
 				displayName: 'Notes',
 				name: 'notes',
 				type: 'string',
 				default: '',
-				description: 'These are notes about the time entry..',
+				description: 'These are notes about the time entry',
 			},
 			{
 				displayName: 'Started Time',
@@ -545,4 +551,4 @@ export const timeEntryFields = [
 
 
 
-] as INodeProperties[];
+];

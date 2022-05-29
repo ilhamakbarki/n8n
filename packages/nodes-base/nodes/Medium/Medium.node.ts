@@ -9,6 +9,7 @@ import {
 	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
+	NodeOperationError,
 } from 'n8n-workflow';
 
 import {
@@ -26,7 +27,6 @@ export class Medium implements INodeType {
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		defaults: {
 			name: 'Medium',
-			color: '#000000',
 		},
 		inputs: ['main'],
 		outputs: ['main'],
@@ -70,12 +70,12 @@ export class Medium implements INodeType {
 					},
 				],
 				default: 'accessToken',
-				description: 'The method of authentication.',
 			},
 			{
 				displayName: 'Resource',
 				name: 'resource',
 				type: 'options',
+				noDataExpression: true,
 				options: [
 					{
 						name: 'Post',
@@ -87,12 +87,12 @@ export class Medium implements INodeType {
 					},
 				],
 				default: 'post',
-				description: 'Resource to operate on.',
 			},
 			{
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				displayOptions: {
 					show: {
 						resource: [
@@ -108,7 +108,6 @@ export class Medium implements INodeType {
 					},
 				],
 				default: 'create',
-				description: 'The operation to perform.',
 			},
 
 			// ----------------------------------
@@ -152,7 +151,7 @@ export class Medium implements INodeType {
 					loadOptionsMethod: 'getPublications',
 				},
 				default: '',
-				description: 'Publication ids',
+				description: 'Publication IDs',
 			},
 			{
 				displayName: 'Title',
@@ -171,7 +170,7 @@ export class Medium implements INodeType {
 						],
 					},
 				},
-				description: 'Title of the post. Max Length : 100 characters',
+				description: 'Title of the post. Max Length : 100 characters.',
 			},
 			{
 				displayName: 'Content Format',
@@ -199,7 +198,7 @@ export class Medium implements INodeType {
 						value: 'markdown',
 					},
 				],
-				description: 'The format of the content to be posted.',
+				description: 'The format of the content to be posted',
 			},
 			{
 				displayName: 'Content',
@@ -221,7 +220,7 @@ export class Medium implements INodeType {
 						],
 					},
 				},
-				description: 'The body of the post, in a valid semantic HTML fragment, or Markdown.',
+				description: 'The body of the post, in a valid semantic HTML fragment, or Markdown',
 			},
 			{
 				displayName: 'Additional Fields',
@@ -245,7 +244,7 @@ export class Medium implements INodeType {
 						name: 'canonicalUrl',
 						type: 'string',
 						default: '',
-						description: 'The original home of this content, if it was originally published elsewhere.',
+						description: 'The original home of this content, if it was originally published elsewhere',
 					},
 					{
 						displayName: 'License',
@@ -290,14 +289,14 @@ export class Medium implements INodeType {
 								value: 'public-domain',
 							},
 						],
-						description: 'License of the post.',
+						description: 'License of the post',
 					},
 					{
 						displayName: 'Notify Followers',
 						name: 'notifyFollowers',
 						type: 'boolean',
 						default: false,
-						description: 'Whether to notify followers that the user has published.',
+						description: 'Whether to notify followers that the user has published',
 					},
 					{
 						displayName: 'Publish Status',
@@ -318,7 +317,7 @@ export class Medium implements INodeType {
 								value: 'unlisted',
 							},
 						],
-						description: 'The status of the post.',
+						description: 'The status of the post',
 					},
 					{
 						displayName: 'Tags',
@@ -334,6 +333,7 @@ export class Medium implements INodeType {
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				displayOptions: {
 					show: {
 						resource: [
@@ -349,7 +349,6 @@ export class Medium implements INodeType {
 					},
 				],
 				default: 'publication',
-				description: 'The operation to perform.',
 			},
 			// ----------------------------------
 			//         publication:getAll
@@ -369,7 +368,7 @@ export class Medium implements INodeType {
 					},
 				},
 				default: false,
-				description: 'If all results should be returned or only up to a given limit.',
+				description: 'Whether to return all results or only up to a given limit',
 			},
 			{
 				displayName: 'Limit',
@@ -393,7 +392,7 @@ export class Medium implements INodeType {
 					maxValue: 200,
 				},
 				default: 100,
-				description: 'How many results to return.',
+				description: 'Max number of results to return',
 			},
 		],
 	};
@@ -448,128 +447,135 @@ export class Medium implements INodeType {
 
 		for (let i = 0; i < items.length; i++) {
 			qs = {};
+			try {
+				resource = this.getNodeParameter('resource', i) as string;
+				operation = this.getNodeParameter('operation', i) as string;
 
-			resource = this.getNodeParameter('resource', i) as string;
-			operation = this.getNodeParameter('operation', i) as string;
+				if (resource === 'post') {
+					//https://github.com/Medium/medium-api-docs
+					if (operation === 'create') {
+						// ----------------------------------
+						//         post:create
+						// ----------------------------------
 
-			if (resource === 'post') {
-				//https://github.com/Medium/medium-api-docs
-				if (operation === 'create') {
-					// ----------------------------------
-					//         post:create
-					// ----------------------------------
+						const title = this.getNodeParameter('title', i) as string;
+						const contentFormat = this.getNodeParameter('contentFormat', i) as string;
+						const content = this.getNodeParameter('content', i) as string;
+						bodyRequest = {
+							tags: [],
+							title,
+							contentFormat,
+							content,
 
-					const title = this.getNodeParameter('title', i) as string;
-					const contentFormat = this.getNodeParameter('contentFormat', i) as string;
-					const content = this.getNodeParameter('content', i) as string;
-					bodyRequest = {
-						tags: [],
-						title,
-						contentFormat,
-						content,
+						};
 
-					};
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						if (additionalFields.tags) {
+							const tags = additionalFields.tags as string;
+							bodyRequest.tags = tags.split(',').map(name => {
+								const returnValue = name.trim();
+								if (returnValue.length > 25) {
+									throw new NodeOperationError(this.getNode(), `The tag "${returnValue}" is to long. Maximum lenght of a tag is 25 characters.`);
+								}
+								return returnValue;
+							});
 
-					const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
-					if (additionalFields.tags) {
-						const tags = additionalFields.tags as string;
-						bodyRequest.tags = tags.split(',').map(name => {
-							const returnValue = name.trim();
-							if (returnValue.length > 25) {
-								throw new Error(`The tag "${returnValue}" is to long. Maximum lenght of a tag is 25 characters.`);
+							if ((bodyRequest.tags as string[]).length > 5) {
+								throw new NodeOperationError(this.getNode(), 'To many tags got used. Maximum 5 can be set.');
 							}
-							return returnValue;
-						});
+						}
 
-						if ((bodyRequest.tags as string[]).length > 5) {
-							throw new Error('To many tags got used. Maximum 5 can be set.');
+						if (additionalFields.canonicalUrl) {
+							bodyRequest.canonicalUrl = additionalFields.canonicalUrl as string;
+						}
+						if (additionalFields.publishStatus) {
+							bodyRequest.publishStatus = additionalFields.publishStatus as string;
+						}
+						if (additionalFields.license) {
+							bodyRequest.license = additionalFields.license as string;
+						}
+						if (additionalFields.notifyFollowers) {
+							bodyRequest.notifyFollowers = additionalFields.notifyFollowers as string;
+						}
+
+						const underPublication = this.getNodeParameter('publication', i) as boolean;
+
+						// if user wants to publish it under a specific publication
+						if (underPublication) {
+							const publicationId = this.getNodeParameter('publicationId', i) as number;
+
+							responseData = await mediumApiRequest.call(
+								this,
+								'POST',
+								`/publications/${publicationId}/posts`,
+								bodyRequest,
+								qs,
+							);
+						}
+						else {
+							const responseAuthorId = await mediumApiRequest.call(
+								this,
+								'GET',
+								'/me',
+								{},
+								qs,
+							);
+
+							const authorId = responseAuthorId.data.id;
+							responseData = await mediumApiRequest.call(
+								this,
+								'POST',
+								`/users/${authorId}/posts`,
+								bodyRequest,
+								qs,
+							);
+
+							responseData = responseData.data;
 						}
 					}
+				}
+				if (resource === 'publication') {
+					//https://github.com/Medium/medium-api-docs#32-publications
+					if (operation === 'getAll') {
+						// ----------------------------------
+						//         publication:getAll
+						// ----------------------------------
 
-					if (additionalFields.canonicalUrl) {
-						bodyRequest.canonicalUrl = additionalFields.canonicalUrl as string;
-					}
-					if (additionalFields.publishStatus) {
-						bodyRequest.publishStatus = additionalFields.publishStatus as string;
-					}
-					if (additionalFields.license) {
-						bodyRequest.license = additionalFields.license as string;
-					}
-					if (additionalFields.notifyFollowers) {
-						bodyRequest.notifyFollowers = additionalFields.notifyFollowers as string;
-					}
+						const returnAll = this.getNodeParameter('returnAll', i) as string;
 
-					const underPublication = this.getNodeParameter('publication', i) as boolean;
-
-					// if user wants to publish it under a specific publication
-					if (underPublication) {
-						const publicationId = this.getNodeParameter('publicationId', i) as number;
-
-						responseData = await mediumApiRequest.call(
-							this,
-							'POST',
-							`/publications/${publicationId}/posts`,
-							bodyRequest,
-							qs,
-						);
-					}
-					else {
-						const responseAuthorId = await mediumApiRequest.call(
+						const user = await mediumApiRequest.call(
 							this,
 							'GET',
-							'/me',
-							{},
-							qs,
+							`/me`,
 						);
 
-						const authorId = responseAuthorId.data.id;
+						const userId = user.data.id;
+						//Get all publications of that user
 						responseData = await mediumApiRequest.call(
 							this,
-							'POST',
-							`/users/${authorId}/posts`,
-							bodyRequest,
-							qs,
+							'GET',
+							`/users/${userId}/publications`,
 						);
 
 						responseData = responseData.data;
+
+						if (!returnAll) {
+							const limit = this.getNodeParameter('limit', i) as number;
+							responseData = responseData.splice(0, limit);
+						}
 					}
 				}
-			}
-			if (resource === 'publication') {
-				//https://github.com/Medium/medium-api-docs#32-publications
-				if (operation === 'getAll') {
-					// ----------------------------------
-					//         publication:getAll
-					// ----------------------------------
-
-					const returnAll = this.getNodeParameter('returnAll', i) as string;
-
-					const user = await mediumApiRequest.call(
-						this,
-						'GET',
-						`/me`,
-					);
-
-					const userId = user.data.id;
-					//Get all publications of that user
-					responseData = await mediumApiRequest.call(
-						this,
-						'GET',
-						`/users/${userId}/publications`,
-					);
-
-					responseData = responseData.data;
-
-					if (!returnAll) {
-						const limit = this.getNodeParameter('limit', i) as number;
-						responseData = responseData.splice(0, limit);
-					}
+				if (Array.isArray(responseData)) {
+					returnData.push.apply(returnData, responseData as IDataObject[]);
+				} else {
+					returnData.push(responseData as IDataObject);
 				}
-			}
-			if (Array.isArray(responseData)) {
-				returnData.push.apply(returnData, responseData as IDataObject[]);
-			} else {
-				returnData.push(responseData as IDataObject);
+			} catch (error) {
+				if (this.continueOnFail()) {
+					returnData.push({ error: error.message });
+					continue;
+				}
+				throw error;
 			}
 		}
 		return [this.helpers.returnJsonArray(returnData)];

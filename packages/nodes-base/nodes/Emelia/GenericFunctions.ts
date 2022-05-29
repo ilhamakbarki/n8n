@@ -4,8 +4,13 @@ import {
 } from 'n8n-core';
 
 import {
+	ICredentialsDecrypted,
+	ICredentialTestFunctions,
 	IHookFunctions,
+	INodeCredentialTestResult,
 	INodePropertyOptions,
+	JsonObject,
+	NodeApiError,
 } from 'n8n-workflow';
 
 /**
@@ -18,7 +23,7 @@ export async function emeliaGraphqlRequest(
 	const response = await emeliaApiRequest.call(this, 'POST', '/graphql', body);
 
 	if (response.errors) {
-		throw new Error(`Emelia error message: ${response.errors[0].message}`);
+		throw new NodeApiError(this.getNode(), response);
 	}
 
 	return response;
@@ -34,7 +39,7 @@ export async function emeliaApiRequest(
 	body: object = {},
 	qs: object = {},
 ) {
-	const { apiKey } = this.getCredentials('emeliaApi') as { apiKey: string };
+	const { apiKey } = await this.getCredentials('emeliaApi') as { apiKey: string };
 
 	const options = {
 		headers: {
@@ -48,19 +53,9 @@ export async function emeliaApiRequest(
 	};
 
 	try {
-
 		return await this.helpers.request!.call(this, options);
-
 	} catch (error) {
-
-		if (error?.response?.body?.error) {
-			const { error: errorMessage } = error.response.body;
-			throw new Error(
-				`Emelia error response [${error.statusCode}]: ${errorMessage}`,
-			);
-		}
-
-		throw error;
+		throw new NodeApiError(this.getNode(), (error as JsonObject));
 	}
 }
 
@@ -100,5 +95,47 @@ export async function loadResource(
 		name: campaign.name,
 		value: campaign._id,
 	}));
+}
 
+export async function emeliaApiTest(this: ICredentialTestFunctions, credential: ICredentialsDecrypted): Promise<INodeCredentialTestResult> {
+	const credentials = credential.data;
+
+	const body = {
+		query: `
+				query all_campaigns {
+					all_campaigns {
+						_id
+						name
+						status
+						createdAt
+						stats {
+							mailsSent
+						}
+					}
+				}`,
+		operationName: 'all_campaigns',
+	};
+
+	const options = {
+		headers: {
+			Authorization: credentials?.apiKey,
+		},
+		method: 'POST',
+		body,
+		uri: `https://graphql.emelia.io/graphql`,
+		json: true,
+	};
+
+	try {
+		await this.helpers.request!(options);
+	} catch (error) {
+		return {
+			status: 'Error',
+			message: `Connection details not valid: ${(error as JsonObject).message}`,
+		};
+	}
+	return {
+		status: 'OK',
+		message: 'Authentication successful!',
+	};
 }

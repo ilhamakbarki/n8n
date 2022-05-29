@@ -4,6 +4,7 @@ import {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
+	NodeOperationError,
 } from 'n8n-workflow';
 import { RundeckApi } from './RundeckApi';
 
@@ -18,7 +19,6 @@ export class Rundeck implements INodeType {
 		description: 'Manage Rundeck API',
 		defaults: {
 			name: 'Rundeck',
-			color: '#F73F39',
 		},
 		inputs: ['main'],
 		outputs: ['main'],
@@ -33,6 +33,7 @@ export class Rundeck implements INodeType {
 				displayName: 'Resource',
 				name: 'resource',
 				type: 'options',
+				noDataExpression: true,
 				options: [
 					{
 						name: 'Job',
@@ -40,12 +41,12 @@ export class Rundeck implements INodeType {
 					},
 				],
 				default: 'job',
-				description: 'The resource to operate on.',
 			},
 			{
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				options: [
 					{
 						name: 'Execute',
@@ -59,14 +60,13 @@ export class Rundeck implements INodeType {
 					},
 				],
 				default: 'execute',
-				description: 'The operation to perform.',
 			},
 
 			// ----------------------------------
 			//         job:execute
 			// ----------------------------------
 			{
-				displayName: 'Job Id',
+				displayName: 'Job ID',
 				name: 'jobid',
 				type: 'string',
 				displayOptions: {
@@ -82,7 +82,7 @@ export class Rundeck implements INodeType {
 				default: '',
 				placeholder: 'Rundeck Job Id',
 				required: true,
-				description: 'The job Id to execute.',
+				description: 'The job ID to execute',
 			},
 			{
 				displayName: 'Arguments',
@@ -130,7 +130,7 @@ export class Rundeck implements INodeType {
 			//         job:getMetadata
 			// ----------------------------------
 			{
-				displayName: 'Job Id',
+				displayName: 'Job ID',
 				name: 'jobid',
 				type: 'string',
 				displayOptions: {
@@ -146,7 +146,7 @@ export class Rundeck implements INodeType {
 				default: '',
 				placeholder: 'Rundeck Job Id',
 				required: true,
-				description: 'The job Id to get metadata off.',
+				description: 'The job ID to get metadata off',
 			},
 		],
 
@@ -158,13 +158,15 @@ export class Rundeck implements INodeType {
 		// Input data
 		const items = this.getInputData();
 		const returnData: IDataObject[] = [];
-		const length = items.length as unknown as number;
+		const length = items.length;
 
 		const operation = this.getNodeParameter('operation', 0) as string;
 		const resource = this.getNodeParameter('resource', 0) as string;
+		const rundeckApi = new RundeckApi(this);
+		await rundeckApi.init();
+
 
 		for (let i = 0; i < length; i++) {
-			const rundeckApi = new RundeckApi(this);
 
 			if (resource === 'job') {
 				if (operation === 'execute') {
@@ -185,10 +187,10 @@ export class Rundeck implements INodeType {
 
 					returnData.push(response);
 				} else {
-					throw new Error(`The operation "${operation}" is not supported!`);
+					throw new NodeOperationError(this.getNode(), `The operation "${operation}" is not supported!`);
 				}
 			} else {
-				throw new Error(`The resource "${resource}" is not supported!`);
+				throw new NodeOperationError(this.getNode(), `The resource "${resource}" is not supported!`);
 			}
 		}
 

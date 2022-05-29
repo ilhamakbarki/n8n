@@ -22,10 +22,9 @@ export class Gotify implements INodeType {
 		group: ['input'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-		description: 'Consume Gotify API.',
+		description: 'Consume Gotify API',
 		defaults: {
 			name: 'Gotify',
-			color: '#71c8ec',
 		},
 		inputs: ['main'],
 		outputs: ['main'],
@@ -40,6 +39,7 @@ export class Gotify implements INodeType {
 				displayName: 'Resource',
 				name: 'resource',
 				type: 'options',
+				noDataExpression: true,
 				options: [
 					{
 						name: 'Message',
@@ -47,12 +47,12 @@ export class Gotify implements INodeType {
 					},
 				],
 				default: 'message',
-				description: 'The resource to operate on.',
 			},
 			{
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				noDataExpression: true,
 				displayOptions: {
 					show: {
 						resource: [
@@ -75,7 +75,6 @@ export class Gotify implements INodeType {
 					},
 				],
 				default: 'create',
-				description: 'The resource to operate on.',
 			},
 			{
 				displayName: 'Message',
@@ -93,7 +92,7 @@ export class Gotify implements INodeType {
 					},
 				},
 				default: '',
-				description: `The message. Markdown (excluding html) is allowed.`,
+				description: 'The message. Markdown (excluding html) is allowed.',
 			},
 			{
 				displayName: 'Additional Fields',
@@ -117,14 +116,14 @@ export class Gotify implements INodeType {
 						name: 'priority',
 						type: 'number',
 						default: 1,
-						description: 'The priority of the message.',
+						description: 'The priority of the message',
 					},
 					{
 						displayName: 'Title',
 						name: 'title',
 						type: 'string',
 						default: '',
-						description: `The title of the message.`,
+						description: 'The title of the message',
 					},
 				],
 			},
@@ -144,7 +143,6 @@ export class Gotify implements INodeType {
 					},
 				},
 				default: '',
-				description: `The message id.`,
 			},
 			{
 				displayName: 'Return All',
@@ -161,12 +159,16 @@ export class Gotify implements INodeType {
 					},
 				},
 				default: false,
-				description: 'If all results should be returned or only up to a given limit.',
+				description: 'Whether to return all results or only up to a given limit',
 			},
 			{
 				displayName: 'Limit',
 				name: 'limit',
 				type: 'number',
+				typeOptions: {
+					minValue: 1,
+				},
+				description: 'Max number of results to return',
 				default: 20,
 				displayOptions: {
 					show: {
@@ -188,73 +190,81 @@ export class Gotify implements INodeType {
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 		const returnData: IDataObject[] = [];
-		const length = (items.length as unknown) as number;
+		const length = items.length;
 		const qs: IDataObject = {};
 		let responseData;
 		const resource = this.getNodeParameter('resource', 0) as string;
 		const operation = this.getNodeParameter('operation', 0) as string;
 		for (let i = 0; i < length; i++) {
-			if (resource === 'message') {
-				if (operation === 'create') {
+			try {
+				if (resource === 'message') {
+					if (operation === 'create') {
 
-					const message = this.getNodeParameter('message', i) as string;
+						const message = this.getNodeParameter('message', i) as string;
 
-					const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 
-					const body: IDataObject = {
-						message,
-					};
+						const body: IDataObject = {
+							message,
+						};
 
-					Object.assign(body, additionalFields);
+						Object.assign(body, additionalFields);
 
-					responseData = await gotifyApiRequest.call(
-						this,
-						'POST',
-						`/message`,
-						body,
-					);
-				}
-				if (operation === 'delete') {
-					const messageId = this.getNodeParameter('messageId', i) as string;
-
-					responseData = await gotifyApiRequest.call(
-						this,
-						'DELETE',
-						`/message/${messageId}`,
-					);
-					responseData = { success: true };
-				}
-
-				if (operation === 'getAll') {
-					const returnAll = this.getNodeParameter('returnAll', i) as boolean;
-
-					if (returnAll) {
-						responseData = await gotifyApiRequestAllItems.call(
-							this,
-							'messages',
-							'GET',
-							'/message',
-							{},
-							qs,
-						);
-
-					} else {
-						qs.limit = this.getNodeParameter('limit', i) as number;
 						responseData = await gotifyApiRequest.call(
 							this,
-							'GET',
+							'POST',
 							`/message`,
-							{},
-							qs,
+							body,
 						);
-						responseData = responseData.messages;
+					}
+					if (operation === 'delete') {
+						const messageId = this.getNodeParameter('messageId', i) as string;
+
+						responseData = await gotifyApiRequest.call(
+							this,
+							'DELETE',
+							`/message/${messageId}`,
+						);
+						responseData = { success: true };
+					}
+
+					if (operation === 'getAll') {
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+
+						if (returnAll) {
+							responseData = await gotifyApiRequestAllItems.call(
+								this,
+								'messages',
+								'GET',
+								'/message',
+								{},
+								qs,
+							);
+
+						} else {
+							qs.limit = this.getNodeParameter('limit', i) as number;
+							responseData = await gotifyApiRequest.call(
+								this,
+								'GET',
+								`/message`,
+								{},
+								qs,
+							);
+							responseData = responseData.messages;
+						}
 					}
 				}
-			}
-			if (Array.isArray(responseData)) {
-				returnData.push.apply(returnData, responseData as IDataObject[]);
-			} else if (responseData !== undefined) {
-				returnData.push(responseData as IDataObject);
+				if (Array.isArray(responseData)) {
+					returnData.push.apply(returnData, responseData as IDataObject[]);
+				} else if (responseData !== undefined) {
+					returnData.push(responseData as IDataObject);
+				}
+			} catch (error) {
+				if (this.continueOnFail()) {
+					returnData.push({ error: error.message });
+					continue;
+				}
+				throw error;
 			}
 		}
 		return [this.helpers.returnJsonArray(returnData)];

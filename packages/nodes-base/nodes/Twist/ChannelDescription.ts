@@ -2,11 +2,12 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export const channelOperations = [
+export const channelOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -16,9 +17,19 @@ export const channelOperations = [
 		},
 		options: [
 			{
+				name: 'Archive',
+				value: 'archive',
+				description: 'Archive a channel',
+			},
+			{
 				name: 'Create',
 				value: 'create',
 				description: 'Initiates a public or private channel-based conversation',
+			},
+			{
+				name: 'Delete',
+				value: 'delete',
+				description: 'Delete a channel',
 			},
 			{
 				name: 'Get',
@@ -31,17 +42,21 @@ export const channelOperations = [
 				description: 'Get all channels',
 			},
 			{
+				name: 'Unarchive',
+				value: 'unarchive',
+				description: 'Unarchive a channel',
+			},
+			{
 				name: 'Update',
 				value: 'update',
 				description: 'Update a channel',
 			},
 		],
 		default: 'create',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const channelFields = [
+export const channelFields: INodeProperties[] = [
 	/*-------------------------------------------------------------------------- */
 	/*                                channel:create                             */
 	/* ------------------------------------------------------------------------- */
@@ -64,7 +79,7 @@ export const channelFields = [
 			},
 		},
 		required: true,
-		description: 'The id of the workspace.',
+		description: 'The ID of the workspace',
 	},
 	{
 		displayName: 'Name',
@@ -82,7 +97,7 @@ export const channelFields = [
 			},
 		},
 		required: true,
-		description: 'The name of the channel.',
+		description: 'The name of the channel',
 	},
 	{
 		displayName: 'Additional Fields',
@@ -172,12 +187,13 @@ export const channelFields = [
 				default: false,
 				description: 'If enabled, the channel will be marked as public',
 			},
+			// eslint-disable-next-line n8n-nodes-base/node-param-default-missing
 			{
 				displayName: 'Temp ID',
 				name: 'temp_id',
 				type: 'number',
 				default: -1,
-				description: 'The temporary id of the channel. It needs to be a negative number.',
+				description: 'The temporary ID of the channel. It needs to be a negative number.',
 			},
 			{
 				displayName: 'User IDs',
@@ -190,12 +206,13 @@ export const channelFields = [
 					],
 				},
 				default: [],
-				description: 'The users that will participate in the channel.',
+				description: 'The users that will participate in the channel',
 			},
 		],
 	},
+
 	/* -------------------------------------------------------------------------- */
-	/*                                  channel:get                               */
+	/*                                  channel:get/archive/unarchive/delete      */
 	/* -------------------------------------------------------------------------- */
 	{
 		displayName: 'Channel ID',
@@ -205,7 +222,10 @@ export const channelFields = [
 		displayOptions: {
 			show: {
 				operation: [
+					'archive',
+					'delete',
 					'get',
+					'unarchive',
 				],
 				resource: [
 					'channel',
@@ -215,6 +235,7 @@ export const channelFields = [
 		required: true,
 		description: 'The ID of the channel',
 	},
+
 	/* -------------------------------------------------------------------------- */
 	/*                                 channel:getAll                             */
 	/* -------------------------------------------------------------------------- */
@@ -237,7 +258,7 @@ export const channelFields = [
 			},
 		},
 		required: true,
-		description: 'The ID of the workspace.',
+		description: 'The ID of the workspace',
 	},
 	{
 		displayName: 'Return All',
@@ -254,7 +275,7 @@ export const channelFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -278,7 +299,7 @@ export const channelFields = [
 			maxValue: 100,
 		},
 		default: 50,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	{
 		displayName: 'Filters',
@@ -326,7 +347,7 @@ export const channelFields = [
 			},
 		},
 		required: true,
-		description: 'The ID of the channel.',
+		description: 'The ID of the channel',
 	},
 	{
 		displayName: 'Update Fields',
@@ -425,4 +446,4 @@ export const channelFields = [
 			},
 		],
 	},
-] as INodeProperties[];
+];

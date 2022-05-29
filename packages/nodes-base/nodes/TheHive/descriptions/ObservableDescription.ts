@@ -6,11 +6,12 @@ import {
 	TLP,
 } from '../interfaces/AlertInterface';
 
-export const observableOperations = [
+export const observableOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		required: true,
 		default: 'getAll',
 		displayOptions: {
@@ -27,9 +28,9 @@ export const observableOperations = [
 			loadOptionsMethod: 'loadObservableOptions',
 		},
 	},
-] as INodeProperties[];
+];
 
-export const observableFields = [
+export const observableFields: INodeProperties[] = [
 	{
 		displayName: 'Case ID',
 		name: 'caseId',
@@ -65,7 +66,7 @@ export const observableFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -90,7 +91,7 @@ export const observableFields = [
 			maxValue: 500,
 		},
 		default: 100,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	// required attributs
 	{
@@ -120,64 +121,9 @@ export const observableFields = [
 		type: 'options',
 		required: true,
 		default: '',
-		options: [
-			{
-				name: 'domain',
-				value: 'domain',
-			},
-			{
-				name: 'file',
-				value: 'file',
-			},
-			{
-				name: 'filename',
-				value: 'filename',
-			},
-			{
-				name: 'fqdn',
-				value: 'fqdn',
-			},
-			{
-				name: 'hash',
-				value: 'hash',
-			},
-			{
-				name: 'ip',
-				value: 'ip',
-			},
-			{
-				name: 'mail',
-				value: 'mail',
-			},
-			{
-				name: 'mail_subject',
-				value: 'mail_subject',
-			},
-			{
-				name: 'other',
-				value: 'other',
-			},
-			{
-				name: 'regexp',
-				value: 'regexp',
-			},
-			{
-				name: 'registry',
-				value: 'registry',
-			},
-			{
-				name: 'uri_path',
-				value: 'uri_path',
-			},
-			{
-				name: 'url',
-				value: 'url',
-			},
-			{
-				name: 'user-agent',
-				value: 'user-agent',
-			},
-		],
+		typeOptions: {
+			loadOptionsMethod: 'loadObservableTypes',
+		},
 		displayOptions: {
 			show: {
 				resource: [
@@ -304,7 +250,7 @@ export const observableFields = [
 				value: TLP.red,
 			},
 		],
-		description: 'Traffict Light Protocol (TLP). Default=Amber',
+		description: 'Traffict Light Protocol (TLP). Default=Amber.',
 	},
 	{
 		displayName: 'IOC',
@@ -368,7 +314,7 @@ export const observableFields = [
 				],
 			},
 		},
-		description: 'Status of the observable. Default=Ok',
+		description: 'Status of the observable. Default=Ok.',
 	},
 	// required for analyzer execution
 	{
@@ -436,8 +382,7 @@ export const observableFields = [
 		name: 'options',
 		type: 'collection',
 		placeholder: 'Add Option',
-		required: false,
-		default: '',
+		default: {},
 		displayOptions: {
 			show: {
 				resource: [
@@ -453,7 +398,6 @@ export const observableFields = [
 				displayName: 'Observable Tags',
 				name: 'tags',
 				type: 'string',
-				required: false,
 				default: '',
 				placeholder: 'tag1,tag2',
 			},
@@ -464,8 +408,7 @@ export const observableFields = [
 		displayName: 'Update Fields',
 		name: 'updateFields',
 		type: 'collection',
-		required: false,
-		default: '',
+		default: {},
 		displayOptions: {
 			show: {
 				resource: [
@@ -515,7 +458,7 @@ export const observableFields = [
 						value: TLP.red,
 					},
 				],
-				description: 'Traffict Light Protocol (TLP). Default=Amber',
+				description: 'Traffict Light Protocol (TLP). Default=Amber.',
 			},
 			{
 				displayName: 'IOC',
@@ -546,7 +489,7 @@ export const observableFields = [
 						value: 'Deleted',
 					},
 				],
-				description: 'Status of the observable. Default=Ok',
+				description: 'Status of the observable. Default=Ok.',
 			},
 		],
 	},
@@ -584,8 +527,7 @@ export const observableFields = [
 		displayName: 'Filters',
 		name: 'filters',
 		type: 'collection',
-		required: false,
-		default: '',
+		default: {},
 		placeholder: 'Add Filter',
 		displayOptions: {
 			show: {
@@ -604,64 +546,9 @@ export const observableFields = [
 				name: 'dataType',
 				type: 'multiOptions',
 				default: [],
-				options: [
-					{
-						name: 'domain',
-						value: 'domain',
-					},
-					{
-						name: 'file',
-						value: 'file',
-					},
-					{
-						name: 'filename',
-						value: 'filename',
-					},
-					{
-						name: 'fqdn',
-						value: 'fqdn',
-					},
-					{
-						name: 'hash',
-						value: 'hash',
-					},
-					{
-						name: 'ip',
-						value: 'ip',
-					},
-					{
-						name: 'mail',
-						value: 'mail',
-					},
-					{
-						name: 'mail_subject',
-						value: 'mail_subject',
-					},
-					{
-						name: 'other',
-						value: 'other',
-					},
-					{
-						name: 'regexp',
-						value: 'regexp',
-					},
-					{
-						name: 'registry',
-						value: 'registry',
-					},
-					{
-						name: 'uri_path',
-						value: 'uri_path',
-					},
-					{
-						name: 'url',
-						value: 'url',
-					},
-					{
-						name: 'user-agent',
-						value: 'user-agent',
-					},
-				],
+				typeOptions: {
+					loadOptionsMethod: 'loadObservableTypes',
+				},
 				description: 'Type of the observable',
 			},
 			{
@@ -678,14 +565,12 @@ export const observableFields = [
 								displayName: 'From date',
 								name: 'fromDate',
 								type: 'dateTime',
-								required: false,
 								default: '',
 							},
 							{
 								displayName: 'To date',
 								name: 'toDate',
 								type: 'dateTime',
-								required: false,
 								default: '',
 							},
 						],
@@ -748,7 +633,7 @@ export const observableFields = [
 						value: 'Deleted',
 					},
 				],
-				description: 'Status of the observable. Default=Ok',
+				description: 'Status of the observable. Default=Ok.',
 			},
 			{
 				displayName: 'TLP',
@@ -773,7 +658,7 @@ export const observableFields = [
 						value: TLP.red,
 					},
 				],
-				description: 'Traffict Light Protocol (TLP). Default=Amber',
+				description: 'Traffict Light Protocol (TLP). Default=Amber.',
 			},
 			{
 				displayName: 'Value',
@@ -784,4 +669,4 @@ export const observableFields = [
 			},
 		],
 	},
-] as INodeProperties[];
+];

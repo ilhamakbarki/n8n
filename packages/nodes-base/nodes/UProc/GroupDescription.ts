@@ -1,6 +1,6 @@
 import {
 	IDataObject,
-	INodeProperties,
+	INodeProperties
 } from 'n8n-workflow';
 
 import {
@@ -12,7 +12,6 @@ const finalGroups = {
 	name: 'group',
 	type: 'options',
 	default: 'communication',
-	description: 'The Resource to consume.',
 	options: [],
 };
 

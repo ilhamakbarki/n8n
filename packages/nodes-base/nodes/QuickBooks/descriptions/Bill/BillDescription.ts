@@ -6,13 +6,13 @@ import {
 	billAdditionalFieldsOptions,
 } from './BillAdditionalFieldsOptions';
 
-export const billOperations = [
+export const billOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		default: 'get',
-		description: 'Operation to perform',
 		options: [
 			{
 				name: 'Create',
@@ -43,9 +43,9 @@ export const billOperations = [
 			},
 		},
 	},
-] as INodeProperties[];
+];
 
-export const billFields = [
+export const billFields: INodeProperties[] = [
 	// ----------------------------------
 	//         bill: create
 	// ----------------------------------
@@ -54,7 +54,7 @@ export const billFields = [
 		name: 'VendorRef',
 		type: 'options',
 		required: true,
-		description: 'The ID of the vendor who the bill is for.',
+		description: 'The ID of the vendor who the bill is for',
 		default: [],
 		typeOptions: {
 			loadOptionsMethod: 'getVendors',
@@ -75,7 +75,7 @@ export const billFields = [
 		name: 'Line',
 		type: 'collection',
 		placeholder: 'Add Line Item Property',
-		description: 'Individual line item of a transaction.',
+		description: 'Individual line item of a transaction',
 		typeOptions: {
 			multipleValues: true,
 		},
@@ -125,14 +125,14 @@ export const billFields = [
 			{
 				displayName: 'Amount',
 				name: 'Amount',
-				description: 'Monetary amount of the line item.',
+				description: 'Monetary amount of the line item',
 				type: 'number',
 				default: 0,
 			},
 			{
 				displayName: 'Description',
 				name: 'Description',
-				description: 'Textual description of the line item.',
+				description: 'Textual description of the line item',
 				type: 'string',
 				default: '',
 				typeOptions: {
@@ -142,7 +142,7 @@ export const billFields = [
 			{
 				displayName: 'Position',
 				name: 'LineNum',
-				description: 'Position of the line item relative to others.',
+				description: 'Position of the line item relative to others',
 				type: 'number',
 				default: 1,
 			},
@@ -176,7 +176,7 @@ export const billFields = [
 		type: 'string',
 		required: true,
 		default: '',
-		description: 'The ID of the bill to delete.',
+		description: 'The ID of the bill to delete',
 		displayOptions: {
 			show: {
 				resource: [
@@ -198,7 +198,7 @@ export const billFields = [
 		type: 'string',
 		required: true,
 		default: '',
-		description: 'The ID of the bill to retrieve.',
+		description: 'The ID of the bill to retrieve',
 		displayOptions: {
 			show: {
 				resource: [
@@ -219,7 +219,7 @@ export const billFields = [
 		name: 'returnAll',
 		type: 'boolean',
 		default: false,
-		description: 'Return all results.',
+		description: 'Whether to return all results or only up to a given limit',
 		displayOptions: {
 			show: {
 				resource: [
@@ -236,7 +236,7 @@ export const billFields = [
 		name: 'limit',
 		type: 'number',
 		default: 5,
-		description: 'The number of results to return.',
+		description: 'Max number of results to return',
 		typeOptions: {
 			minValue: 1,
 			maxValue: 1000,
@@ -268,7 +268,7 @@ export const billFields = [
 				type: 'string',
 				default: '',
 				placeholder: 'WHERE Metadata.LastUpdatedTime > \'2021-01-01\'',
-				description: 'The condition for selecting bills. See the <a href="https://developer.intuit.com/app/developer/qbo/docs/develop/explore-the-quickbooks-online-api/data-queries" target="_blank">guide</a> for supported syntax.',
+				description: 'The condition for selecting bills. See the <a href="https://developer.intuit.com/app/developer/qbo/docs/develop/explore-the-quickbooks-online-api/data-queries">guide</a> for supported syntax.',
 				typeOptions: {
 					alwaysOpenEditWindow: true,
 				},
@@ -295,7 +295,7 @@ export const billFields = [
 		type: 'string',
 		required: true,
 		default: '',
-		description: 'The ID of the bill to update.',
+		description: 'The ID of the bill to update',
 		displayOptions: {
 			show: {
 				resource: [
@@ -327,4 +327,4 @@ export const billFields = [
 		// filter out fields that cannot be updated
 		options: billAdditionalFieldsOptions.filter(property => property.name !== 'TotalAmt' && property.name !== 'Balance'),
 	},
-] as INodeProperties[];
+];

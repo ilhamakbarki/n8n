@@ -2,11 +2,12 @@ import {
 	INodeProperties,
  } from 'n8n-workflow';
 
-export const contactOperations = [
+export const contactOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -18,7 +19,7 @@ export const contactOperations = [
 			{
 				name: 'Create/Update',
 				value: 'upsert',
-				description: 'Create/update a contact',
+				description: 'Create a new contact, or update the current one if it already exists (upsert)',
 			},
 			{
 				name: 'Delete',
@@ -37,11 +38,10 @@ export const contactOperations = [
 			},
 		],
 		default: 'upsert',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const contactFields = [
+export const contactFields: INodeProperties[] = [
 
 /* -------------------------------------------------------------------------- */
 /*                                 contact:upsert                             */
@@ -72,8 +72,7 @@ export const contactFields = [
 			},
 		},
 		default: 'email',
-		description: `Performs duplicate checking by one of the following options: Email, EmailAndName,</br>
-		if a match is found using the option provided, the existing contact will be updated`,
+		description: 'Performs duplicate checking by one of the following options: Email, EmailAndName. If a match is found using the option provided, the existing contact will be updated.',
 	},
 	{
 		displayName: 'Additional Fields',
@@ -242,7 +241,7 @@ export const contactFields = [
 		typeOptions: {
 			multipleValues: true,
 		},
-		default: '',
+		default: {},
 		placeholder: 'Add Address',
 		displayOptions: {
 			show: {
@@ -507,7 +506,7 @@ export const contactFields = [
 		typeOptions: {
 			multipleValues: true,
 		},
-		default: '',
+		default: {},
 		placeholder: 'Add Social Account',
 		displayOptions: {
 			show: {
@@ -616,8 +615,7 @@ export const contactFields = [
 				name: 'fields',
 				type: 'string',
 				default: '',
-				description: `Comma-delimited list of Contact properties to include in the response.</br>
-				(Some fields such as lead_source_id, custom_fields, and job_title aren't included, by default.)`,
+				description: 'Comma-delimited list of Contact properties to include in the response. (Some fields such as lead_source_id, custom_fields, and job_title aren\'t included, by default.).',
 			},
 		],
 	},
@@ -639,7 +637,7 @@ export const contactFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -663,7 +661,7 @@ export const contactFields = [
 			maxValue: 200,
 		},
 		default: 100,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	{
 		displayName: 'Options',
@@ -757,4 +755,4 @@ export const contactFields = [
 			},
 		],
 	},
-] as INodeProperties[];
+];

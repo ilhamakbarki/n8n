@@ -2,11 +2,12 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export const userListOperations = [
+export const userListOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -27,11 +28,10 @@ export const userListOperations = [
 			},
 		],
 		default: 'add',
-		description: 'The operation to perform.',
 	},
-] as INodeProperties[];
+];
 
-export const userListFields = [
+export const userListFields: INodeProperties[] = [
 
 	/* -------------------------------------------------------------------------- */
 	/*                                userList:add                                */
@@ -201,8 +201,8 @@ export const userListFields = [
 				name: 'channelUnsubscribe',
 				type: 'boolean',
 				default: false,
-				description: `Unsubscribe email from list's associated channel - essentially a global unsubscribe`,
+				description: 'Unsubscribe email from list\'s associated channel - essentially a global unsubscribe',
 			},
 		],
 	},
-] as INodeProperties[];
+];

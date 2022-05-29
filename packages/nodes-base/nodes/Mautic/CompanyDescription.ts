@@ -2,11 +2,12 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export const companyOperations = [
+export const companyOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -42,11 +43,10 @@ export const companyOperations = [
 			},
 		],
 		default: 'create',
-		description: 'The operation to perform',
 	},
-] as INodeProperties[];
+];
 
-export const companyFields = [
+export const companyFields: INodeProperties[] = [
 
 	/* -------------------------------------------------------------------------- */
 	/*                                company:create                              */
@@ -66,10 +66,10 @@ export const companyFields = [
 			},
 		},
 		default: '',
-		description: 'The name of the company to create.',
+		description: 'The name of the company to create',
 	},
 	{
-		displayName: 'Simple',
+		displayName: 'Simplify',
 		name: 'simple',
 		type: 'boolean',
 		displayOptions: {
@@ -83,7 +83,7 @@ export const companyFields = [
 			},
 		},
 		default: true,
-		description: 'When set to true a simplify version of the response will be used else the raw data.',
+		description: 'Whether to return a simplified version of the response instead of the raw data',
 	},
 	{
 		displayName: 'Additional Fields',
@@ -103,17 +103,159 @@ export const companyFields = [
 		},
 		options: [
 			{
+				displayName: 'Address',
+				name: 'addressUi',
+				placeholder: 'Address',
+				type: 'fixedCollection',
+				typeOptions: {
+					multipleValues: false,
+				},
+				default: {},
+				options: [
+					{
+						name: 'addressValues',
+						displayName: 'Address',
+						values: [
+							{
+								displayName: 'Address Line 1',
+								name: 'address1',
+								type: 'string',
+								default: '',
+							},
+							{
+								displayName: 'Address Line 2',
+								name: 'address2',
+								type: 'string',
+								default: '',
+							},
+							{
+								displayName: 'City',
+								name: 'city',
+								type: 'string',
+								default: '',
+							},
+							{
+								displayName: 'State',
+								name: 'state',
+								type: 'string',
+								default: '',
+							},
+							{
+								displayName: 'Country',
+								name: 'country',
+								type: 'string',
+								default: '',
+							},
+							{
+								displayName: 'Zip Code',
+								name: 'zipCode',
+								type: 'string',
+								default: '',
+							},
+						],
+					},
+				],
+			},
+			{
+				displayName: 'Annual Revenue',
+				name: 'annualRevenue',
+				type: 'number',
+				default: 0,
+			},
+			{
+				displayName: 'Company Email',
+				name: 'companyEmail',
+				type: 'string',
+				default: '',
+			},
+			{
+				displayName: 'Custom Fields',
+				name: 'customFieldsUi',
+				placeholder: 'Add Custom Fields',
+				description: 'Adds a custom fields to set also values which have not been predefined',
+				type: 'fixedCollection',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: {},
+				options: [
+					{
+						name: 'customFieldValues',
+						displayName: 'Field',
+						values: [
+							{
+								displayName: 'Field ID',
+								name: 'fieldId',
+								type: 'options',
+								typeOptions: {
+									loadOptionsMethod: 'getCompanyFields',
+								},
+								default: '',
+								description: 'ID of the field to set',
+							},
+							{
+								displayName: 'Field Value',
+								name: 'fieldValue',
+								type: 'string',
+								default: '',
+								description: 'Value of the field to set',
+							},
+						],
+					},
+				],
+			},
+			{
+				displayName: 'Description',
+				name: 'description',
+				type: 'string',
+				default: '',
+			},
+			{
+				displayName: 'Fax',
+				name: 'fax',
+				type: 'string',
+				default: '',
+			},
+			{
+				displayName: 'Industry',
+				name: 'industry',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getIndustries',
+				},
+				default: '',
+			},
+			{
 				displayName: 'Is Published',
 				name: 'isPublished',
 				type: 'boolean',
 				default: false,
 			},
 			{
+				displayName: 'Number of Employees',
+				name: 'numberOfEmpoyees',
+				type: 'number',
+				default: 0,
+			},
+
+			{
 				displayName: 'Overwrite With Blank',
 				name: 'overwriteWithBlank',
 				type: 'boolean',
 				default: false,
-				description: 'If true, then empty values are set to fields. Otherwise empty values are skipped',
+				description: 'If true, then empty values are set to fields. Otherwise empty values are skipped.',
+			},
+			{
+				displayName: 'Phone',
+				name: 'phone',
+				type: 'string',
+				default: '',
+			},
+			{
+				displayName: 'Website',
+				name: 'website',
+				type: 'string',
+				default: '',
 			},
 		],
 	},
@@ -136,10 +278,10 @@ export const companyFields = [
 			},
 		},
 		default: '',
-		description: 'The ID of the company to update.',
+		description: 'The ID of the company to update',
 	},
 	{
-		displayName: 'Simple',
+		displayName: 'Simplify',
 		name: 'simple',
 		type: 'boolean',
 		displayOptions: {
@@ -153,7 +295,7 @@ export const companyFields = [
 			},
 		},
 		default: true,
-		description: 'When set to true a simplify version of the response will be used else the raw data.',
+		description: 'Whether to return a simplified version of the response instead of the raw data',
 	},
 	{
 		displayName: 'Update Fields',
@@ -173,11 +315,133 @@ export const companyFields = [
 		},
 		options: [
 			{
+				displayName: 'Address',
+				name: 'addressUi',
+				placeholder: 'Address',
+				type: 'fixedCollection',
+				typeOptions: {
+					multipleValues: false,
+				},
+				default: {},
+				options: [
+					{
+						name: 'addressValues',
+						displayName: 'Address',
+						values: [
+							{
+								displayName: 'Address Line 1',
+								name: 'address1',
+								type: 'string',
+								default: '',
+							},
+							{
+								displayName: 'Address Line 2',
+								name: 'address2',
+								type: 'string',
+								default: '',
+							},
+							{
+								displayName: 'City',
+								name: 'city',
+								type: 'string',
+								default: '',
+							},
+							{
+								displayName: 'State',
+								name: 'state',
+								type: 'string',
+								default: '',
+							},
+							{
+								displayName: 'Country',
+								name: 'country',
+								type: 'string',
+								default: '',
+							},
+							{
+								displayName: 'Zip Code',
+								name: 'zipCode',
+								type: 'string',
+								default: '',
+							},
+						],
+					},
+				],
+			},
+			{
+				displayName: 'Annual Revenue',
+				name: 'annualRevenue',
+				type: 'number',
+				default: 0,
+			},
+			{
+				displayName: 'Company Email',
+				name: 'companyEmail',
+				type: 'string',
+				default: '',
+			},
+			{
 				displayName: 'Company Name',
 				name: 'name',
 				type: 'string',
 				default: '',
-				description: 'Company name',
+			},
+			{
+				displayName: 'Custom Fields',
+				name: 'customFieldsUi',
+				placeholder: 'Add Custom Fields',
+				description: 'Adds a custom fields to set also values which have not been predefined',
+				type: 'fixedCollection',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: {},
+				options: [
+					{
+						name: 'customFieldValues',
+						displayName: 'Field',
+						values: [
+							{
+								displayName: 'Field ID',
+								name: 'fieldId',
+								type: 'options',
+								typeOptions: {
+									loadOptionsMethod: 'getCompanyFields',
+								},
+								default: '',
+								description: 'ID of the field to set',
+							},
+							{
+								displayName: 'Field Value',
+								name: 'fieldValue',
+								type: 'string',
+								default: '',
+								description: 'Value of the field to set',
+							},
+						],
+					},
+				],
+			},
+			{
+				displayName: 'Description',
+				name: 'description',
+				type: 'string',
+				default: '',
+			},
+			{
+				displayName: 'Fax',
+				name: 'fax',
+				type: 'string',
+				default: '',
+			},
+			{
+				displayName: 'Industry',
+				name: 'industry',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getIndustries',
+				},
+				default: '',
 			},
 			{
 				displayName: 'Is Published',
@@ -186,11 +450,30 @@ export const companyFields = [
 				default: false,
 			},
 			{
+				displayName: 'Number of Employees',
+				name: 'numberOfEmpoyees',
+				type: 'number',
+				default: 0,
+			},
+
+			{
 				displayName: 'Overwrite With Blank',
 				name: 'overwriteWithBlank',
 				type: 'boolean',
 				default: false,
-				description: 'If true, then empty values are set to fields. Otherwise empty values are skipped',
+				description: 'If true, then empty values are set to fields. Otherwise empty values are skipped.',
+			},
+			{
+				displayName: 'Phone',
+				name: 'phone',
+				type: 'string',
+				default: '',
+			},
+			{
+				displayName: 'Website',
+				name: 'website',
+				type: 'string',
+				default: '',
 			},
 		],
 	},
@@ -213,10 +496,10 @@ export const companyFields = [
 			},
 		},
 		default: '',
-		description: 'The ID of the company to return.',
+		description: 'The ID of the company to return',
 	},
 	{
-		displayName: 'Simple',
+		displayName: 'Simplify',
 		name: 'simple',
 		type: 'boolean',
 		displayOptions: {
@@ -230,7 +513,7 @@ export const companyFields = [
 			},
 		},
 		default: true,
-		description: 'When set to true a simplify version of the response will be used else the raw data.',
+		description: 'Whether to return a simplified version of the response instead of the raw data',
 	},
 
 	/* -------------------------------------------------------------------------- */
@@ -251,7 +534,7 @@ export const companyFields = [
 			},
 		},
 		default: false,
-		description: 'If all results should be returned or only up to a given limit.',
+		description: 'Whether to return all results or only up to a given limit',
 	},
 	{
 		displayName: 'Limit',
@@ -275,10 +558,10 @@ export const companyFields = [
 			maxValue: 30,
 		},
 		default: 30,
-		description: 'How many results to return.',
+		description: 'Max number of results to return',
 	},
 	{
-		displayName: 'Simple',
+		displayName: 'Simplify',
 		name: 'simple',
 		type: 'boolean',
 		displayOptions: {
@@ -292,7 +575,7 @@ export const companyFields = [
 			},
 		},
 		default: true,
-		description: 'When set to true a simplify version of the response will be used else the raw data.',
+		description: 'Whether to return a simplified version of the response instead of the raw data',
 	},
 	{
 		displayName: 'Additional Fields',
@@ -326,7 +609,7 @@ export const companyFields = [
 					},
 				],
 				default: '',
-				description: 'Sort direction: asc or desc.',
+				description: 'Sort direction: asc or desc',
 			},
 			{
 				displayName: 'Order By',
@@ -340,10 +623,10 @@ export const companyFields = [
 			},
 			{
 				displayName: 'Search',
-				name: 'isPublished',
-				type: 'boolean',
+				name: 'search',
+				type: 'string',
 				default: '',
-				description: 'String or search command to filter entities by.',
+				description: 'String or search command to filter entities by',
 			},
 		],
 	},
@@ -365,10 +648,10 @@ export const companyFields = [
 			},
 		},
 		default: '',
-		description: 'The ID of the company to delete.',
+		description: 'The ID of the company to delete',
 	},
 	{
-		displayName: 'Simple',
+		displayName: 'Simplify',
 		name: 'simple',
 		type: 'boolean',
 		displayOptions: {
@@ -382,6 +665,6 @@ export const companyFields = [
 			},
 		},
 		default: true,
-		description: 'When set to true a simplify version of the response will be used else the raw data.',
+		description: 'Whether to return a simplified version of the response instead of the raw data',
 	},
-] as INodeProperties[];
+];

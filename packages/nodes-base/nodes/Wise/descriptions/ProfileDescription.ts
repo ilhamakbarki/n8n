@@ -2,13 +2,13 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export const profileOperations = [
+export const profileOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		default: 'get',
-		description: 'Operation to perform',
 		options: [
 			{
 				name: 'Get',
@@ -27,9 +27,9 @@ export const profileOperations = [
 			},
 		},
 	},
-] as INodeProperties[];
+];
 
-export const profileFields = [
+export const profileFields: INodeProperties[] = [
 	// ----------------------------------
 	//         profile: get
 	// ----------------------------------
@@ -42,7 +42,7 @@ export const profileFields = [
 		typeOptions: {
 			loadOptionsMethod: 'getProfiles',
 		},
-		description: 'ID of the user profile to retrieve.',
+		description: 'ID of the user profile to retrieve',
 		displayOptions: {
 			show: {
 				resource: [
@@ -54,4 +54,4 @@ export const profileFields = [
 			},
 		},
 	},
-] as INodeProperties[];
+];

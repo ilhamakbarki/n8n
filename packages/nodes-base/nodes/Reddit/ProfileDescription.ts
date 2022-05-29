@@ -2,11 +2,12 @@ import {
 	INodeProperties,
 } from 'n8n-workflow';
 
-export const profileOperations = [
+export const profileOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
+		noDataExpression: true,
 		displayOptions: {
 			show: {
 				resource: [
@@ -21,19 +22,18 @@ export const profileOperations = [
 			},
 		],
 		default: 'get',
-		description: 'Operation to perform',
 	},
-] as INodeProperties[];
+];
 
 
-export const profileFields = [
+export const profileFields: INodeProperties[] = [
 	{
 		displayName: 'Details',
 		name: 'details',
 		type: 'options',
 		required: true,
 		default: 'identity',
-		description: 'Details of my account to retrieve.',
+		description: 'Details of my account to retrieve',
 		options: [
 			{
 				name: 'Identity',
@@ -61,6 +61,11 @@ export const profileFields = [
 				description: 'Return the settings preferences of the logged-in user',
 			},
 			{
+				name: 'Saved',
+				value: 'saved',
+				description: 'Return the saved posts for the user',
+			},
+			{
 				name: 'Trophies',
 				value: 'trophies',
 				description: 'Return the trophies of the logged-in user',
@@ -77,4 +82,51 @@ export const profileFields = [
 			},
 		},
 	},
-] as INodeProperties[];
+	{
+		displayName: 'Return All',
+		name: 'returnAll',
+		type: 'boolean',
+		default: false,
+		description: 'Whether to return all results or only up to a given limit',
+		displayOptions: {
+			show: {
+				resource: [
+					'profile',
+				],
+				operation: [
+					'get',
+				],
+				details: [
+					'saved',
+				],
+			},
+		},
+	},
+	{
+		displayName: 'Limit',
+		name: 'limit',
+		type: 'number',
+		default: 100,
+		description: 'Max number of results to return',
+		typeOptions: {
+			minValue: 1,
+			maxValue: 100,
+		},
+		displayOptions: {
+			show: {
+				resource: [
+					'profile',
+				],
+				operation: [
+					'get',
+				],
+				details: [
+					'saved',
+				],
+				returnAll: [
+					false,
+				],
+			},
+		},
+	},
+];
