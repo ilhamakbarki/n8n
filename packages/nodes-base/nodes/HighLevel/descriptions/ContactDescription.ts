@@ -5,6 +5,7 @@ import {
 export const contactOperations = [
 	{
 		displayName: 'Operation',
+		noDataExpression : true,
 		name: 'operation',
 		type: 'options',
 		displayOptions: {
@@ -33,7 +34,6 @@ export const contactOperations = [
 			},
 		],
 		default: 'create',
-		description: 'Operation to perform',
 	},
 ] as INodeProperties[];
 
@@ -44,7 +44,7 @@ export const contactFields = [
 	{
 		displayName: 'Email',
 		name: 'email',
-		description: 'Email of the contact to create.',
+		description: 'Email of the contact to create',
 		type: 'string',
 		required: true,
 		default: '',
@@ -80,56 +80,56 @@ export const contactFields = [
 				name: 'address1',
 				type: 'string',
 				default: '',
-				description: 'Address of the contact to create.',
+				description: 'Address of the contact to create',
 			},
 			{
 				displayName: 'City',
 				name: 'city',
 				type: 'string',
 				default: '',
-				description: 'City of the contact to create.',
+				description: 'City of the contact to create',
 			},
 			{
 				displayName: 'First Name',
 				name: 'firstName',
 				type: 'string',
 				default: '',
-				description: 'First name of the contact to create.',
+				description: 'First name of the contact to create',
 			},
 			{
 				displayName: 'Last Name',
 				name: 'lastName',
 				type: 'string',
 				default: '',
-				description: 'Last name of the contact to create.',
+				description: 'Last name of the contact to create',
 			},
 			{
 				displayName: 'Full Name',
 				name: 'name',
 				type: 'string',
 				default: '',
-				description: 'Full name of the contact to create.',
+				description: 'Full name of the contact to create',
 			},
 			{
 				displayName: 'Phone',
 				name: 'phone',
 				type: 'string',
 				default: '',
-				description: 'Phone of the contact to create.',
+				description: 'Phone of the contact to create',
 			},
 			{
 				displayName: 'Postal Code',
 				name: 'postalCode',
 				type: 'string',
 				default: '',
-				description: 'Postal code of the contact to create.',
+				description: 'Postal code of the contact to create',
 			},
 			{
 				displayName: 'State',
 				name: 'state',
 				type: 'string',
 				default: '',
-				description: 'State of the contact to create.',
+				description: 'State of the contact to create',
 			},
 		],
 	},
@@ -140,7 +140,7 @@ export const contactFields = [
 	{
 		displayName: 'Contact ID',
 		name: 'contactId',
-		description: 'ID of the contact to delete.',
+		description: 'ID of the contact to delete',
 		type: 'string',
 		required: true,
 		default: '',
@@ -162,7 +162,7 @@ export const contactFields = [
 	{
 		displayName: 'Contact ID',
 		name: 'contactId',
-		description: 'ID of the contact to retrieve.',
+		description: 'ID of the contact to retrieve',
 		type: 'string',
 		required: true,
 		default: '',
@@ -184,7 +184,7 @@ export const contactFields = [
 	{
 		displayName: 'Contact ID',
 		name: 'contactId',
-		description: 'ID of the contact to update.',
+		description: 'ID of the contact to update',
 		type: 'string',
 		required: true,
 		default: '',
@@ -220,64 +220,114 @@ export const contactFields = [
 				name: 'address1',
 				type: 'string',
 				default: '',
-				description: 'Address to set for the contact.',
+				description: 'Address to set for the contact',
 			},
 			{
 				displayName: 'City',
 				name: 'city',
 				type: 'string',
 				default: '',
-				description: 'City to set for the contact.',
+				description: 'City to set for the contact',
 			},
 			{
 				displayName: 'Email',
 				name: 'email',
 				type: 'string',
 				default: '',
-				description: 'Email to set for the contact.',
+				description: 'Email to set for the contact',
 			},
 			{
 				displayName: 'First Name',
 				name: 'firstName',
 				type: 'string',
 				default: '',
-				description: 'First name to set for the contact.',
+				description: 'First name to set for the contact',
 			},
 			{
 				displayName: 'Last Name',
 				name: 'lastName',
 				type: 'string',
 				default: '',
-				description: 'Last name to set for the contact.',
+				description: 'Last name to set for the contact',
 			},
 			{
 				displayName: 'Full Name',
 				name: 'name',
 				type: 'string',
 				default: '',
-				description: 'Full name to set for the contact.',
+				description: 'Full name to set for the contact',
 			},
 			{
 				displayName: 'Phone',
 				name: 'phone',
 				type: 'string',
 				default: '',
-				description: 'Phone number to set for the contact.',
+				description: 'Phone number to set for the contact',
 			},
 			{
 				displayName: 'Postal Code',
 				name: 'postalCode',
 				type: 'string',
 				default: '',
-				description: 'Postal code to set for the contact.',
+				description: 'Postal code to set for the contact',
 			},
 			{
 				displayName: 'State',
 				name: 'state',
 				type: 'string',
 				default: '',
-				description: 'State to set for the contact.',
+				description: 'State to set for the contact',
 			},
 		],
 	},
 ] as INodeProperties[];
+
+export const customFields = [
+	{
+		displayName: 'Custom Fields',
+		name: 'customFields',
+		type: 'fixedCollection',
+		placeholder: 'Add Custom Fields',
+		default: {},
+		typeOptions: {
+			multipleValues: true,
+		},
+		displayOptions: {
+			show: {
+				resource: [
+					'contact',
+				],
+				operation: [
+					'create',
+					'update'
+				],
+			},
+		},
+		options: [
+			{
+				displayName: 'Field',
+				name: 'customField',
+				placeholder: 'Add Field',
+				values: [
+					{
+						displayName: 'Field',
+						name: 'field',
+						type: 'options',
+						typeOptions: {
+							loadOptionsMethod: 'getCustomFields',
+							loadOptionsDependsOn: [
+							],
+						},
+						default: [],
+					},
+					{
+						displayName: 'Value',
+						name: 'value',
+						type: 'string',
+						default: '',
+					},
+				],
+			},
+		],
+	}
+]as INodeProperties[];

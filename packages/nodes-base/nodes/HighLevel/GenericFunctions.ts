@@ -5,6 +5,11 @@ import {
 	ILoadOptionsFunctions,
 } from 'n8n-core';
 
+import {
+	OptionsWithUrl,
+	AuthOptions,
+} from 'request';
+
 /**
  * Make an authenticated REST API request to HighLevel.
  */
@@ -17,19 +22,26 @@ export async function highLevelApiRequest(
 ) {
 	const { apiKey } = await this.getCredentials('highLevelApi') as { apiKey: string };
 
-	const options = {
-		headers: {
-			Authorization: apiKey,
-		},
+	const auth :AuthOptions = {
+		bearer : apiKey,
+	}
+
+	const options :OptionsWithUrl = {
+		auth,
 		method,
 		body,
 		qs,
-		uri: `https://rest.gohighlevel.com/v1${endpoint}`,
+		url: `https://rest.gohighlevel.com/v1${endpoint}`,
 		json: true,
 	};
 
 	try {
-
+		if (Object.keys(body).length === 0) {
+			delete options.body;
+		}
+		if (Object.keys(qs).length === 0) {
+			delete options.qs;
+		}
 		return await this.helpers.request!.call(this, options);
 
 	} catch (error) {

@@ -4,7 +4,9 @@ import {
 
 import {
 	IDataObject,
+	ILoadOptionsFunctions,
 	INodeExecutionData,
+	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
@@ -14,8 +16,14 @@ import {
 } from './GenericFunctions';
 
 import {
+	processNames,
+	DataCustomFields,
+} from './utils';
+
+import {
 	contactFields,
 	contactOperations,
+	customFields,
 } from './descriptions';
 
 export class HighLevel implements INodeType {
@@ -43,6 +51,7 @@ export class HighLevel implements INodeType {
 			{
 				displayName: 'Resource',
 				name: 'resource',
+				noDataExpression: true,
 				type: 'options',
 				options: [
 					{
@@ -51,11 +60,25 @@ export class HighLevel implements INodeType {
 					},
 				],
 				default: 'contact',
-				description: 'Resource to consume',
 			},
 			...contactOperations,
 			...contactFields,
+			...customFields,
 		],
+	};
+
+	methods = {
+		loadOptions: {
+			async getCustomFields(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				const {customFields} = await highLevelApiRequest.call(this, 'GET', '/custom-fields/');
+				console.log(customFields)
+				const cusFields = customFields.map(({ name, id }: { name: string, id: string }) => {
+					return ({ name, value: id });
+				});
+
+				return processNames(cusFields);
+			}
+		}
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
@@ -82,7 +105,6 @@ export class HighLevel implements INodeType {
 					// ----------------------------------------
 
 					// https://developers.gohighlevel.com/#3ae04a5f-a029-4855-8ad2-bccdf2a858ae
-
 					const body: IDataObject = {
 						email: this.getNodeParameter('email', i),
 					};
@@ -93,6 +115,14 @@ export class HighLevel implements INodeType {
 						Object.assign(body, additionalFields);
 					}
 
+					const customFields = this.getNodeParameter('customFields', i) as DataCustomFields
+					if(customFields.customField.length>0){
+						let customField : IDataObject = {}
+						for ( let data of customFields.customField){
+							customField[data.field] = data.value
+						}
+						Object.assign(body, {customField})
+					}
 					responseData = await highLevelApiRequest.call(this, 'POST', `/contacts`, body);
 
 				} else if (operation === 'delete') {
@@ -136,6 +166,15 @@ export class HighLevel implements INodeType {
 
 					if (Object.keys(updateFields).length) {
 						Object.assign(body, updateFields);
+					}
+
+					const customFields = this.getNodeParameter('customFields', i) as DataCustomFields
+					if(customFields.customField.length>0){
+						let customField : IDataObject = {}
+						for ( let data of customFields.customField){
+							customField[data.field] = data.value
+						}
+						Object.assign(body, {customField})
 					}
 
 					const endpoint = `/contacts/${contactId}`;
