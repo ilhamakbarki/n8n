@@ -71,11 +71,9 @@ export class HighLevel implements INodeType {
 		loadOptions: {
 			async getCustomFields(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				const {customFields} = await highLevelApiRequest.call(this, 'GET', '/custom-fields/');
-				console.log(customFields)
 				const cusFields = customFields.map(({ name, id }: { name: string, id: string }) => {
 					return ({ name, value: id });
 				});
-
 				return processNames(cusFields);
 			}
 		}
