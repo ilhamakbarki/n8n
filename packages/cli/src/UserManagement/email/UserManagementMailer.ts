@@ -63,7 +63,7 @@ export class UserManagementMailer {
 
 		const result = await this.mailer?.sendMail({
 			emailRecipients: inviteEmailData.email,
-			subject: 'You have been invited to n8n',
+			subject: 'You have been invited to OmniC3ntro',
 			body: template,
 		});
 
@@ -78,7 +78,7 @@ export class UserManagementMailer {
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const result = await this.mailer?.sendMail({
 			emailRecipients: passwordResetData.email,
-			subject: 'n8n password reset',
+			subject: 'OmniC3ntro password reset',
 			body: template,
 		});
 
