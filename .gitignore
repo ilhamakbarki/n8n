@@ -14,3 +14,8 @@ _START_PACKAGE
 .idea
 nodelinter.config.json
 packages/*/package-lock.json
+Dockerfile
+docker-compose.yml
+!*/Dockerfile
+!*/docker-compose.yml
+package-lock.json
