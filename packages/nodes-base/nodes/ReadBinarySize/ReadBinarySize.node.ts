@@ -44,7 +44,7 @@ export class ReadBinarySize implements INodeType {
 						displayName: 'Types of Memory',
 						description: 'Types of various Units of Memory',
 						type: 'options',
-						default: '1. Byte',
+						default: 'Byte',
 						options: [
 							{
 								name: '1. Byte',
