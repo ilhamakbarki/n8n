@@ -138,7 +138,6 @@ export class ReadBinarySize implements INodeType {
 				}
 			}
 		}
-		console.log(`devide ${devide}`)
 
 		for (let itemIndex = 0; itemIndex < length; itemIndex++) {
 			try {
