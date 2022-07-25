@@ -734,7 +734,8 @@
       "dist/nodes/Zoom/Zoom.node.js",
       "dist/nodes/Zulip/Zulip.node.js",
       "dist/nodes/360Dialog/Dialog360.node.js",
-      "dist/nodes/Encryption/Encryption.node.js"
+      "dist/nodes/Encryption/Encryption.node.js",
+      "dist/nodes/ReadBinarySize/ReadBinarySize.node.js"
     ]
   },
   "devDependencies": {
