@@ -65,7 +65,6 @@ export class Tracardi implements INodeType {
 						let sourceID = this.getNodeParameter('sourceID', i) as string;
 						let eventType = this.getNodeParameter('eventType', i) as string;
 						const responseData = await tracardiApiRequest.call(this, `/collect/${eventType}/${sourceID}`, 'POST');
-						console.log(responseData)
 						returnData.push(responseData as IDataObject);
 					} else {
 						throw new NodeOperationError(this.getNode(), `The operation "${operation}" is not known!`);
