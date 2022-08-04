@@ -13,6 +13,9 @@ import {
 	otrsResource,
 } from './ResourceDescription';
 
+import { ticketOperations } from './Ticket/Operations';
+import { customerOperations } from './Customer/Operations';
+
 import {
 	optionalTicketCreateFields,
 	ticketCreateFields,
@@ -21,7 +24,8 @@ import {
 import {
 	otrsApiRequest,
 } from './GenericFunctions'
-import { ticketOperations } from './Ticket/Operations';
+
+import { customerCreateFields } from './Customer/Create';
 
 export class Otrs implements INodeType {
 	description: INodeTypeDescription = {
@@ -43,10 +47,13 @@ export class Otrs implements INodeType {
 		}],
 		properties: [
 			...otrsResource,
-			//Operations
+			//Ticket
 			...ticketOperations,
 			...ticketCreateFields,
 			...optionalTicketCreateFields,
+			//Customer
+			...customerOperations,
+			...customerCreateFields,
 		],
 	};
 
@@ -66,30 +73,49 @@ export class Otrs implements INodeType {
 					if (operation === 'create') {
 						let ticket: IDataObject = {
 							'Title': this.getNodeParameter('title', i) as string,
-							'Queue': this.getNodeParameter('queue', i) as string,
-							'State': this.getNodeParameter('state', i) as string,
-							'Priority': this.getNodeParameter('priority', i) as string,
 							'CustomerUser': this.getNodeParameter('customerUser', i) as string,
 						}
 						let article: IDataObject = {
-							'CommunicationChannel': this.getNodeParameter('communicationChannel', i) as string,
+							'CommunicationChannel': 'Email',
 							'Subject': this.getNodeParameter('subject', i) as string,
 							'Body': this.getNodeParameter('body', i) as string,
-							'ContentType': this.getNodeParameter('contentType', i) as string,
-							'Charset': this.getNodeParameter('charset', i) as string,
+							'ContentType': 'text/plain; charset=utf8',
+							'Charset': 'utf8',
+							'MimeType': 'text/plain'
 						}
 						let additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						if (typeof additionalFields.customerID != 'undefined') {
+							ticket["CustomerID"] = additionalFields.customerID
+						}
+						if (typeof additionalFields.queueID != 'undefined') {
+							ticket["QueueID"] = additionalFields.queueID
+						}
+						if (typeof additionalFields.queue != 'undefined') {
+							ticket["Queue"] = additionalFields.queue
+						}
+						if (typeof additionalFields.stateID != 'undefined') {
+							ticket["StateID"] = additionalFields.stateID
+						}
+						if (typeof additionalFields.state != 'undefined') {
+							ticket["State"] = additionalFields.state
+						}
+						if (typeof additionalFields.priorityID != 'undefined') {
+							ticket["PriorityID"] = additionalFields.priorityID
+						}
+						if (typeof additionalFields.priority != 'undefined') {
+							ticket["Priority"] = additionalFields.priority
+						}
 						if (typeof additionalFields.lockID != 'undefined') {
 							ticket["LockID"] = additionalFields.lockID
 						}
 						if (typeof additionalFields.lock != 'undefined') {
 							ticket["Lock"] = additionalFields.lock
 						}
-						if (typeof additionalFields.typeID != 'undefined') {
-							ticket["TypeID"] = additionalFields.typeID
+						if (typeof additionalFields.ticketTypeID != 'undefined') {
+							ticket["TypeID"] = additionalFields.ticketTypeID
 						}
-						if (typeof additionalFields.type != 'undefined') {
-							ticket["Type"] = additionalFields.type
+						if (typeof additionalFields.ticketType != 'undefined') {
+							ticket["Type"] = additionalFields.ticketType
 						}
 						if (typeof additionalFields.serviceID != 'undefined') {
 							ticket["ServiceID"] = additionalFields.serviceID
@@ -146,12 +172,26 @@ export class Otrs implements INodeType {
 
 						body["Ticket"] = ticket
 						body["Article"] = article
-						const responseData = await otrsApiRequest.call(this, `ticket`, 'POST', body);
+						const responseData = await otrsApiRequest.call(this, 'POST', `ticket`, undefined, body);
 						returnData.push(responseData as IDataObject);
 					} else {
 						throw new NodeOperationError(this.getNode(), `The operation "${operation}" is not known!`);
 					}
-				} else {
+				} else if(resource === 'customer'){
+					if (operation === 'create') {
+						let customer: IDataObject = {
+							'Firstname': this.getNodeParameter('firstname', i) as string,
+							'Lastname': this.getNodeParameter('lastname', i) as string,
+							'CustomerID': this.getNodeParameter('email', i) as string,
+							'Login': this.getNodeParameter('email', i) as string,
+							'Email': this.getNodeParameter('email', i) as string,
+						}
+						const responseData = await otrsApiRequest.call(this, `POST`, undefined, '/api/customers/createCustomerUser', customer);
+						returnData.push(responseData as IDataObject);
+					} else {
+						throw new NodeOperationError(this.getNode(), `The operation "${operation}" is not known!`);
+					}
+				}else {
 					throw new NodeOperationError(this.getNode(), `The resource "${resource}" is not known!`);
 				}
 			} catch (error) {

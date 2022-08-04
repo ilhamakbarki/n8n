@@ -13,6 +13,10 @@ export const otrsResource: INodeProperties[] = [
 				name: 'Ticket',
 				value: 'ticket',
 			},
+			{
+				name: 'Customer',
+				value: 'customer',
+			},
 		],
 		default: 'ticket',
 	},

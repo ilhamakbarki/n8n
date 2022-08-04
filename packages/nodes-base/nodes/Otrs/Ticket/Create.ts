@@ -22,80 +22,8 @@ export const ticketCreateFields: INodeProperties[] = [
 		default: '',
 	},
 	{
-		displayName: 'Queue',
-		name: 'queue',
-		type: 'string',
-		noDataExpression: true,
-		required: true,
-		displayOptions: {
-			show: {
-				resource: [
-					'ticket',
-				],
-				operation: [
-					'create'
-				]
-			},
-		},
-		default: '',
-	},
-	{
-		displayName: 'State',
-		name: 'state',
-		type: 'string',
-		noDataExpression: true,
-		required: true,
-		displayOptions: {
-			show: {
-				resource: [
-					'ticket',
-				],
-				operation: [
-					'create'
-				]
-			},
-		},
-		default: '',
-	},
-	{
-		displayName: 'Priority',
-		name: 'priority',
-		type: 'string',
-		noDataExpression: true,
-		required: true,
-		displayOptions: {
-			show: {
-				resource: [
-					'ticket',
-				],
-				operation: [
-					'create'
-				]
-			},
-		},
-		default: '',
-	},
-	{
 		displayName: 'Customer User',
 		name: 'customerUser',
-		type: 'string',
-		noDataExpression: true,
-		required: true,
-		displayOptions: {
-			show: {
-				resource: [
-					'ticket',
-				],
-				operation: [
-					'create'
-				]
-			},
-		},
-		default: '',
-	},
-	{
-		displayName: 'Communication Channel',
-		name: 'communicationChannel',
 		type: 'string',
 		noDataExpression: true,
 		required: true,
@@ -147,42 +75,6 @@ export const ticketCreateFields: INodeProperties[] = [
 		},
 		default: '',
 	},
-	{
-		displayName: 'Content Type',
-		name: 'contentType',
-		type: 'string',
-		noDataExpression: true,
-		required: true,
-		displayOptions: {
-			show: {
-				resource: [
-					'ticket',
-				],
-				operation: [
-					'create'
-				]
-			},
-		},
-		default: '',
-	},
-	{
-		displayName: 'Charset',
-		name: 'charset',
-		type: 'string',
-		noDataExpression: true,
-		required: true,
-		displayOptions: {
-			show: {
-				resource: [
-					'ticket',
-				],
-				operation: [
-					'create'
-				]
-			},
-		},
-		default: '',
-	},
 ];
 
 export const optionalTicketCreateFields: INodeProperties[] = [
@@ -204,6 +96,48 @@ export const optionalTicketCreateFields: INodeProperties[] = [
 		default: {},
 		options: [
 			{
+				displayName: 'Customer ID',
+				name: 'customerID',
+				type: 'number',
+				default: '',
+			},
+			{
+				displayName: 'Queue ID',
+				name: 'queueID',
+				type: 'number',
+				default: '',
+			},
+			{
+				displayName: 'Queue',
+				name: 'queue',
+				type: 'string',
+				default: '',
+			},
+			{
+				displayName: 'State ID',
+				name: 'stateID',
+				type: 'number',
+				default: '',
+			},
+			{
+				displayName: 'State',
+				name: 'state',
+				type: 'string',
+				default: '',
+			},
+			{
+				displayName: 'Priority ID',
+				name: 'priorityID',
+				type: 'number',
+				default: '',
+			},
+			{
+				displayName: 'Priority',
+				name: 'priority',
+				type: 'string',
+				default: '',
+			},
+			{
 				displayName: 'Lock ID',
 				name: 'lockID',
 				type: 'number',
@@ -216,14 +150,14 @@ export const optionalTicketCreateFields: INodeProperties[] = [
 				default: '',
 			},
 			{
-				displayName: 'Type ID',
-				name: 'typeID',
+				displayName: 'Ticket Type ID',
+				name: 'ticketTypeID',
 				type: 'number',
 				default: '',
 			},
 			{
-				displayName: 'Type',
-				name: 'type',
+				displayName: 'Ticket Type',
+				name: 'ticketType',
 				type: 'string',
 				default: '',
 			},
