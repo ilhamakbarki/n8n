@@ -15,8 +15,8 @@ export const customerCreateFields: INodeProperties[] = [
 					'customer',
 				],
 				operation: [
-					'create'
-				]
+					'create',
+				],
 			},
 		},
 		default: '',
@@ -33,8 +33,8 @@ export const customerCreateFields: INodeProperties[] = [
 					'customer',
 				],
 				operation: [
-					'create'
-				]
+					'create',
+				],
 			},
 		},
 		default: '',
@@ -52,10 +52,10 @@ export const customerCreateFields: INodeProperties[] = [
 					'customer',
 				],
 				operation: [
-					'create'
-				]
+					'create',
+				],
 			},
 		},
 		default: '',
 	},
-]
+];

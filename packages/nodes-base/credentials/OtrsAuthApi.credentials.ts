@@ -6,8 +6,8 @@ import {
 
 export class OtrsAuthApi implements ICredentialType {
 	name = 'otrsAuthApi';
-	displayName = 'Otrs Auth';
-	documentationUrl = 'otrs';
+	displayName = 'Otrs Auth API';
+	documentationUrl = 'https://docs.n8n.io/integrations/creating-nodes/';
 	properties: INodeProperties[] = [
 		{
 			displayName: 'Host',
@@ -15,7 +15,7 @@ export class OtrsAuthApi implements ICredentialType {
 			type: 'string',
 			default: '',
 			hint: 'https://sdlocatel.keos.co/',
-			required: true
+			required: true,
 		},
 		{
 			displayName: 'Path Webservice',
@@ -23,7 +23,7 @@ export class OtrsAuthApi implements ICredentialType {
 			type: 'string',
 			default: '',
 			hint: 'rest',
-			required: true
+			required: true,
 		},
 		{
 			displayName: 'Username',
@@ -31,7 +31,7 @@ export class OtrsAuthApi implements ICredentialType {
 			type: 'string',
 			default: '',
 			hint: 'ilham',
-			required: true
+			required: true,
 		},
 		{
 			displayName: 'Password',
@@ -41,7 +41,7 @@ export class OtrsAuthApi implements ICredentialType {
 				password: true,
 			},
 			default: '',
-			required: true
+			required: true,
 		},
 	];
 }

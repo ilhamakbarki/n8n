@@ -15,8 +15,8 @@ export const ticketCreateFields: INodeProperties[] = [
 					'ticket',
 				],
 				operation: [
-					'create'
-				]
+					'create',
+				],
 			},
 		},
 		default: '',
@@ -33,8 +33,8 @@ export const ticketCreateFields: INodeProperties[] = [
 					'ticket',
 				],
 				operation: [
-					'create'
-				]
+					'create',
+				],
 			},
 		},
 		default: '',
@@ -51,8 +51,8 @@ export const ticketCreateFields: INodeProperties[] = [
 					'ticket',
 				],
 				operation: [
-					'create'
-				]
+					'create',
+				],
 			},
 		},
 		default: '',
@@ -69,8 +69,8 @@ export const ticketCreateFields: INodeProperties[] = [
 					'ticket',
 				],
 				operation: [
-					'create'
-				]
+					'create',
+				],
 			},
 		},
 		default: '',
@@ -89,8 +89,8 @@ export const optionalTicketCreateFields: INodeProperties[] = [
 					'ticket',
 				],
 				operation: [
-					'create'
-				]
+					'create',
+				],
 			},
 		},
 		default: {},
@@ -263,6 +263,6 @@ export const optionalTicketCreateFields: INodeProperties[] = [
 				type: 'number',
 				default: '',
 			},
-		]
-	}
-]
+		],
+	},
+];

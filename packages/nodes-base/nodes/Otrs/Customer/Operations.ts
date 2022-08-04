@@ -20,7 +20,7 @@ export const customerOperations: INodeProperties[] = [
 				name: 'Create Customer',
 				value: 'create',
 				description: 'Create a New Customer',
-				action: 'Create new OTRS Customer',
+				action: 'Create new otrs customer',
 			},
 		],
 		default: 'create',

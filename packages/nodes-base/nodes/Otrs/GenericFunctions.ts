@@ -37,14 +37,14 @@ export async function otrsApiRequest(this: IHookFunctions | IExecuteFunctions, m
 		},
 		uri: `${credentials.host}/api/auth/login`,
 		json: true,
-		method: 'POST'
-	}
-	let authRespo = await this.helpers.request(optionsAuth);
-	if((authRespo["Response"] as string).toLocaleLowerCase() !="ok"){
+		method: 'POST',
+	};
+	const authRespo = await this.helpers.request(optionsAuth);
+	if((authRespo["Response"] as string).toLocaleLowerCase() !== "ok"){
 		throw new NodeApiError(this.getNode(), {"error":401, "message":authRespo.Message}, {message:authRespo.Message, httpCode:"401"});
 	}
 
-	let sessionID = authRespo["SessionValue"]
+	const sessionID = authRespo["SessionValue"];
 	const options: OptionsWithUri = {
 		method,
 		body,
@@ -54,18 +54,18 @@ export async function otrsApiRequest(this: IHookFunctions | IExecuteFunctions, m
 		rejectUnauthorized: false,
 	};
 
-	if(uri != undefined){
-		options.uri = `${credentials.host}${uri}`
+	if(uri !== undefined){
+		options.uri = `${credentials.host}${uri}`;
 	}
 
-	options.body["SessionID"] = sessionID
+	options.body["SessionID"] = sessionID;
 
 	if (typeof options.body === "undefined" || Object.keys(options.body).length < 1) {
-		delete options.body
+		delete options.body;
 	}
 
 	if (typeof options.qs === "undefined" || Object.keys(options.qs).length < 1) {
-		delete options.qs
+		delete options.qs;
 	}
 	try {
 		return await this.helpers.request(options);
