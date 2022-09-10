@@ -1309,8 +1309,13 @@ export function returnJsonArray(jsonData: IDataObject | IDataObject[]): INodeExe
 		jsonData = [jsonData];
 	}
 
-	jsonData.forEach((data: IDataObject) => {
-		returnData.push({ json: data });
+	jsonData.forEach((data: IDataObject & { json?: IDataObject }) => {
+		if (data.json) {
+			// We already have the JSON key so avoid double wrapping
+			returnData.push({ ...data, json: data.json });
+		} else {
+			returnData.push({ json: data });
+		}
 	});
 
 	return returnData;
@@ -1461,19 +1466,19 @@ export async function requestWithAuthentication(
 					// make the updated property in the credentials
 					// available to the authenticate method
 					Object.assign(credentialsDecrypted, data);
+					requestOptions = await additionalData.credentialsHelper.authenticate(
+						credentialsDecrypted,
+						credentialsType,
+						requestOptions as IHttpRequestOptions,
+						workflow,
+						node,
+						additionalData.timezone,
+					);
+					// retry the request
+					return await proxyRequestToAxios(requestOptions as IDataObject);
 				}
-
-				requestOptions = await additionalData.credentialsHelper.authenticate(
-					credentialsDecrypted,
-					credentialsType,
-					requestOptions as IHttpRequestOptions,
-					workflow,
-					node,
-					additionalData.timezone,
-				);
 			}
-			// retry the request
-			return await proxyRequestToAxios(requestOptions as IDataObject);
+			throw error;
 		} catch (error) {
 			throw new NodeApiError(this.getNode(), error);
 		}
