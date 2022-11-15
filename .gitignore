@@ -13,10 +13,9 @@ _START_PACKAGE
 !.vscode/settings.default.json
 .idea
 nodelinter.config.json
-packages/*/package-lock.json
-packages/*/.turbo
-Dockerfile
-docker-compose.yml
-!*/Dockerfile
-!*/docker-compose.yml
+**/package-lock.json
+packages/**/.turbo
+*.tsbuildinfo
+cypress/videos/*
+cypress/screenshots/*
 *.swp
