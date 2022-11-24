@@ -107,7 +107,7 @@
 
 		<div :class="$style.runSelector" v-if="maxRunIndex > 0" v-show="!editMode.enabled">
 			<n8n-select size="small" :value="runIndex" @input="onRunIndexChange" @click.stop popper-append-to-body>
-				<template slot="prepend">{{ $locale.baseText('ndv.output.run') }}</template>
+				<template #prepend>{{ $locale.baseText('ndv.output.run') }}</template>
 				<n8n-option v-for="option in (maxRunIndex + 1)" :label="getRunLabel(option)" :value="option - 1" :key="option"></n8n-option>
 			</n8n-select>
 
@@ -307,7 +307,7 @@
 
 			<div :class="$style.pageSizeSelector">
 				<n8n-select size="mini" :value="pageSize" @input="onPageSizeChange" popper-append-to-body>
-					<template slot="prepend">{{ $locale.baseText('ndv.output.pageSize') }}</template>
+					<template #prepend>{{ $locale.baseText('ndv.output.pageSize') }}</template>
 					<n8n-option
 						v-for="size in pageSizes"
 						:key="size"
@@ -363,14 +363,14 @@ import BinaryDataDisplay from '@/components/BinaryDataDisplay.vue';
 import WarningTooltip from '@/components/WarningTooltip.vue';
 import NodeErrorView from '@/components/Error/NodeErrorView.vue';
 
-import { copyPaste } from '@/components/mixins/copyPaste';
-import { externalHooks } from "@/components/mixins/externalHooks";
-import { genericHelpers } from '@/components/mixins/genericHelpers';
-import { nodeHelpers } from '@/components/mixins/nodeHelpers';
-import { pinData } from '@/components/mixins/pinData';
+import { copyPaste } from '@/mixins/copyPaste';
+import { externalHooks } from "@/mixins/externalHooks";
+import { genericHelpers } from '@/mixins/genericHelpers';
+import { nodeHelpers } from '@/mixins/nodeHelpers';
+import { pinData } from '@/mixins/pinData';
 import { CodeEditor } from "@/components/forms";
 import { dataPinningEventBus } from '@/event-bus/data-pinning-event-bus';
-import { clearJsonKey, executionDataToJson, stringSizeInBytes } from './helpers';
+import { clearJsonKey, executionDataToJson, stringSizeInBytes } from '@/utils';
 import { isEmpty } from '@/utils';
 import { useWorkflowsStore } from "@/stores/workflows";
 import { mapStores } from "pinia";

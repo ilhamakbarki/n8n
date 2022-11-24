@@ -19,13 +19,14 @@
 					<trigger-icon />
 				</span>
 				<n8n-tooltip v-if="isCommunityNode" placement="top">
-					<div
-						:class="$style['community-node-icon']"
-						slot="content"
-						v-html="$locale.baseText('generic.communityNode.tooltip', { interpolate: { packageName: nodeType.name.split('.')[0], docURL: COMMUNITY_NODES_INSTALLATION_DOCS_URL } })"
-						@click="onCommunityNodeTooltipClick"
-					>
-					</div>
+					<template #content>
+						<div
+							:class="$style['community-node-icon']"
+							v-html="$locale.baseText('generic.communityNode.tooltip', { interpolate: { packageName: nodeType.name.split('.')[0], docURL: COMMUNITY_NODES_INSTALLATION_DOCS_URL } })"
+							@click="onCommunityNodeTooltipClick"
+						>
+						</div>
+					</template>
 					<n8n-icon icon="cube" />
 				</n8n-tooltip>
 			</div>
@@ -57,12 +58,12 @@
 import Vue, { PropType } from 'vue';
 import { INodeTypeDescription } from 'n8n-workflow';
 
-import { getNewNodePosition, NODE_SIZE } from '@/views/canvasHelpers';
+import { isCommunityPackageName } from '@/utils';
+import { getNewNodePosition, NODE_SIZE } from '@/utils/nodeViewUtils';
 import { COMMUNITY_NODES_INSTALLATION_DOCS_URL } from '@/constants';
 
 import NodeIcon from '@/components/NodeIcon.vue';
 import TriggerIcon from '@/components/TriggerIcon.vue';
-import { isCommunityPackageName } from '@/components/helpers';
 
 Vue.component('node-icon', NodeIcon);
 Vue.component('trigger-icon', TriggerIcon);

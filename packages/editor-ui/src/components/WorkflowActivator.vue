@@ -9,7 +9,9 @@
 			</n8n-text>
 		</div>
 		<n8n-tooltip :disabled="!disabled" placement="bottom">
-			<div slot="content">{{ $locale.baseText('workflowActivator.thisWorkflowHasNoTriggerNodes') }}</div>
+			<template #content>
+				<div>{{ $locale.baseText('workflowActivator.thisWorkflowHasNoTriggerNodes') }}</div>
+			</template>
 			<el-switch
 				v-loading="updatingWorkflowActivation"
 				:value="workflowActive"
@@ -24,7 +26,9 @@
 
 		<div class="could-not-be-started" v-if="couldNotBeStarted">
 			<n8n-tooltip placement="top">
-				<div @click="displayActivationError" slot="content" v-html="$locale.baseText('workflowActivator.theWorkflowIsSetToBeActiveBut')"></div>
+				<template #content>
+					<div @click="displayActivationError" v-html="$locale.baseText('workflowActivator.theWorkflowIsSetToBeActiveBut')"></div>
+				</template>
 				<font-awesome-icon @click="displayActivationError" icon="exclamation-triangle" />
 			</n8n-tooltip>
 		</div>
@@ -33,13 +37,13 @@
 
 <script lang="ts">
 
-import { showMessage } from '@/components/mixins/showMessage';
-import { workflowActivate } from '@/components/mixins/workflowActivate';
+import { showMessage } from '@/mixins/showMessage';
+import { workflowActivate } from '@/mixins/workflowActivate';
 import { useUIStore } from '@/stores/ui';
 import { useWorkflowsStore } from '@/stores/workflows';
 import { mapStores } from 'pinia';
 import mixins from 'vue-typed-mixins';
-import { getActivatableTriggerNodes } from './helpers';
+import { getActivatableTriggerNodes } from '@/utils';
 
 export default mixins(
 	showMessage,
