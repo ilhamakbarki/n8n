@@ -7,7 +7,7 @@ export function getSamlConnectionTestFailedView(
 	return `
     <http>
     <head>
-    <title>n8n - SAML Connection Test Result</title>
+    <title>XMS API - SAML Connection Test Result</title>
     <style>
         body { background: rgb(251,252,254); font-family: 'Open Sans', sans-serif; padding: 10px; margin: auto; width: 500px; top: 40%; position: relative; }
         h1 { color: rgb(240, 60, 60); font-size: 16px; font-weight: 400; margin: 0 0 10px 0; }

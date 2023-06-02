@@ -261,60 +261,60 @@ export default defineComponent({
 					available: this.canUserAccessSettings && this.usersStore.currentUser !== null,
 					activateOnRouteNames: [VIEWS.USERS_SETTINGS, VIEWS.API_SETTINGS, VIEWS.PERSONAL_SETTINGS],
 				},
-				{
-					id: 'help',
-					icon: 'question',
-					label: 'Help',
-					position: 'bottom',
-					children: [
-						{
-							id: 'quickstart',
-							icon: 'video',
-							label: this.$locale.baseText('mainSidebar.helpMenuItems.quickstart'),
-							type: 'link',
-							properties: {
-								href: 'https://www.youtube.com/watch?v=1MwSoB0gnM4',
-								newWindow: true,
-							},
-						},
-						{
-							id: 'docs',
-							icon: 'book',
-							label: this.$locale.baseText('mainSidebar.helpMenuItems.documentation'),
-							type: 'link',
-							properties: {
-								href: 'https://docs.n8n.io',
-								newWindow: true,
-							},
-						},
-						{
-							id: 'forum',
-							icon: 'users',
-							label: this.$locale.baseText('mainSidebar.helpMenuItems.forum'),
-							type: 'link',
-							properties: {
-								href: 'https://community.n8n.io',
-								newWindow: true,
-							},
-						},
-						{
-							id: 'examples',
-							icon: 'graduation-cap',
-							label: this.$locale.baseText('mainSidebar.helpMenuItems.course'),
-							type: 'link',
-							properties: {
-								href: 'https://www.youtube.com/watch?v=1MwSoB0gnM4',
-								newWindow: true,
-							},
-						},
-						{
-							id: 'about',
-							icon: 'info',
-							label: this.$locale.baseText('mainSidebar.aboutN8n'),
-							position: 'bottom',
-						},
-					],
-				},
+				// {
+				// 	id: 'help',
+				// 	icon: 'question',
+				// 	label: 'Help',
+				// 	position: 'bottom',
+				// 	children: [
+				// 		{
+				// 			id: 'quickstart',
+				// 			icon: 'video',
+				// 			label: this.$locale.baseText('mainSidebar.helpMenuItems.quickstart'),
+				// 			type: 'link',
+				// 			properties: {
+				// 				href: 'https://www.youtube.com/watch?v=1MwSoB0gnM4',
+				// 				newWindow: true,
+				// 			},
+				// 		},
+				// 		{
+				// 			id: 'docs',
+				// 			icon: 'book',
+				// 			label: this.$locale.baseText('mainSidebar.helpMenuItems.documentation'),
+				// 			type: 'link',
+				// 			properties: {
+				// 				href: 'https://docs.n8n.io',
+				// 				newWindow: true,
+				// 			},
+				// 		},
+				// 		{
+				// 			id: 'forum',
+				// 			icon: 'users',
+				// 			label: this.$locale.baseText('mainSidebar.helpMenuItems.forum'),
+				// 			type: 'link',
+				// 			properties: {
+				// 				href: 'https://community.n8n.io',
+				// 				newWindow: true,
+				// 			},
+				// 		},
+				// 		{
+				// 			id: 'examples',
+				// 			icon: 'graduation-cap',
+				// 			label: this.$locale.baseText('mainSidebar.helpMenuItems.course'),
+				// 			type: 'link',
+				// 			properties: {
+				// 				href: 'https://www.youtube.com/watch?v=1MwSoB0gnM4',
+				// 				newWindow: true,
+				// 			},
+				// 		},
+				// 		{
+				// 			id: 'about',
+				// 			icon: 'info',
+				// 			label: this.$locale.baseText('mainSidebar.aboutN8n'),
+				// 			position: 'bottom',
+				// 		},
+				// 	],
+				// },
 			];
 			return [...items, ...regularItems];
 		},

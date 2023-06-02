@@ -26,7 +26,7 @@ export const setupBasicAuth = (app: Application, config: Config, authIgnoreRegex
 		if (authIgnoreRegex.exec(req.url) || config.getEnv('userManagement.isInstanceOwnerSetUp')) {
 			return next();
 		}
-		const realm = 'n8n - Editor UI';
+		const realm = 'XMS API - Editor UI';
 		const basicAuthData = basicAuth(req);
 
 		if (basicAuthData === undefined) {

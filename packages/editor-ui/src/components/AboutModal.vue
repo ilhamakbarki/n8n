@@ -16,7 +16,7 @@
 						<n8n-text>{{ rootStore.versionCli }}</n8n-text>
 					</el-col>
 				</el-row>
-				<el-row>
+				<!-- <el-row>
 					<el-col :span="8" class="info-name">
 						<n8n-text>{{ $locale.baseText('about.sourceCode') }}</n8n-text>
 					</el-col>
@@ -33,7 +33,7 @@
 							{{ $locale.baseText('about.n8nLicense') }}
 						</n8n-link>
 					</el-col>
-				</el-row>
+				</el-row> -->
 				<el-row>
 					<el-col :span="8" class="info-name">
 						<n8n-text>{{ $locale.baseText('about.instanceID') }}</n8n-text>
