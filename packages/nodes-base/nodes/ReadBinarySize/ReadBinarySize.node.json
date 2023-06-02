@@ -1,0 +1,32 @@
+{
+	"node": "n8n-custom-nodes.readBinarySize",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": [
+		"Nodes"
+	],
+	"resources": {
+		"primaryDocumentation": [
+			{
+				"url": "#"
+			}
+		],
+		"generic": [
+			{
+				"label": "Read Binary Size",
+				"icon": "",
+				"url": "#"
+			}
+		]
+	},
+	"alias": [
+		"Text",
+		"Save",
+		"Export"
+	],
+	"subcategories": {
+		"Core Nodes": [
+			"Files"
+		]
+	}
+}
