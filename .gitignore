@@ -19,7 +19,9 @@ packages/**/.turbo
 *.tsbuildinfo
 cypress/videos/*
 cypress/screenshots/*
+cypress/downloads/*
 *.swp
+CHANGELOG-*.md
 docker-compose.yml
 Dockerfile
 !*/Dockerfile

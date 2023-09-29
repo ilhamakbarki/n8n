@@ -88,10 +88,11 @@
 				:toastTitle="
 					$locale.baseText('credentialEdit.credentialConfig.redirectUrlCopiedToClipboard')
 				"
+				:redactValue="true"
 			/>
 		</template>
 		<enterprise-edition v-else :features="[EnterpriseEditionFeature.Sharing]">
-			<div class="ph-no-capture">
+			<div>
 				<n8n-info-tip :bold="false">
 					{{
 						$locale.baseText('credentialEdit.credentialEdit.info.sharee', {
@@ -108,7 +109,7 @@
 			:credentialProperties="credentialProperties"
 			:documentationUrl="documentationUrl"
 			:showValidationWarnings="showValidationWarning"
-			@change="onDataChange"
+			@update="onDataChange"
 		/>
 
 		<OauthButton
@@ -125,10 +126,24 @@
 		<n8n-text v-if="isMissingCredentials" color="text-base" size="medium">
 			{{ $locale.baseText('credentialEdit.credentialConfig.missingCredentialType') }}
 		</n8n-text>
+
+		<EnterpriseEdition :features="[EnterpriseEditionFeature.ExternalSecrets]">
+			<template #fallback>
+				<n8n-info-tip class="mt-s">
+					{{ $locale.baseText('credentialEdit.credentialConfig.externalSecrets') }}
+					<n8n-link bold :to="$locale.baseText('settings.externalSecrets.docs')" size="small">
+						{{ $locale.baseText('credentialEdit.credentialConfig.externalSecrets.moreInfo') }}
+					</n8n-link>
+				</n8n-info-tip>
+			</template>
+		</EnterpriseEdition>
 	</div>
 </template>
 
 <script lang="ts">
+import { defineComponent } from 'vue';
+import { mapStores } from 'pinia';
+
 import type { ICredentialType, INodeTypeDescription } from 'n8n-workflow';
 import { getAppNameFromCredType, isCommunityPackageName } from '@/utils';
 
@@ -139,7 +154,6 @@ import OauthButton from './OauthButton.vue';
 import { addCredentialTranslation } from '@/plugins/i18n';
 import { BUILTIN_CREDENTIALS_DOCS_URL, DOCS_DOMAIN, EnterpriseEditionFeature } from '@/constants';
 import type { IPermissions } from '@/permissions';
-import { mapStores } from 'pinia';
 import { useUIStore } from '@/stores/ui.store';
 import { useWorkflowsStore } from '@/stores/workflows.store';
 import { useRootStore } from '@/stores/n8nRoot.store';
@@ -149,11 +163,12 @@ import { useNodeTypesStore } from '@/stores/nodeTypes.store';
 import type { ICredentialsResponse } from '@/Interface';
 import AuthTypeSelector from '@/components/CredentialEdit/AuthTypeSelector.vue';
 import GoogleAuthButton from './GoogleAuthButton.vue';
-import Vue from 'vue';
+import EnterpriseEdition from '@/components/EnterpriseEdition.ee.vue';
 
-export default Vue.extend({
+export default defineComponent({
 	name: 'CredentialConfig',
 	components: {
+		EnterpriseEdition,
 		AuthTypeSelector,
 		Banner,
 		CopyInput,
@@ -263,7 +278,7 @@ export default Vue.extend({
 			);
 		},
 		credentialTypeName(): string {
-			return (this.credentialType as ICredentialType).name;
+			return (this.credentialType as ICredentialType)?.name;
 		},
 		credentialOwnerName(): string {
 			return this.credentialsStore.getCredentialOwnerNameById(`${this.credentialId}`);
@@ -330,7 +345,7 @@ export default Vue.extend({
 			return this.credentialsStore.allUsableCredentialsByType[type];
 		},
 		onDataChange(event: { name: string; value: string | number | boolean | Date | null }): void {
-			this.$emit('change', event);
+			this.$emit('update', event);
 		},
 		onDocumentationUrlClick(): void {
 			this.$telemetry.track('User clicked credential modal docs link', {

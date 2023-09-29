@@ -3,7 +3,8 @@ import path from 'path';
 import { tmpdir } from 'os';
 import { isEmpty } from 'lodash';
 import { get } from 'lodash';
-import { BinaryDataManager, Credentials, constructExecutionMetaData } from 'n8n-core';
+import { BinaryDataService, Credentials, constructExecutionMetaData } from 'n8n-core';
+import { Container } from 'typedi';
 import type {
 	CredentialLoadingDetails,
 	ICredentialDataDecryptedObject,
@@ -19,6 +20,7 @@ import type {
 	IHttpRequestOptions,
 	ILogger,
 	INode,
+	INodeCredentials,
 	INodeCredentialsDetails,
 	INodeType,
 	INodeTypeData,
@@ -29,10 +31,10 @@ import type {
 	IWorkflowBase,
 	IWorkflowExecuteAdditionalData,
 	NodeLoadingDetails,
+	WorkflowTestData,
 } from 'n8n-workflow';
 import { ICredentialsHelper, LoggerProxy, NodeHelpers, WorkflowHooks } from 'n8n-workflow';
 import { executeWorkflow } from './ExecuteWorkflow';
-import type { WorkflowTestData } from './types';
 
 import { FAKE_CREDENTIALS_DATA } from './FakeCredentialsMap';
 
@@ -122,6 +124,7 @@ export class CredentialsHelper extends ICredentialsHelper {
 	}
 
 	async getDecrypted(
+		additionalData: IWorkflowExecuteAdditionalData,
 		nodeCredentials: INodeCredentialsDetails,
 		type: string,
 	): Promise<ICredentialDataDecryptedObject> {
@@ -145,6 +148,7 @@ export class CredentialsHelper extends ICredentialsHelper {
 export function WorkflowExecuteAdditionalData(
 	waitPromise: IDeferredPromise<IRun>,
 	nodeExecutionOrder: string[],
+	workflowTestData?: WorkflowTestData,
 ): IWorkflowExecuteAdditionalData {
 	const hookFunctions = {
 		nodeExecuteAfter: [
@@ -167,7 +171,6 @@ export function WorkflowExecuteAdditionalData(
 		nodes: [],
 		connections: {},
 	};
-
 	return {
 		credentialsHelper: new CredentialsHelper(credentialTypes),
 		hooks: new WorkflowHooks(hookFunctions, 'trigger', '1', workflowData),
@@ -175,12 +178,13 @@ export function WorkflowExecuteAdditionalData(
 		sendMessageToUI: (message: string) => {},
 		restApiUrl: '',
 		encryptionKey: 'test',
-		timezone: 'America/New_York',
+		timezone: workflowTestData?.input.workflowData.settings?.timezone || 'America/New_York',
 		webhookBaseUrl: 'webhook',
 		webhookWaitingBaseUrl: 'webhook-waiting',
 		webhookTestBaseUrl: 'webhook-test',
 		userId: '123',
 		variables: {},
+		instanceBaseUrl: '',
 	};
 }
 
@@ -213,16 +217,10 @@ export function createTemporaryDir(prefix = 'n8n') {
 	return mkdtempSync(path.join(tmpdir(), prefix));
 }
 
-export async function initBinaryDataManager(mode: 'default' | 'filesystem' = 'default') {
-	const temporaryDir = createTemporaryDir();
-	await BinaryDataManager.init({
-		mode,
-		availableModes: mode,
-		localStoragePath: temporaryDir,
-		binaryDataTTL: 1,
-		persistedBinaryDataTTL: 1,
-	});
-	return temporaryDir;
+export async function initBinaryDataService(mode: 'default' | 'filesystem' = 'default') {
+	const binaryDataService = new BinaryDataService();
+	await binaryDataService.init({ mode: 'default', availableModes: [mode] });
+	Container.set(BinaryDataService, binaryDataService);
 }
 
 const credentialTypes = new CredentialType();
@@ -237,7 +235,7 @@ export function setup(testData: WorkflowTestData[] | WorkflowTestData) {
 	const nodes = [...new Set(testData.flatMap((data) => data.input.workflowData.nodes))];
 	const credentialNames = nodes
 		.filter((n) => n.credentials)
-		.flatMap(({ credentials }) => Object.keys(credentials!));
+		.flatMap(({ credentials }) => Object.keys(credentials as INodeCredentials));
 	for (const credentialName of credentialNames) {
 		const loadInfo = knownCredentials[credentialName];
 		if (!loadInfo) {
@@ -320,6 +318,15 @@ export const equalityTest = async (testData: WorkflowTestData, types: INodeTypes
 	const resultNodeData = getResultNodeData(result, testData);
 	resultNodeData.forEach(({ nodeName, resultData }) => {
 		const msg = `Equality failed for "${testData.description}" at node "${nodeName}"`;
+		resultData.forEach((item) => {
+			item?.forEach(({ binary }) => {
+				if (binary) {
+					// @ts-ignore
+					delete binary.data.data;
+					delete binary.data.directory;
+				}
+			});
+		});
 		return expect(resultData, msg).toEqual(testData.output.nodeData[nodeName]);
 	});
 
@@ -339,24 +346,35 @@ const preparePinData = (pinData: IDataObject) => {
 	);
 	return returnData;
 };
-
 export const workflowToTests = (workflowFiles: string[]) => {
 	const testCases: WorkflowTestData[] = [];
 	for (const filePath of workflowFiles) {
 		const description = filePath.replace('.json', '');
-		const workflowData = readJsonFileSync<IWorkflowBase>(filePath);
+		const workflowData = readJsonFileSync<IWorkflowBase & Pick<WorkflowTestData, 'trigger'>>(
+			filePath,
+		);
+		const testDir = path.join(baseDir, path.dirname(filePath));
+		workflowData.nodes.forEach((node) => {
+			if (node.parameters) {
+				node.parameters = JSON.parse(
+					JSON.stringify(node.parameters).replace(/"C:\\\\Test\\\\(.*)"/, `"${testDir}/$1"`),
+				);
+			}
+		});
 		if (workflowData.pinData === undefined) {
 			throw new Error('Workflow data does not contain pinData');
 		}
 
 		const nodeData = preparePinData(workflowData.pinData);
-
 		delete workflowData.pinData;
+
+		const { trigger } = workflowData;
+		delete workflowData.trigger;
 
 		const input = { workflowData };
 		const output = { nodeData };
 
-		testCases.push({ description, input, output });
+		testCases.push({ description, input, output, trigger });
 	}
 	return testCases;
 };

@@ -4,6 +4,7 @@ import type {
 	ICredentialsDecrypted,
 	ICredentialTestFunctions,
 	IDataObject,
+	IExecuteFunctions,
 	INodeCredentialTestResult,
 	INodeExecutionData,
 	INodeType,
@@ -15,9 +16,8 @@ import { NodeOperationError } from 'n8n-workflow';
 import type mysql2 from 'mysql2/promise';
 
 import { copyInputItems, createConnection, searchTables } from './GenericFunctions';
-import type { IExecuteFunctions } from 'n8n-core';
 
-import { oldVersionNotice } from '../../../utils/descriptions';
+import { oldVersionNotice } from '@utils/descriptions';
 
 const versionDescription: INodeTypeDescription = {
 	displayName: 'MySQL',
@@ -75,9 +75,11 @@ const versionDescription: INodeTypeDescription = {
 			displayName: 'Query',
 			name: 'query',
 			type: 'string',
+			noDataExpression: true,
 			typeOptions: {
 				editor: 'sqlEditor',
-				sqlDialect: 'mysql',
+				rows: 5,
+				sqlDialect: 'MySQL',
 			},
 			displayOptions: {
 				show: {
@@ -420,6 +422,6 @@ export class MySqlV1 implements INodeType {
 
 		await connection.end();
 
-		return this.prepareOutputData(returnItems);
+		return [returnItems];
 	}
 }

@@ -1610,6 +1610,29 @@ export class Telegram implements INodeType {
 						description: 'If the message is a reply, ID of the original message',
 					},
 					{
+						displayName: 'Message Thread ID',
+						name: 'message_thread_id',
+						type: 'number',
+						displayOptions: {
+							show: {
+								'/operation': [
+									'sendAnimation',
+									'sendAudio',
+									'sendChatAction',
+									'sendDocument',
+									'sendLocation',
+									'sendMediaGroup',
+									'sendMessage',
+									'sendPhoto',
+									'sendSticker',
+									'sendVideo',
+								],
+							},
+						},
+						default: 0,
+						description: 'The unique identifier of the forum topic',
+					},
+					{
 						displayName: 'Title',
 						name: 'title',
 						type: 'string',
@@ -1982,7 +2005,7 @@ export class Telegram implements INodeType {
 
 					let uploadData: Buffer | Readable;
 					if (itemBinaryData.id) {
-						uploadData = this.helpers.getBinaryStream(itemBinaryData.id);
+						uploadData = await this.helpers.getBinaryStream(itemBinaryData.id);
 					} else {
 						uploadData = Buffer.from(itemBinaryData.data, BINARY_ENCODING);
 					}
@@ -2060,6 +2083,6 @@ export class Telegram implements INodeType {
 			}
 		}
 
-		return this.prepareOutputData(returnData);
+		return [returnData];
 	}
 }

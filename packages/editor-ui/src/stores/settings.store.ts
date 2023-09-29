@@ -26,7 +26,6 @@ import type {
 	WorkflowSettings,
 } from 'n8n-workflow';
 import { defineStore } from 'pinia';
-import Vue from 'vue';
 import { useRootStore } from './n8nRoot.store';
 import { useUIStore } from './ui.store';
 import { useUsersStore } from './users.store';
@@ -38,7 +37,7 @@ export const useSettingsStore = defineStore(STORES.SETTINGS, {
 		settings: {} as IN8nUISettings,
 		promptsData: {} as IN8nPrompts,
 		userManagement: {
-			enabled: false,
+			quota: -1,
 			showSetupOnFirstLoad: false,
 			smtpSetup: false,
 			authenticationMethod: UserManagementAuthenticationMethod.Email,
@@ -60,6 +59,9 @@ export const useSettingsStore = defineStore(STORES.SETTINGS, {
 			loginLabel: '',
 			loginEnabled: false,
 		},
+		mfa: {
+			enabled: false,
+		},
 		onboardingCallPromptEnabled: false,
 		saveDataErrorExecution: 'all',
 		saveDataSuccessExecution: 'all',
@@ -71,9 +73,6 @@ export const useSettingsStore = defineStore(STORES.SETTINGS, {
 		},
 		versionCli(): string {
 			return this.settings.versionCli;
-		},
-		isUserManagementEnabled(): boolean {
-			return this.userManagement.enabled;
 		},
 		isPublicApiEnabled(): boolean {
 			return this.api.enabled;
@@ -127,13 +126,6 @@ export const useSettingsStore = defineStore(STORES.SETTINGS, {
 				this.settings.personalizationSurveyEnabled
 			);
 		},
-		isUserActivationSurveyEnabled(): boolean {
-			return (
-				this.settings.telemetry &&
-				this.settings.telemetry.enabled &&
-				this.settings.userActivationSurveyEnabled
-			);
-		},
 		telemetry(): ITelemetrySettings {
 			return this.settings.telemetry;
 		},
@@ -142,6 +134,9 @@ export const useSettingsStore = defineStore(STORES.SETTINGS, {
 		},
 		isTelemetryEnabled(): boolean {
 			return this.settings.telemetry && this.settings.telemetry.enabled;
+		},
+		isMfaFeatureEnabled(): boolean {
+			return this.settings?.mfa?.enabled;
 		},
 		areTagsEnabled(): boolean {
 			return this.settings.workflowTagsDisabled !== undefined
@@ -181,6 +176,15 @@ export const useSettingsStore = defineStore(STORES.SETTINGS, {
 		isDefaultAuthenticationSaml(): boolean {
 			return this.userManagement.authenticationMethod === UserManagementAuthenticationMethod.Saml;
 		},
+		permanentlyDismissedBanners(): string[] {
+			return this.settings.banners?.dismissed ?? [];
+		},
+		isBelowUserQuota(): boolean {
+			const userStore = useUsersStore();
+			return (
+				this.userManagement.quota === -1 || this.userManagement.quota > userStore.allUsers.length
+			);
+		},
 	},
 	actions: {
 		setSettings(settings: IN8nUISettings): void {
@@ -198,6 +202,17 @@ export const useSettingsStore = defineStore(STORES.SETTINGS, {
 			if (settings.sso?.saml) {
 				this.saml.loginEnabled = settings.sso.saml.loginEnabled;
 				this.saml.loginLabel = settings.sso.saml.loginLabel;
+			}
+			if (settings.enterprise?.showNonProdBanner) {
+				useUIStore().pushBannerToStack('NON_PRODUCTION_LICENSE');
+			}
+			if (settings.versionCli) {
+				useRootStore().setVersionCli(settings.versionCli);
+			}
+
+			const isV1BannerDismissedPermanently = (settings.banners?.dismissed || []).includes('V1');
+			if (!isV1BannerDismissedPermanently && useRootStore().versionCli.startsWith('1.')) {
+				useUIStore().pushBannerToStack('V1');
 			}
 		},
 		async getSettings(): Promise<void> {
@@ -224,16 +239,23 @@ export const useSettingsStore = defineStore(STORES.SETTINGS, {
 			rootStore.setN8nMetadata(settings.n8nMetadata || {});
 			rootStore.setDefaultLocale(settings.defaultLocale);
 			rootStore.setIsNpmAvailable(settings.isNpmAvailable);
+
 			useVersionsStore().setVersionNotificationSettings(settings.versionNotifications);
 		},
 		stopShowingSetupPage(): void {
-			Vue.set(this.userManagement, 'showSetupOnFirstLoad', false);
+			this.userManagement.showSetupOnFirstLoad = false;
 		},
 		disableTemplates(): void {
-			Vue.set(this.settings.templates, 'enabled', false);
+			this.settings = {
+				...this.settings,
+				templates: {
+					...this.settings.templates,
+					enabled: false,
+				},
+			};
 		},
 		setPromptsData(promptsData: IN8nPrompts): void {
-			Vue.set(this, 'promptsData', promptsData);
+			this.promptsData = promptsData;
 		},
 		setAllowedModules(allowedModules: { builtIn?: string[]; external?: string[] }): void {
 			this.settings.allowedModules = allowedModules;
@@ -303,32 +325,32 @@ export const useSettingsStore = defineStore(STORES.SETTINGS, {
 		},
 		async getLdapConfig() {
 			const rootStore = useRootStore();
-			return await getLdapConfig(rootStore.getRestApiContext);
+			return getLdapConfig(rootStore.getRestApiContext);
 		},
 		async getLdapSynchronizations(pagination: { page: number }) {
 			const rootStore = useRootStore();
-			return await getLdapSynchronizations(rootStore.getRestApiContext, pagination);
+			return getLdapSynchronizations(rootStore.getRestApiContext, pagination);
 		},
 		async testLdapConnection() {
 			const rootStore = useRootStore();
-			return await testLdapConnection(rootStore.getRestApiContext);
+			return testLdapConnection(rootStore.getRestApiContext);
 		},
 		async updateLdapConfig(ldapConfig: ILdapConfig) {
 			const rootStore = useRootStore();
-			return await updateLdapConfig(rootStore.getRestApiContext, ldapConfig);
+			return updateLdapConfig(rootStore.getRestApiContext, ldapConfig);
 		},
 		async runLdapSync(data: IDataObject) {
 			const rootStore = useRootStore();
-			return await runLdapSync(rootStore.getRestApiContext, data);
+			return runLdapSync(rootStore.getRestApiContext, data);
 		},
 		setSaveDataErrorExecution(newValue: string) {
-			Vue.set(this, 'saveDataErrorExecution', newValue);
+			this.saveDataErrorExecution = newValue;
 		},
 		setSaveDataSuccessExecution(newValue: string) {
-			Vue.set(this, 'saveDataSuccessExecution', newValue);
+			this.saveDataSuccessExecution = newValue;
 		},
 		setSaveManualExecutions(saveManualExecutions: boolean) {
-			Vue.set(this, 'saveManualExecutions', saveManualExecutions);
+			this.saveManualExecutions = saveManualExecutions;
 		},
 		async getTimezones(): Promise<IDataObject> {
 			const rootStore = useRootStore();
@@ -336,3 +358,5 @@ export const useSettingsStore = defineStore(STORES.SETTINGS, {
 		},
 	},
 });
+
+export { useUsersStore };

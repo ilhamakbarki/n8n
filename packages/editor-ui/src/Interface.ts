@@ -1,5 +1,11 @@
-import type { CREDENTIAL_EDIT_MODAL_KEY } from './constants';
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import type {
+	CREDENTIAL_EDIT_MODAL_KEY,
+	SignInType,
+	FAKE_DOOR_FEATURES,
+	TRIGGER_NODE_CREATOR_VIEW,
+	REGULAR_NODE_CREATOR_VIEW,
+} from './constants';
+
 import type { IMenuItem } from 'n8n-design-system';
 import type {
 	GenericValue,
@@ -30,18 +36,16 @@ import type {
 	FeatureFlags,
 	ExecutionStatus,
 	ITelemetryTrackProperties,
-	IN8nUISettings,
 	IUserManagementSettings,
 	WorkflowSettings,
+	IUserSettings,
+	IN8nUISettings,
+	BannerName,
+	INodeProperties,
 } from 'n8n-workflow';
-import type { SignInType } from './constants';
-import type {
-	FAKE_DOOR_FEATURES,
-	TRIGGER_NODE_CREATOR_VIEW,
-	REGULAR_NODE_CREATOR_VIEW,
-} from './constants';
 import type { BulkCommand, Undoable } from '@/models/history';
-import type { PartialBy } from '@/utils/typeHelpers';
+import type { PartialBy, TupleToUnion } from '@/utils/typeHelpers';
+import type { Component } from 'vue';
 
 export * from 'n8n-design-system/types';
 
@@ -60,6 +64,10 @@ declare global {
 						isIdentifiedID?: boolean;
 						featureFlags: FeatureFlags;
 					};
+					session_recording?: {
+						maskAllInputs?: boolean;
+						maskInputFn?: ((text: string, element?: HTMLElement) => string) | null;
+					};
 				},
 			): void;
 			isFeatureEnabled?(flagName: string): boolean;
@@ -72,6 +80,12 @@ declare global {
 			reset?(resetDeviceId?: boolean): void;
 			onFeatureFlags?(callback: (keys: string[], map: FeatureFlags) => void): void;
 			reloadFeatureFlags?(): void;
+			capture?(event: string, properties: IDataObject): void;
+			register?(metadata: IDataObject): void;
+			people?: {
+				set?(metadata: IDataObject): void;
+			};
+			debug?(): void;
 		};
 		analytics?: {
 			track(event: string, proeprties?: ITelemetryTrackProperties): void;
@@ -200,6 +214,7 @@ export interface IWorkflowDataUpdate {
 	tags?: ITag[] | string[]; // string[] when store or requested, ITag[] from API response
 	pinData?: IPinData;
 	versionId?: string;
+	meta?: WorkflowMetadata;
 }
 
 export interface IWorkflowToShare extends IWorkflowDataUpdate {
@@ -211,15 +226,16 @@ export interface IWorkflowToShare extends IWorkflowDataUpdate {
 export interface IWorkflowTemplate {
 	id: number;
 	name: string;
-	workflow: {
-		nodes: INodeUi[];
-		connections: IConnections;
-	};
+	workflow: Pick<IWorkflowData, 'nodes' | 'connections' | 'settings' | 'pinData'>;
 }
 
 export interface INewWorkflowData {
 	name: string;
 	onboardingFlowEnabled: boolean;
+}
+
+export interface WorkflowMetadata {
+	onboardingId?: string;
 }
 
 // Almost identical to cli.Interfaces.ts
@@ -238,6 +254,7 @@ export interface IWorkflowDb {
 	ownedBy?: Partial<IUser>;
 	versionId: string;
 	usedCredentials?: IUsedCredential[];
+	meta?: WorkflowMetadata;
 }
 
 // Identical to cli.Interfaces.ts
@@ -561,12 +578,7 @@ export interface IUserResponse {
 	personalizationAnswers?: IPersonalizationSurveyVersions | null;
 	isPending: boolean;
 	signInType?: SignInType;
-	settings?: {
-		isOnboarded?: boolean;
-		showUserActivationSurvey?: boolean;
-		firstSuccessfulWorkflowId?: string;
-		userActivated?: boolean;
-	};
+	settings?: IUserSettings;
 }
 
 export interface CurrentUserResponse extends IUserResponse {
@@ -576,15 +588,24 @@ export interface CurrentUserResponse extends IUserResponse {
 export interface IUser extends IUserResponse {
 	isDefaultUser: boolean;
 	isPendingUser: boolean;
+	hasRecoveryCodesLeft: boolean;
 	isOwner: boolean;
 	inviteAcceptUrl?: string;
 	fullName?: string;
+	createdAt?: string;
+	mfaEnabled: boolean;
 }
 
 export interface IVersionNotificationSettings {
 	enabled: boolean;
 	endpoint: string;
 	infoUrl: string;
+}
+
+export interface IUserListAction {
+	label: string;
+	value: string;
+	guard?: (user: IUser) => boolean;
 }
 
 export interface IN8nPrompts {
@@ -700,6 +721,7 @@ export interface IWorkflowSettings extends IWorkflowSettingsWorkflow {
 	maxExecutionTimeout?: number;
 	callerIds?: string;
 	callerPolicy?: WorkflowSettings.CallerPolicy;
+	executionOrder: NonNullable<IWorkflowSettingsWorkflow['executionOrder']>;
 }
 
 export interface ITimeoutHMS {
@@ -708,7 +730,7 @@ export interface ITimeoutHMS {
 	seconds: number;
 }
 
-export type WorkflowTitleStatus = 'EXECUTING' | 'IDLE' | 'ERROR';
+export type WorkflowTitleStatus = 'EXECUTING' | 'IDLE' | 'ERROR' | 'DEBUG';
 
 export type ExtractActionKeys<T> = T extends SimplifiedNodeType ? T['name'] : never;
 
@@ -716,11 +738,10 @@ export type ActionsRecord<T extends SimplifiedNodeType[]> = {
 	[K in ExtractActionKeys<T[number]>]: ActionTypeDescription[];
 };
 
-export interface SimplifiedNodeType
-	extends Pick<
-		INodeTypeDescription,
-		'displayName' | 'description' | 'name' | 'group' | 'icon' | 'iconUrl' | 'codex' | 'defaults'
-	> {}
+export type SimplifiedNodeType = Pick<
+	INodeTypeDescription,
+	'displayName' | 'description' | 'name' | 'group' | 'icon' | 'iconUrl' | 'codex' | 'defaults'
+>;
 export interface SubcategoryItemProps {
 	description?: string;
 	iconType?: string;
@@ -880,6 +901,7 @@ export interface WorkflowsState {
 	workflowExecutionData: IExecutionResponse | null;
 	workflowExecutionPairedItemMappings: { [itemId: string]: Set<string> };
 	workflowsById: IWorkflowsMap;
+	isInDebugMode?: boolean;
 }
 
 export interface RootState {
@@ -973,13 +995,10 @@ export interface ITagsState {
 	fetchedUsageCount: boolean;
 }
 
-export type Modals =
-	| {
-			[key: string]: ModalState;
-	  }
-	| {
-			[CREDENTIAL_EDIT_MODAL_KEY]: NewCredentialsModal;
-	  };
+export type Modals = {
+	[CREDENTIAL_EDIT_MODAL_KEY]: NewCredentialsModal;
+	[key: string]: ModalState;
+};
 
 export type ModalState = {
 	open: boolean;
@@ -1068,7 +1087,10 @@ export interface UIState {
 	nodeViewInitialized: boolean;
 	addFirstStepOnLoad: boolean;
 	executionSidebarAutoRefresh: boolean;
+	bannersHeight: number;
+	bannerStack: BannerName[];
 }
+
 export type IFakeDoor = {
 	id: FAKE_DOOR_FEATURES;
 	featureName: string;
@@ -1128,6 +1150,9 @@ export interface ISettingsState {
 		loginLabel: string;
 		loginEnabled: boolean;
 	};
+	mfa: {
+		enabled: boolean;
+	};
 	onboardingCallPromptEnabled: boolean;
 	saveDataErrorExecution: string;
 	saveDataSuccessExecution: string;
@@ -1171,6 +1196,7 @@ export interface IVersionsState {
 export interface IUsersState {
 	currentUserId: null | string;
 	users: { [userId: string]: IUser };
+	currentUserCloudInfo: Cloud.UserAccount | null;
 }
 
 export interface IWorkflowsState {
@@ -1359,6 +1385,13 @@ export type NodeAuthenticationOption = {
 	displayOptions?: IDisplayOptions;
 };
 
+export interface ResourceMapperReqParams {
+	nodeTypeAndVersion: INodeTypeNameVersion;
+	path: string;
+	methodName?: string;
+	currentNodeParameters: INodeParameters;
+	credentials?: INodeCredentials;
+}
 export interface EnvironmentVariable {
 	id: number;
 	key: string;
@@ -1433,13 +1466,150 @@ export type SamlPreferencesExtractedData = {
 	returnUrl: string;
 };
 
-export type VersionControlPreferences = {
+export type SshKeyTypes = ['ed25519', 'rsa'];
+
+export type SourceControlPreferences = {
 	connected: boolean;
 	repositoryUrl: string;
-	authorName: string;
-	authorEmail: string;
 	branchName: string;
+	branches: string[];
 	branchReadOnly: boolean;
 	branchColor: string;
 	publicKey?: string;
+	keyGeneratorType?: TupleToUnion<SshKeyTypes>;
+	currentBranch?: string;
+};
+
+export interface SourceControlStatus {
+	ahead: number;
+	behind: number;
+	conflicted: string[];
+	created: string[];
+	current: string;
+	deleted: string[];
+	detached: boolean;
+	files: Array<{
+		path: string;
+		index: string;
+		working_dir: string;
+	}>;
+	modified: string[];
+	not_added: string[];
+	renamed: string[];
+	staged: string[];
+	tracking: null;
+}
+
+export interface SourceControlAggregatedFile {
+	conflict: boolean;
+	file: string;
+	id: string;
+	location: string;
+	name: string;
+	status: string;
+	type: string;
+	updatedAt?: string;
+}
+
+export declare namespace Cloud {
+	export interface PlanData {
+		planId: number;
+		monthlyExecutionsLimit: number;
+		activeWorkflowsLimit: number;
+		credentialsLimit: number;
+		isActive: boolean;
+		displayName: string;
+		expirationDate: string;
+		metadata: PlanMetadata;
+	}
+
+	export interface PlanMetadata {
+		version: 'v1';
+		group: 'opt-out' | 'opt-in' | 'trial';
+		slug: 'pro-1' | 'pro-2' | 'starter' | 'trial-1';
+		trial?: Trial;
+	}
+
+	interface Trial {
+		length: number;
+		gracePeriod: number;
+	}
+
+	export type UserAccount = {
+		confirmed: boolean;
+		username: string;
+		email: string;
+		hasEarlyAccess?: boolean;
+	};
+}
+
+export interface CloudPlanState {
+	data: Cloud.PlanData | null;
+	usage: InstanceUsage | null;
+	loadingPlan: boolean;
+}
+
+export interface InstanceUsage {
+	timeframe?: string;
+	executions: number;
+	activeWorkflows: number;
+}
+
+export type CloudPlanAndUsageData = Cloud.PlanData & { usage: InstanceUsage };
+
+export interface ExternalSecretsProviderSecret {
+	key: string;
+}
+
+export type ExternalSecretsProviderData = Record<string, IUpdateInformation['value']>;
+
+export interface ExternalSecretsProvider {
+	icon: string;
+	name: string;
+	displayName: string;
+	connected: boolean;
+	connectedAt: string | false;
+	state: 'connected' | 'tested' | 'initializing' | 'error';
+	data?: ExternalSecretsProviderData;
+}
+
+export interface ExternalSecretsProviderWithProperties extends ExternalSecretsProvider {
+	properties: INodeProperties[];
+}
+
+export type CloudUpdateLinkSourceType =
+	| 'canvas-nav'
+	| 'custom-data-filter'
+	| 'workflow_sharing'
+	| 'credential_sharing'
+	| 'settings-n8n-api'
+	| 'audit-logs'
+	| 'ldap'
+	| 'log-streaming'
+	| 'source-control'
+	| 'sso'
+	| 'usage_page'
+	| 'settings-users'
+	| 'variables';
+
+export type UTMCampaign =
+	| 'upgrade-custom-data-filter'
+	| 'upgrade-canvas-nav'
+	| 'upgrade-workflow-sharing'
+	| 'upgrade-credentials-sharing'
+	| 'upgrade-api'
+	| 'upgrade-audit-logs'
+	| 'upgrade-ldap'
+	| 'upgrade-log-streaming'
+	| 'upgrade-source-control'
+	| 'upgrade-sso'
+	| 'open'
+	| 'upgrade-users'
+	| 'upgrade-variables';
+
+export type N8nBanners = {
+	[key in BannerName]: {
+		priority: number;
+		component: Component;
+	};
 };

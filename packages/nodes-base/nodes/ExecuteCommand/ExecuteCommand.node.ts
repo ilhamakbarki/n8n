@@ -75,6 +75,7 @@ export class ExecuteCommand implements INodeType {
 				default: '',
 				placeholder: 'echo "test"',
 				description: 'The command to execute',
+				required: true,
 			},
 		],
 	};
@@ -126,6 +127,6 @@ export class ExecuteCommand implements INodeType {
 			}
 		}
 
-		return this.prepareOutputData(returnItems);
+		return [returnItems];
 	}
 }

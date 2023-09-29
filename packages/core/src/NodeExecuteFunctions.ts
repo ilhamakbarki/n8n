@@ -3,97 +3,20 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 /* eslint-disable @typescript-eslint/naming-convention */
-/* eslint-disable new-cap */
+
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-/* eslint-disable @typescript-eslint/no-shadow */
-/* eslint-disable no-param-reassign */
-import type {
-	GenericValue,
-	IAdditionalCredentialOptions,
-	IAllExecuteFunctions,
-	IBinaryData,
-	IContextObject,
-	ICredentialDataDecryptedObject,
-	ICredentialsExpressionResolveValues,
-	IDataObject,
-	IExecuteResponsePromiseData,
-	IExecuteWorkflowInfo,
-	IHttpRequestOptions,
-	IN8nHttpFullResponse,
-	IN8nHttpResponse,
-	INode,
-	INodeCredentialDescription,
-	INodeCredentialsDetails,
-	INodeExecutionData,
-	IOAuth2Options,
-	IRunExecutionData,
-	ISourceData,
-	ITaskDataConnections,
-	IWebhookData,
-	IWebhookDescription,
-	IWorkflowDataProxyAdditionalKeys,
-	IWorkflowDataProxyData,
-	IWorkflowExecuteAdditionalData,
-	Workflow,
-	WorkflowActivateMode,
-	WorkflowExecuteMode,
-	IExecuteData,
-	IGetNodeParameterOptions,
-	NodeParameterValueType,
-	NodeExecutionWithMetadata,
-	IPairedItemData,
-	ICredentialTestFunctions,
-	BinaryHelperFunctions,
-	NodeHelperFunctions,
-	RequestHelperFunctions,
-	FunctionsBase,
-	IExecuteFunctions,
-	IExecuteSingleFunctions,
-	IHookFunctions,
-	ILoadOptionsFunctions,
-	IPollFunctions,
-	ITriggerFunctions,
-	IWebhookFunctions,
-	BinaryMetadata,
-	FileSystemHelperFunctions,
-} from 'n8n-workflow';
-import {
-	createDeferredPromise,
-	isObjectEmpty,
-	NodeApiError,
-	NodeHelpers,
-	NodeOperationError,
-	WorkflowDataProxy,
-	LoggerProxy as Logger,
-	OAuth2GrantType,
-	deepCopy,
-	fileTypeFromMimeType,
-	ExpressionError,
-} from 'n8n-workflow';
 
-import pick from 'lodash.pick';
-import { Agent } from 'https';
-import { IncomingMessage } from 'http';
-import { stringify } from 'qs';
-import type { Token } from 'oauth-1.0a';
-import clientOAuth1 from 'oauth-1.0a';
-import clientOAuth2 from 'client-oauth2';
-import crypto, { createHmac } from 'crypto';
-import get from 'lodash.get';
-import type { Request, Response } from 'express';
-import FormData from 'form-data';
-import path from 'path';
-import type { OptionsWithUri, OptionsWithUrl, RequestCallback, RequiredUriUrl } from 'request';
-import type { RequestPromiseOptions } from 'request-promise-native';
-import requestPromise from 'request-promise-native';
-import FileType from 'file-type';
-import { lookup, extension } from 'mime-types';
-import type { IncomingHttpHeaders } from 'http';
+/* eslint-disable @typescript-eslint/no-shadow */
+
+import type {
+	ClientOAuth2Options,
+	ClientOAuth2RequestObject,
+	ClientOAuth2TokenData,
+} from '@n8n/client-oauth2';
+import { ClientOAuth2 } from '@n8n/client-oauth2';
 import type {
 	AxiosError,
 	AxiosPromise,
@@ -103,23 +26,120 @@ import type {
 	Method,
 } from 'axios';
 import axios from 'axios';
-import url, { URL, URLSearchParams } from 'url';
-import { Readable } from 'stream';
-import { access as fsAccess } from 'fs/promises';
+import crypto, { createHmac } from 'crypto';
+import type { Request, Response } from 'express';
+import FileType from 'file-type';
+import FormData from 'form-data';
 import { createReadStream } from 'fs';
+import { access as fsAccess, writeFile as fsWriteFile } from 'fs/promises';
+import { IncomingMessage, type IncomingHttpHeaders } from 'http';
+import { Agent } from 'https';
+import get from 'lodash/get';
+import pick from 'lodash/pick';
+import { extension, lookup } from 'mime-types';
+import type {
+	BinaryHelperFunctions,
+	FieldType,
+	FileSystemHelperFunctions,
+	FunctionsBase,
+	GenericValue,
+	IAdditionalCredentialOptions,
+	IAllExecuteFunctions,
+	IBinaryData,
+	IContextObject,
+	ICredentialDataDecryptedObject,
+	ICredentialTestFunctions,
+	ICredentialsExpressionResolveValues,
+	IDataObject,
+	IExecuteData,
+	IExecuteFunctions,
+	IExecuteResponsePromiseData,
+	IExecuteSingleFunctions,
+	IExecuteWorkflowInfo,
+	IGetNodeParameterOptions,
+	IHookFunctions,
+	IHttpRequestOptions,
+	ILoadOptionsFunctions,
+	IN8nHttpFullResponse,
+	IN8nHttpResponse,
+	INode,
+	INodeCredentialDescription,
+	INodeCredentialsDetails,
+	INodeExecutionData,
+	INodeProperties,
+	INodePropertyCollection,
+	INodePropertyOptions,
+	INodeType,
+	IOAuth2Options,
+	IPairedItemData,
+	IPollFunctions,
+	IRunExecutionData,
+	ISourceData,
+	ITaskDataConnections,
+	ITriggerFunctions,
+	IWebhookData,
+	IWebhookDescription,
+	IWebhookFunctions,
+	IWorkflowDataProxyAdditionalKeys,
+	IWorkflowDataProxyData,
+	IWorkflowExecuteAdditionalData,
+	NodeExecutionWithMetadata,
+	NodeHelperFunctions,
+	NodeParameterValueType,
+	RequestHelperFunctions,
+	Workflow,
+	WorkflowActivateMode,
+	WorkflowExecuteMode,
+} from 'n8n-workflow';
+import {
+	ExpressionError,
+	LoggerProxy as Logger,
+	NodeApiError,
+	NodeHelpers,
+	NodeOperationError,
+	NodeSSLError,
+	OAuth2GrantType,
+	WorkflowDataProxy,
+	createDeferredPromise,
+	deepCopy,
+	fileTypeFromMimeType,
+	isObjectEmpty,
+	isResourceMapperValue,
+	validateFieldType,
+} from 'n8n-workflow';
+import type { Token } from 'oauth-1.0a';
+import clientOAuth1 from 'oauth-1.0a';
+import path from 'path';
+import { stringify } from 'qs';
+import type { OptionsWithUri, OptionsWithUrl } from 'request';
+import type { RequestPromiseOptions } from 'request-promise-native';
+import { Readable } from 'stream';
+import url, { URL, URLSearchParams } from 'url';
 
-import { BinaryDataManager } from './BinaryDataManager';
-import type { IResponseError, IWorkflowSettings } from './Interfaces';
+import { BinaryDataService } from './BinaryData/BinaryData.service';
+import {
+	BINARY_DATA_STORAGE_PATH,
+	BLOCK_FILE_ACCESS_TO_N8N_FILES,
+	CONFIG_FILES,
+	CUSTOM_EXTENSION_ENV,
+	PLACEHOLDER_EMPTY_EXECUTION_ID,
+	RESTRICT_FILE_ACCESS_TO,
+	UM_EMAIL_TEMPLATES_INVITE,
+	UM_EMAIL_TEMPLATES_PWRESET,
+} from './Constants';
 import { extractValue } from './ExtractValue';
+import type { ExtendedValidationResult, IResponseError, IWorkflowSettings } from './Interfaces';
 import { getClientCredentialsToken } from './OAuth2Helper';
-import { PLACEHOLDER_EMPTY_EXECUTION_ID } from './Constants';
-import { binaryToBuffer } from './BinaryDataManager/utils';
 import {
 	getAllWorkflowExecutionMetadata,
 	getWorkflowExecutionMetadata,
 	setAllWorkflowExecutionMetadata,
 	setWorkflowExecutionMetadata,
 } from './WorkflowExecutionMetadata';
+import { getSecretsProxy } from './Secrets';
+import { getUserN8nFolderPath } from './UserSettings';
+import Container from 'typedi';
+import type { BinaryData } from './BinaryData/types';
 
 axios.defaults.timeout = 300000;
 // Prevent axios from adding x-form-www-urlencoded headers by default
@@ -132,10 +152,6 @@ axios.defaults.paramsSerializer = (params) => {
 	}
 	return stringify(params, { arrayFormat: 'indices' });
 };
-
-const requestPromiseWithDefaults = requestPromise.defaults({
-	timeout: 300000, // 5 minutes
-});
 
 const pushFormDataValue = (form: FormData, key: string, value: any) => {
 	if (value?.hasOwnProperty('value') && value.hasOwnProperty('options')) {
@@ -417,6 +433,7 @@ async function parseRequestObject(requestObject: IDataObject) {
 	if (requestObject.rejectUnauthorized === false) {
 		axiosConfig.httpsAgent = new Agent({
 			rejectUnauthorized: false,
+			secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
 		});
 	}
 
@@ -585,22 +602,101 @@ type ConfigObject = {
 	simple?: boolean;
 };
 
-export async function proxyRequestToAxios(
-	workflow: Workflow,
-	additionalData: IWorkflowExecuteAdditionalData,
-	node: INode,
-	uriOrObject: string | IDataObject,
-	options?: IDataObject,
-): Promise<any> {
-	// Check if there's a better way of getting this config here
-	if (process.env.N8N_USE_DEPRECATED_REQUEST_LIB) {
-		return requestPromiseWithDefaults.call(
-			null,
-			uriOrObject as unknown as RequiredUriUrl & RequestPromiseOptions,
-			options as unknown as RequestCallback,
-		);
+interface IContentType {
+	type: string;
+	parameters: {
+		charset: string;
+		[key: string]: string;
+	};
+}
+
+interface IContentDisposition {
+	type: string;
+	filename?: string;
+}
+
+function parseHeaderParameters(parameters: string[]): Record<string, string> {
+	return parameters.reduce(
+		(acc, param) => {
+			const [key, value] = param.split('=');
+			acc[key.toLowerCase().trim()] = decodeURIComponent(value);
+			return acc;
+		},
+		{} as Record<string, string>,
+	);
+}
+
+function parseContentType(contentType?: string): IContentType | null {
+	if (!contentType) {
+		return null;
 	}
 
+	const [type, ...parameters] = contentType.split(';');
+
+	return {
+		type: type.toLowerCase(),
+		parameters: { charset: 'utf-8', ...parseHeaderParameters(parameters) },
+	};
+}
+
+function parseFileName(filename?: string): string | undefined {
+	if (filename?.startsWith('"') && filename?.endsWith('"')) {
+		return filename.slice(1, -1);
+	}
+
+	return filename;
+}
+
+// https://datatracker.ietf.org/doc/html/rfc5987
+function parseFileNameStar(filename?: string): string | undefined {
+	const [_encoding, _locale, content] = parseFileName(filename)?.split("'") ?? [];
+
+	return content;
+}
+
+function parseContentDisposition(contentDisposition?: string): IContentDisposition | null {
+	if (!contentDisposition) {
+		return null;
+	}
+
+	// This is invalid syntax, but common
+	// Example 'filename="example.png"' (instead of 'attachment; filename="example.png"')
+	if (!contentDisposition.startsWith('attachment') && !contentDisposition.startsWith('inline')) {
+		contentDisposition = `attachment; ${contentDisposition}`;
+	}
+
+	const [type, ...parameters] = contentDisposition.split(';');
+
+	const parsedParameters = parseHeaderParameters(parameters);
+
+	return {
+		type,
+		filename:
+			parseFileNameStar(parsedParameters['filename*']) ?? parseFileName(parsedParameters.filename),
+	};
+}
+
+export function parseIncomingMessage(message: IncomingMessage) {
+	const contentType = parseContentType(message.headers['content-type']);
+	if (contentType) {
+		const { type, parameters } = contentType;
+		message.contentType = type;
+		message.encoding = parameters.charset.toLowerCase() as BufferEncoding;
+	}
+
+	const contentDisposition = parseContentDisposition(message.headers['content-disposition']);
+	if (contentDisposition) {
+		message.contentDisposition = contentDisposition;
+	}
+}
+
+export async function proxyRequestToAxios(
+	workflow: Workflow | undefined,
+	additionalData: IWorkflowExecuteAdditionalData | undefined,
+	node: INode | undefined,
+	uriOrObject: string | object,
+	options?: object,
+): Promise<any> {
 	let axiosConfig: AxiosRequestConfig = {
 		maxBodyLength: Infinity,
 		maxContentLength: Infinity,
@@ -648,35 +744,22 @@ export async function proxyRequestToAxios(
 
 	try {
 		const response = await requestFn();
-		if (configObject.resolveWithFullResponse === true) {
-			let body = response.data;
-			if (response.data === '') {
-				if (axiosConfig.responseType === 'arraybuffer') {
-					body = Buffer.alloc(0);
-				} else {
-					body = undefined;
-				}
-			}
-			await additionalData.hooks?.executeHookFunctions('nodeFetchedData', [workflow.id, node]);
-			return {
-				body,
-				headers: response.headers,
-				statusCode: response.status,
-				statusMessage: response.statusText,
-				request: response.request,
-			};
-		} else {
-			let body = response.data;
-			if (response.data === '') {
-				if (axiosConfig.responseType === 'arraybuffer') {
-					body = Buffer.alloc(0);
-				} else {
-					body = undefined;
-				}
-			}
-			await additionalData.hooks?.executeHookFunctions('nodeFetchedData', [workflow.id, node]);
-			return body;
+		let body = response.data;
+		if (body instanceof IncomingMessage && axiosConfig.responseType === 'stream') {
+			parseIncomingMessage(body);
+		} else if (body === '') {
+			body = axiosConfig.responseType === 'arraybuffer' ? Buffer.alloc(0) : undefined;
 		}
+		await additionalData?.hooks?.executeHookFunctions('nodeFetchedData', [workflow?.id, node]);
+		return configObject.resolveWithFullResponse
+			? {
+					body,
+					headers: response.headers,
+					statusCode: response.status,
+					statusMessage: response.statusText,
+					request: response.request,
+			  }
+			: body;
 	} catch (error) {
 		const { config, response } = error;
 
@@ -684,14 +767,16 @@ export async function proxyRequestToAxios(
 		// https://github.com/axios/axios/blob/master/lib/core/enhanceError.js
 		// Note: `code` is ignored as it's an expected part of the errorData.
 		if (error.isAxiosError) {
+			error.config = error.request = undefined;
+			error.options = pick(config ?? {}, ['url', 'method', 'data', 'headers']);
 			if (response) {
 				Logger.debug('Request proxied to Axios failed', { status: response.status });
 				let responseData = response.data;
 
 				if (Buffer.isBuffer(responseData) || responseData instanceof Readable) {
-					responseData = await binaryToBuffer(responseData).then((buffer) =>
-						buffer.toString('utf-8'),
-					);
+					responseData = await Container.get(BinaryDataService)
+						.toBuffer(responseData)
+						.then((buffer) => buffer.toString('utf-8'));
 				}
 
 				if (configObject.simple === false) {
@@ -707,20 +792,14 @@ export async function proxyRequestToAxios(
 					}
 				}
 
-				const message = `${response.status as number} - ${JSON.stringify(responseData)}`;
+				error.message = `${response.status as number} - ${JSON.stringify(responseData)}`;
 				throw Object.assign(error, {
-					message,
 					statusCode: response.status,
-					options: pick(config ?? {}, ['url', 'method', 'data', 'headers']),
 					error: responseData,
-					config: undefined,
-					request: undefined,
 					response: pick(response, ['headers', 'status', 'statusText']),
 				});
-			} else {
-				throw Object.assign(error, {
-					options: pick(config ?? {}, ['url', 'method', 'data', 'headers']),
-				});
+			} else if ('rejectUnauthorized' in configObject && error.code?.includes('CERT')) {
+				throw new NodeSSLError(error);
 			}
 		}
 
@@ -732,13 +811,15 @@ function convertN8nRequestToAxios(n8nRequest: IHttpRequestOptions): AxiosRequest
 	// Destructure properties with the same name first.
 	const { headers, method, timeout, auth, proxy, url } = n8nRequest;
 
-	const axiosRequest = {
+	const axiosRequest: AxiosRequestConfig = {
 		headers: headers ?? {},
 		method,
 		timeout,
 		auth,
 		proxy,
 		url,
+		maxBodyLength: Infinity,
+		maxContentLength: Infinity,
 	} as AxiosRequestConfig;
 
 	axiosRequest.params = n8nRequest.qs;
@@ -791,7 +872,7 @@ function convertN8nRequestToAxios(n8nRequest: IHttpRequestOptions): AxiosRequest
 		// if there is a body and it's empty (does not have properties),
 		// make sure not to send anything in it as some services fail when
 		// sending GET request with empty body.
-		if (typeof body === 'object' && !isObjectEmpty(body)) {
+		if (typeof body === 'string' || (typeof body === 'object' && !isObjectEmpty(body))) {
 			axiosRequest.data = body;
 		}
 	}
@@ -859,18 +940,22 @@ async function httpRequest(
 	return result.data;
 }
 
+export function getBinaryPath(binaryDataId: string): string {
+	return Container.get(BinaryDataService).getPath(binaryDataId);
+}
+
 /**
  * Returns binary file metadata
  */
-export async function getBinaryMetadata(binaryDataId: string): Promise<BinaryMetadata> {
-	return BinaryDataManager.getInstance().getBinaryMetadata(binaryDataId);
+export async function getBinaryMetadata(binaryDataId: string): Promise<BinaryData.Metadata> {
+	return Container.get(BinaryDataService).getMetadata(binaryDataId);
 }
 
 /**
  * Returns binary file stream for piping
  */
-export function getBinaryStream(binaryDataId: string, chunkSize?: number): Readable {
-	return BinaryDataManager.getInstance().getBinaryStream(binaryDataId, chunkSize);
+export async function getBinaryStream(binaryDataId: string, chunkSize?: number): Promise<Readable> {
+	return Container.get(BinaryDataService).getAsStream(binaryDataId, chunkSize);
 }
 
 export function assertBinaryData(
@@ -907,26 +992,33 @@ export async function getBinaryDataBuffer(
 	inputIndex: number,
 ): Promise<Buffer> {
 	const binaryData = inputData.main[inputIndex]![itemIndex]!.binary![propertyName]!;
-	return BinaryDataManager.getInstance().retrieveBinaryData(binaryData);
+	return Container.get(BinaryDataService).getAsBuffer(binaryData);
 }
 
 /**
  * Store an incoming IBinaryData & related buffer using the configured binary data manager.
  *
  * @export
- * @param {IBinaryData} data
- * @param {Buffer | Readable} binaryData
+ * @param {IBinaryData} binaryData
+ * @param {Buffer | Readable} bufferOrStream
  * @returns {Promise<IBinaryData>}
  */
 export async function setBinaryDataBuffer(
-	data: IBinaryData,
-	binaryData: Buffer | Readable,
+	binaryData: IBinaryData,
+	bufferOrStream: Buffer | Readable,
+	workflowId: string,
 	executionId: string,
 ): Promise<IBinaryData> {
-	return BinaryDataManager.getInstance().storeBinaryData(data, binaryData, executionId);
+	return Container.get(BinaryDataService).store(
+		workflowId,
+		executionId,
+		bufferOrStream,
+		binaryData,
+	);
 }
 
 export async function copyBinaryFile(
+	workflowId: string,
 	executionId: string,
 	filePath: string,
 	fileName: string,
@@ -976,7 +1068,12 @@ export async function copyBinaryFile(
 		returnData.fileName = path.parse(filePath).base;
 	}
 
-	return BinaryDataManager.getInstance().copyBinaryFile(returnData, filePath, executionId);
+	return Container.get(BinaryDataService).copyBinaryFile(
+		workflowId,
+		executionId,
+		returnData,
+		filePath,
+	);
 }
 
 /**
@@ -986,10 +1083,25 @@ export async function copyBinaryFile(
 async function prepareBinaryData(
 	binaryData: Buffer | Readable,
 	executionId: string,
+	workflowId: string,
 	filePath?: string,
 	mimeType?: string,
 ): Promise<IBinaryData> {
 	let fileExtension: string | undefined;
+	if (binaryData instanceof IncomingMessage) {
+		if (!filePath) {
+			try {
+				const { responseUrl } = binaryData;
+				filePath =
+					binaryData.contentDisposition?.filename ??
+					((responseUrl && new URL(responseUrl).pathname) ?? binaryData.req?.path)?.slice(1);
+			} catch {}
+		}
+		if (!mimeType) {
+			mimeType = binaryData.contentType;
+		}
+	}
+
 	if (!mimeType) {
 		// If no mime type is given figure it out
 
@@ -1053,19 +1165,19 @@ async function prepareBinaryData(
 		}
 	}
 
-	return setBinaryDataBuffer(returnData, binaryData, executionId);
+	return setBinaryDataBuffer(returnData, binaryData, workflowId, executionId);
 }
 
 /**
  * Makes a request using OAuth data for authentication
  *
- * @param {(OptionsWithUri | requestPromise.RequestPromiseOptions)} requestOptions
+ * @param {(OptionsWithUri | RequestPromiseOptions)} requestOptions
  *
  */
 export async function requestOAuth2(
 	this: IAllExecuteFunctions,
 	credentialsType: string,
-	requestOptions: OptionsWithUri | requestPromise.RequestPromiseOptions | IHttpRequestOptions,
+	requestOptions: OptionsWithUri | RequestPromiseOptions | IHttpRequestOptions,
 	node: INode,
 	additionalData: IWorkflowExecuteAdditionalData,
 	oAuth2Options?: IOAuth2Options,
@@ -1081,22 +1193,21 @@ export async function requestOAuth2(
 		throw new Error('OAuth credentials not connected!');
 	}
 
-	const oAuthClient = new clientOAuth2({
+	const oAuthClient = new ClientOAuth2({
 		clientId: credentials.clientId as string,
 		clientSecret: credentials.clientSecret as string,
 		accessTokenUri: credentials.accessTokenUrl as string,
 		scopes: (credentials.scope as string).split(' '),
+		ignoreSSLIssues: credentials.ignoreSSLIssues as boolean,
 	});
 
-	let oauthTokenData = credentials.oauthTokenData as clientOAuth2.Data;
-
+	let oauthTokenData = credentials.oauthTokenData as ClientOAuth2TokenData;
 	// if it's the first time using the credentials, get the access token and save it into the DB.
 	if (
 		credentials.grantType === OAuth2GrantType.clientCredentials &&
 		(oauthTokenData === undefined || Object.keys(oauthTokenData).length === 0)
 	) {
 		const { data } = await getClientCredentialsToken(oAuthClient, credentials);
-
 		// Find the credentials
 		if (!node.credentials?.[credentialsType]) {
 			throw new Error(
@@ -1116,21 +1227,28 @@ export async function requestOAuth2(
 		oauthTokenData = data;
 	}
 
+	const accessToken =
+		get(oauthTokenData, oAuth2Options?.property as string) || oauthTokenData.accessToken;
+	const refreshToken = oauthTokenData.refreshToken;
 	const token = oAuthClient.createToken(
-		get(oauthTokenData, oAuth2Options?.property as string) || oauthTokenData.accessToken,
-		oauthTokenData.refreshToken,
+		{
+			...oauthTokenData,
+			...(accessToken ? { access_token: accessToken } : {}),
+			...(refreshToken ? { refresh_token: refreshToken } : {}),
+		},
 		oAuth2Options?.tokenType || oauthTokenData.tokenType,
-		oauthTokenData,
 	);
+
+	(requestOptions as OptionsWithUri).rejectUnauthorized = !credentials.ignoreSSLIssues;
+
 	// Signs the request by adding authorization headers or query parameters depending
 	// on the token-type used.
-	const newRequestOptions = token.sign(requestOptions as clientOAuth2.RequestObject);
+	const newRequestOptions = token.sign(requestOptions as ClientOAuth2RequestObject);
 	const newRequestHeaders = (newRequestOptions.headers = newRequestOptions.headers ?? {});
 	// If keep bearer is false remove the it from the authorization header
 	if (oAuth2Options?.keepBearer === false && typeof newRequestHeaders.Authorization === 'string') {
 		newRequestHeaders.Authorization = newRequestHeaders.Authorization.split(' ')[1];
 	}
-
 	if (oAuth2Options?.keyToIncludeInAccessTokenHeader) {
 		Object.assign(newRequestHeaders, {
 			[oAuth2Options.keyToIncludeInAccessTokenHeader]: token.accessToken,
@@ -1146,7 +1264,9 @@ export async function requestOAuth2(
 				if (oAuth2Options?.includeCredentialsOnRefreshOnBody) {
 					const body: IDataObject = {
 						client_id: credentials.clientId as string,
-						client_secret: credentials.clientSecret as string,
+						...(credentials.grantType === 'authorizationCode' && {
+							client_secret: credentials.clientSecret as string,
+						}),
 					};
 					tokenRefreshOptions.body = body;
 					tokenRefreshOptions.headers = {
@@ -1164,7 +1284,7 @@ export async function requestOAuth2(
 				if (OAuth2GrantType.clientCredentials === credentials.grantType) {
 					newToken = await getClientCredentialsToken(token.client, credentials);
 				} else {
-					newToken = await token.refresh(tokenRefreshOptions);
+					newToken = await token.refresh(tokenRefreshOptions as unknown as ClientOAuth2Options);
 				}
 
 				Logger.debug(
@@ -1184,7 +1304,7 @@ export async function requestOAuth2(
 					credentialsType,
 					credentials,
 				);
-				const refreshedRequestOption = newToken.sign(requestOptions as clientOAuth2.RequestObject);
+				const refreshedRequestOption = newToken.sign(requestOptions as ClientOAuth2RequestObject);
 
 				if (oAuth2Options?.keyToIncludeInAccessTokenHeader) {
 					Object.assign(newRequestHeaders, {
@@ -1197,6 +1317,11 @@ export async function requestOAuth2(
 			throw error;
 		});
 	}
+	const tokenExpiredStatusCode =
+		oAuth2Options?.tokenExpiredStatusCode === undefined
+			? 401
+			: oAuth2Options?.tokenExpiredStatusCode;
+
 	return this.helpers
 		.request(newRequestOptions)
 		.then((response) => {
@@ -1204,21 +1329,14 @@ export async function requestOAuth2(
 			if (
 				requestOptions.resolveWithFullResponse === true &&
 				requestOptions.simple === false &&
-				response.statusCode ===
-					(oAuth2Options?.tokenExpiredStatusCode === undefined
-						? 401
-						: oAuth2Options?.tokenExpiredStatusCode)
+				response.statusCode === tokenExpiredStatusCode
 			) {
 				throw response;
 			}
 			return response;
 		})
 		.catch(async (error: IResponseError) => {
-			const statusCodeReturned =
-				oAuth2Options?.tokenExpiredStatusCode === undefined
-					? 401
-					: oAuth2Options?.tokenExpiredStatusCode;
-			if (error.statusCode === statusCodeReturned) {
+			if (error.statusCode === tokenExpiredStatusCode) {
 				// Token is probably not valid anymore. So try refresh it.
 				const tokenRefreshOptions: IDataObject = {};
 				if (oAuth2Options?.includeCredentialsOnRefreshOnBody) {
@@ -1243,7 +1361,7 @@ export async function requestOAuth2(
 				if (OAuth2GrantType.clientCredentials === credentials.grantType) {
 					newToken = await getClientCredentialsToken(token.client, credentials);
 				} else {
-					newToken = await token.refresh(tokenRefreshOptions);
+					newToken = await token.refresh(tokenRefreshOptions as unknown as ClientOAuth2Options);
 				}
 				Logger.debug(
 					`OAuth2 token for "${credentialsType}" used by node "${node.name}" has been renewed.`,
@@ -1271,7 +1389,7 @@ export async function requestOAuth2(
 				);
 
 				// Make the request again with the new token
-				const newRequestOptions = newToken.sign(requestOptions as clientOAuth2.RequestObject);
+				const newRequestOptions = newToken.sign(requestOptions as ClientOAuth2RequestObject);
 				newRequestOptions.headers = newRequestOptions.headers ?? {};
 
 				if (oAuth2Options?.keyToIncludeInAccessTokenHeader) {
@@ -1294,11 +1412,7 @@ export async function requestOAuth2(
 export async function requestOAuth1(
 	this: IAllExecuteFunctions,
 	credentialsType: string,
-	requestOptions:
-		| OptionsWithUrl
-		| OptionsWithUri
-		| requestPromise.RequestPromiseOptions
-		| IHttpRequestOptions,
+	requestOptions: OptionsWithUrl | OptionsWithUri | RequestPromiseOptions | IHttpRequestOptions,
 	isN8nRequest = false,
 ) {
 	const credentials = await this.getCredentials(credentialsType);
@@ -1318,7 +1432,18 @@ export async function requestOAuth1(
 		},
 		signature_method: credentials.signatureMethod as string,
 		hash_function(base, key) {
-			const algorithm = credentials.signatureMethod === 'HMAC-SHA1' ? 'sha1' : 'sha256';
+			let algorithm: string;
+			switch (credentials.signatureMethod) {
+				case 'HMAC-SHA256':
+					algorithm = 'sha256';
+					break;
+				case 'HMAC-SHA512':
+					algorithm = 'sha512';
+					break;
+				default:
+					algorithm = 'sha1';
+					break;
+			}
 			return createHmac(algorithm, key).update(base).digest('base64');
 		},
 	});
@@ -1392,6 +1517,7 @@ export async function httpRequestWithAuthentication(
 			throw new NodeOperationError(
 				node,
 				`Node "${node.name}" does not have any credentials of type "${credentialsType}" set!`,
+				{ severity: 'warning' },
 			);
 		}
 
@@ -1551,7 +1677,7 @@ export function normalizeItems(
 export async function requestWithAuthentication(
 	this: IAllExecuteFunctions,
 	credentialsType: string,
-	requestOptions: OptionsWithUri | requestPromise.RequestPromiseOptions,
+	requestOptions: OptionsWithUri | RequestPromiseOptions,
 	workflow: Workflow,
 	node: INode,
 	additionalData: IWorkflowExecuteAdditionalData,
@@ -1587,6 +1713,7 @@ export async function requestWithAuthentication(
 			throw new NodeOperationError(
 				node,
 				`Node "${node.name}" does not have any credentials of type "${credentialsType}" set!`,
+				{ severity: 'warning' },
 			);
 		}
 
@@ -1661,6 +1788,7 @@ export function getAdditionalKeys(
 	additionalData: IWorkflowExecuteAdditionalData,
 	mode: WorkflowExecuteMode,
 	runExecutionData: IRunExecutionData | null,
+	options?: { secretsEnabled?: boolean },
 ): IWorkflowDataProxyAdditionalKeys {
 	const executionId = additionalData.executionId || PLACEHOLDER_EMPTY_EXECUTION_ID;
 	const resumeUrl = `${additionalData.webhookWaitingBaseUrl}/${executionId}`;
@@ -1701,6 +1829,7 @@ export function getAdditionalKeys(
 				: undefined,
 		},
 		$vars: additionalData.variables,
+		$secrets: options?.secretsEnabled ? getSecretsProxy(additionalData) : undefined,
 
 		// deprecated
 		$executionId: executionId,
@@ -1745,6 +1874,7 @@ export async function getCredentials(
 			throw new NodeOperationError(
 				node,
 				`Node type "${node.type}" does not have any credentials defined!`,
+				{ severity: 'warning' },
 			);
 		}
 
@@ -1755,6 +1885,7 @@ export async function getCredentials(
 			throw new NodeOperationError(
 				node,
 				`Node type "${node.type}" does not have any credentials of type "${type}" defined!`,
+				{ severity: 'warning' },
 			);
 		}
 
@@ -1778,10 +1909,16 @@ export async function getCredentials(
 		if (nodeCredentialDescription?.required === true) {
 			// Credentials are required so error
 			if (!node.credentials) {
-				throw new NodeOperationError(node, 'Node does not have any credentials set!');
+				throw new NodeOperationError(node, 'Node does not have any credentials set!', {
+					severity: 'warning',
+				});
 			}
 			if (!node.credentials[type]) {
-				throw new NodeOperationError(node, `Node does not have any credentials set for "${type}"!`);
+				throw new NodeOperationError(
+					node,
+					`Node does not have any credentials set for "${type}"!`,
+					{ severity: 'warning' },
+				);
 			}
 		} else {
 			// Credentials are not required
@@ -1828,6 +1965,7 @@ export async function getCredentials(
 	// }
 
 	const decryptedDataObject = await additionalData.credentialsHelper.getDecrypted(
+		additionalData,
 		nodeCredentials,
 		type,
 		mode,
@@ -1849,7 +1987,7 @@ function cleanupParameterData(inputData: NodeParameterValueType): void {
 	}
 
 	if (Array.isArray(inputData)) {
-		inputData.forEach((value) => cleanupParameterData(value));
+		inputData.forEach((value) => cleanupParameterData(value as NodeParameterValueType));
 		return;
 	}
 
@@ -1867,6 +2005,205 @@ function cleanupParameterData(inputData: NodeParameterValueType): void {
 		});
 	}
 }
+
+const validateResourceMapperValue = (
+	parameterName: string,
+	paramValues: { [key: string]: unknown },
+	node: INode,
+	skipRequiredCheck = false,
+): ExtendedValidationResult => {
+	const result: ExtendedValidationResult = { valid: true, newValue: paramValues };
+	const paramNameParts = parameterName.split('.');
+	if (paramNameParts.length !== 2) {
+		return result;
+	}
+	const resourceMapperParamName = paramNameParts[0];
+	const resourceMapperField = node.parameters[resourceMapperParamName];
+	if (!resourceMapperField || !isResourceMapperValue(resourceMapperField)) {
+		return result;
+	}
+	const schema = resourceMapperField.schema;
+	const paramValueNames = Object.keys(paramValues);
+	for (let i = 0; i < paramValueNames.length; i++) {
+		const key = paramValueNames[i];
+		const resolvedValue = paramValues[key];
+		const schemaEntry = schema.find((s) => s.id === key);
+
+		if (
+			!skipRequiredCheck &&
+			schemaEntry?.required === true &&
+			schemaEntry.type !== 'boolean' &&
+			!resolvedValue
+		) {
+			return {
+				valid: false,
+				errorMessage: `The value "${String(key)}" is required but not set`,
+				fieldName: key,
+			};
+		}
+
+		if (schemaEntry?.type) {
+			const validationResult = validateFieldType(
+				key,
+				resolvedValue,
+				schemaEntry.type,
+				schemaEntry.options,
+			);
+			if (!validationResult.valid) {
+				return { ...validationResult, fieldName: key };
+			} else {
+				// If it's valid, set the casted value
+				paramValues[key] = validationResult.newValue;
+			}
+		}
+	}
+	return result;
+};
+
+const validateCollection = (
+	node: INode,
+	runIndex: number,
+	itemIndex: number,
+	propertyDescription: INodeProperties,
+	parameterPath: string[],
+	validationResult: ExtendedValidationResult,
+): ExtendedValidationResult => {
+	let nestedDescriptions: INodeProperties[] | undefined;
+
+	if (propertyDescription.type === 'fixedCollection') {
+		nestedDescriptions = (propertyDescription.options as INodePropertyCollection[]).find(
+			(entry) => entry.name === parameterPath[1],
+		)?.values;
+	}
+
+	if (propertyDescription.type === 'collection') {
+		nestedDescriptions = propertyDescription.options as INodeProperties[];
+	}
+
+	if (!nestedDescriptions) {
+		return validationResult;
+	}
+
+	const validationMap: {
+		[key: string]: { type: FieldType; displayName: string; options?: INodePropertyOptions[] };
+	} = {};
+
+	for (const prop of nestedDescriptions) {
+		if (!prop.validateType || prop.ignoreValidationDuringExecution) continue;
+
+		validationMap[prop.name] = {
+			type: prop.validateType,
+			displayName: prop.displayName,
+			options:
+				prop.validateType === 'options' ? (prop.options as INodePropertyOptions[]) : undefined,
+		};
+	}
+
+	if (!Object.keys(validationMap).length) {
+		return validationResult;
+	}
+
+	for (const value of Array.isArray(validationResult.newValue)
+		? (validationResult.newValue as IDataObject[])
+		: [validationResult.newValue as IDataObject]) {
+		for (const key of Object.keys(value)) {
+			if (!validationMap[key]) continue;
+
+			const fieldValidationResult = validateFieldType(
+				key,
+				value[key],
+				validationMap[key].type,
+				validationMap[key].options,
+			);
+
+			if (!fieldValidationResult.valid) {
+				throw new ExpressionError(
+					`Invalid input for field '${validationMap[key].displayName}' inside '${propertyDescription.displayName}' in [item ${itemIndex}]`,
+					{
+						description: fieldValidationResult.errorMessage,
+						runIndex,
+						itemIndex,
+						nodeCause: node.name,
+					},
+				);
+			}
+			value[key] = fieldValidationResult.newValue;
+		}
+	}
+
+	return validationResult;
+};
+
+export const validateValueAgainstSchema = (
+	node: INode,
+	nodeType: INodeType,
+	parameterValue: string | number | boolean | object | null | undefined,
+	parameterName: string,
+	runIndex: number,
+	itemIndex: number,
+) => {
+	const parameterPath = parameterName.split('.');
+
+	const propertyDescription = nodeType.description.properties.find(
+		(prop) =>
+			parameterPath[0] === prop.name && NodeHelpers.displayParameter(node.parameters, prop, node),
+	);
+
+	if (!propertyDescription) {
+		return parameterValue;
+	}
+
+	let validationResult: ExtendedValidationResult = { valid: true, newValue: parameterValue };
+
+	if (
+		parameterPath.length === 1 &&
+		propertyDescription.validateType &&
+		!propertyDescription.ignoreValidationDuringExecution
+	) {
+		validationResult = validateFieldType(
+			parameterName,
+			parameterValue,
+			propertyDescription.validateType,
+		);
+	} else if (
+		propertyDescription.type === 'resourceMapper' &&
+		parameterPath[1] === 'value' &&
+		typeof parameterValue === 'object'
+	) {
+		validationResult = validateResourceMapperValue(
+			parameterName,
+			parameterValue as { [key: string]: unknown },
+			node,
+			propertyDescription.typeOptions?.resourceMapper?.mode !== 'add',
+		);
+	} else if (['fixedCollection', 'collection'].includes(propertyDescription.type)) {
+		validationResult = validateCollection(
+			node,
+			runIndex,
+			itemIndex,
+			propertyDescription,
+			parameterPath,
+			validationResult,
+		);
+	}
+
+	if (!validationResult.valid) {
+		throw new ExpressionError(
+			`Invalid input for '${
+				validationResult.fieldName
+					? String(validationResult.fieldName)
+					: propertyDescription.displayName
+			}' [item ${itemIndex}]`,
+			{
+				description: validationResult.errorMessage,
+				runIndex,
+				itemIndex,
+				nodeCause: node.name,
+			},
+		);
+	}
+	return validationResult.newValue;
+};
 
 /**
  * Returns the requested resolved (all expressions replaced) node parameters.
@@ -1899,6 +2236,10 @@ export function getNodeParameter(
 		throw new Error(`Could not get parameter "${parameterName}"!`);
 	}
 
+	if (options?.rawExpressions) {
+		return value;
+	}
+
 	let returnData;
 	try {
 		returnData = workflow.expression.getParameterValue(
@@ -1915,7 +2256,8 @@ export function getNodeParameter(
 		);
 		cleanupParameterData(returnData);
 	} catch (e) {
-		if (e instanceof ExpressionError && node.continueOnFail && node.name === 'Set') {
+		if (e instanceof ExpressionError && node.continueOnFail && node.type === 'n8n-nodes-base.set') {
+			// https://linear.app/n8n/issue/PAY-684
 			returnData = [{ name: undefined, value: undefined }];
 		} else {
 			if (e.context) e.context.parameter = parameterName;
@@ -1928,6 +2270,16 @@ export function getNodeParameter(
 	if (options?.extractValue) {
 		returnData = extractValue(returnData, parameterName, node, nodeType);
 	}
+
+	// Validate parameter value if it has a schema defined(RMC) or validateType defined
+	returnData = validateValueAgainstSchema(
+		node,
+		nodeType,
+		returnData,
+		parameterName,
+		runIndex,
+		itemIndex,
+	);
 
 	return returnData;
 }
@@ -1985,7 +2337,7 @@ export function getNodeWebhookUrl(
 		undefined,
 		false,
 	) as boolean;
-	return NodeHelpers.getNodeWebhookUrl(baseUrl, workflow.id!, node, path.toString(), isFullPath);
+	return NodeHelpers.getNodeWebhookUrl(baseUrl, workflow.id, node, path.toString(), isFullPath);
 }
 
 /**
@@ -2019,7 +2371,6 @@ export function getWebhookDescription(
 		return undefined;
 	}
 
-	// eslint-disable-next-line no-restricted-syntax
 	for (const webhookDescription of nodeType.description.webhooks) {
 		if (webhookDescription.name === name) {
 			return webhookDescription;
@@ -2045,7 +2396,10 @@ const getCommonWorkflowFunctions = (
 	getWorkflowStaticData: (type) => workflow.getStaticData(type, node),
 
 	getRestApiUrl: () => additionalData.restApiUrl,
+	getInstanceBaseUrl: () => additionalData.instanceBaseUrl,
 	getTimezone: () => getTimezone(workflow, additionalData),
+
+	prepareOutputData: async (outputData) => [outputData],
 });
 
 const getRequestHelperFunctions = (
@@ -2095,7 +2449,7 @@ const getRequestHelperFunctions = (
 	async requestOAuth1(
 		this: IAllExecuteFunctions,
 		credentialsType: string,
-		requestOptions: OptionsWithUrl | requestPromise.RequestPromiseOptions,
+		requestOptions: OptionsWithUrl | RequestPromiseOptions,
 	): Promise<any> {
 		return requestOAuth1.call(this, credentialsType, requestOptions);
 	},
@@ -2103,7 +2457,7 @@ const getRequestHelperFunctions = (
 	async requestOAuth2(
 		this: IAllExecuteFunctions,
 		credentialsType: string,
-		requestOptions: OptionsWithUri | requestPromise.RequestPromiseOptions,
+		requestOptions: OptionsWithUri | RequestPromiseOptions,
 		oAuth2Options?: IOAuth2Options,
 	): Promise<any> {
 		return requestOAuth2.call(
@@ -2117,6 +2471,72 @@ const getRequestHelperFunctions = (
 	},
 });
 
+const getAllowedPaths = () => {
+	const restrictFileAccessTo = process.env[RESTRICT_FILE_ACCESS_TO];
+	if (!restrictFileAccessTo) {
+		return [];
+	}
+	const allowedPaths = restrictFileAccessTo
+		.split(';')
+		.map((path) => path.trim())
+		.filter((path) => path);
+	return allowedPaths;
+};
+
+function isFilePathBlocked(filePath: string): boolean {
+	const allowedPaths = getAllowedPaths();
+	const resolvedFilePath = path.resolve(filePath);
+	const userFolder = getUserN8nFolderPath();
+	const blockFileAccessToN8nFiles = process.env[BLOCK_FILE_ACCESS_TO_N8N_FILES] !== 'false';
+
+	//if allowed paths are defined, allow access only to those paths
+	if (allowedPaths.length) {
+		for (const path of allowedPaths) {
+			if (resolvedFilePath.startsWith(path)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	//restrict access to .n8n folder and other .env config related paths
+	if (blockFileAccessToN8nFiles) {
+		const restrictedPaths: string[] = [userFolder];
+
+		if (process.env[CONFIG_FILES]) {
+			restrictedPaths.push(...process.env[CONFIG_FILES].split(','));
+		}
+
+		if (process.env[CUSTOM_EXTENSION_ENV]) {
+			const customExtensionFolders = process.env[CUSTOM_EXTENSION_ENV].split(';');
+			restrictedPaths.push(...customExtensionFolders);
+		}
+
+		if (process.env[BINARY_DATA_STORAGE_PATH]) {
+			restrictedPaths.push(process.env[BINARY_DATA_STORAGE_PATH]);
+		}
+
+		if (process.env[UM_EMAIL_TEMPLATES_INVITE]) {
+			restrictedPaths.push(process.env[UM_EMAIL_TEMPLATES_INVITE]);
+		}
+
+		if (process.env[UM_EMAIL_TEMPLATES_PWRESET]) {
+			restrictedPaths.push(process.env[UM_EMAIL_TEMPLATES_PWRESET]);
+		}
+
+		//check if the file path is restricted
+		for (const path of restrictedPaths) {
+			if (resolvedFilePath.startsWith(path)) {
+				return true;
+			}
+		}
+	}
+
+	//path is not restricted
+	return false;
+}
+
 const getFileSystemHelperFunctions = (node: INode): FileSystemHelperFunctions => ({
 	async createReadStream(filePath) {
 		try {
@@ -2125,30 +2545,55 @@ const getFileSystemHelperFunctions = (node: INode): FileSystemHelperFunctions =>
 			throw error.code === 'ENOENT'
 				? new NodeOperationError(node, error, {
 						message: `The file "${String(filePath)}" could not be accessed.`,
+						severity: 'warning',
 				  })
 				: error;
 		}
+		if (isFilePathBlocked(filePath as string)) {
+			const allowedPaths = getAllowedPaths();
+			const message = allowedPaths.length ? ` Allowed paths: ${allowedPaths.join(', ')}` : '';
+			throw new NodeOperationError(node, `Access to the file is not allowed.${message}`, {
+				severity: 'warning',
+			});
+		}
 		return createReadStream(filePath);
+	},
+
+	getStoragePath() {
+		return path.join(getUserN8nFolderPath(), `storage/${node.type}`);
+	},
+
+	async writeContentToFile(filePath, content, flag) {
+		if (isFilePathBlocked(filePath as string)) {
+			throw new NodeOperationError(node, `The file "${String(filePath)}" is not writable.`, {
+				severity: 'warning',
+			});
+		}
+		return fsWriteFile(filePath, content, { encoding: 'binary', flag });
 	},
 });
 
-const getNodeHelperFunctions = ({
-	executionId,
-}: IWorkflowExecuteAdditionalData): NodeHelperFunctions => ({
+const getNodeHelperFunctions = (
+	{ executionId }: IWorkflowExecuteAdditionalData,
+	workflowId: string,
+): NodeHelperFunctions => ({
 	copyBinaryFile: async (filePath, fileName, mimeType) =>
-		copyBinaryFile(executionId!, filePath, fileName, mimeType),
+		copyBinaryFile(workflowId, executionId!, filePath, fileName, mimeType),
 });
 
-const getBinaryHelperFunctions = ({
-	executionId,
-}: IWorkflowExecuteAdditionalData): BinaryHelperFunctions => ({
+const getBinaryHelperFunctions = (
+	{ executionId }: IWorkflowExecuteAdditionalData,
+	workflowId: string,
+): BinaryHelperFunctions => ({
+	getBinaryPath,
 	getBinaryStream,
 	getBinaryMetadata,
-	binaryToBuffer,
+	binaryToBuffer: async (body: Buffer | Readable) =>
+		Container.get(BinaryDataService).toBuffer(body),
 	prepareBinaryData: async (binaryData, filePath, mimeType) =>
-		prepareBinaryData(binaryData, executionId!, filePath, mimeType),
+		prepareBinaryData(binaryData, executionId!, workflowId, filePath, mimeType),
 	setBinaryDataBuffer: async (data, binaryData) =>
-		setBinaryDataBuffer(data, binaryData, executionId!),
+		setBinaryDataBuffer(data, binaryData, workflowId, executionId!),
 	copyBinaryFile: async () => {
 		throw new Error('copyBinaryFile has been removed. Please upgrade this node');
 	},
@@ -2208,7 +2653,7 @@ export function getExecutePollFunctions(
 			helpers: {
 				createDeferredPromise,
 				...getRequestHelperFunctions(workflow, node, additionalData),
-				...getBinaryHelperFunctions(additionalData),
+				...getBinaryHelperFunctions(additionalData, workflow.id),
 				returnJsonArray,
 			},
 		};
@@ -2267,7 +2712,7 @@ export function getExecuteTriggerFunctions(
 			helpers: {
 				createDeferredPromise,
 				...getRequestHelperFunctions(workflow, node, additionalData),
-				...getBinaryHelperFunctions(additionalData),
+				...getBinaryHelperFunctions(additionalData, workflow.id),
 				returnJsonArray,
 			},
 		};
@@ -2332,9 +2777,10 @@ export function getExecuteFunctions(
 						parentWorkflowSettings: workflow.settings,
 					})
 					.then(async (result) =>
-						BinaryDataManager.getInstance().duplicateBinaryData(
-							result,
+						Container.get(BinaryDataService).duplicateBinaryData(
+							workflow.id,
 							additionalData.executionId!,
+							result,
 						),
 					);
 			},
@@ -2404,8 +2850,8 @@ export function getExecuteFunctions(
 				);
 				return dataProxy.getDataProxy();
 			},
-			prepareOutputData: NodeHelpers.prepareOutputData,
-			binaryToBuffer,
+			binaryToBuffer: async (body: Buffer | Readable) =>
+				Container.get(BinaryDataService).toBuffer(body),
 			async putExecutionToWait(waitTill: Date): Promise<void> {
 				runExecutionData.waitTill = waitTill;
 				if (additionalData.setExecutionStatus) {
@@ -2432,7 +2878,6 @@ export function getExecuteFunctions(
 						additionalData.sendMessageToUI(node.name, args);
 					}
 				} catch (error) {
-					// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
 					Logger.warn(`There was a problem sending message to UI: ${error.message}`);
 				}
 			},
@@ -2443,7 +2888,7 @@ export function getExecuteFunctions(
 				createDeferredPromise,
 				...getRequestHelperFunctions(workflow, node, additionalData),
 				...getFileSystemHelperFunctions(node),
-				...getBinaryHelperFunctions(additionalData),
+				...getBinaryHelperFunctions(additionalData, workflow.id),
 				assertBinaryData: (itemIndex, propertyName) =>
 					assertBinaryData(inputData, node, itemIndex, propertyName, 0),
 				getBinaryDataBuffer: async (itemIndex, propertyName) =>
@@ -2453,7 +2898,7 @@ export function getExecuteFunctions(
 				normalizeItems,
 				constructExecutionMetaData,
 			},
-			nodeHelpers: getNodeHelperFunctions(additionalData),
+			nodeHelpers: getNodeHelperFunctions(additionalData, workflow.id),
 		};
 	})(workflow, runExecutionData, connectionInputData, inputData, node) as IExecuteFunctions;
 }
@@ -2585,7 +3030,7 @@ export function getExecuteSingleFunctions(
 			helpers: {
 				createDeferredPromise,
 				...getRequestHelperFunctions(workflow, node, additionalData),
-				...getBinaryHelperFunctions(additionalData),
+				...getBinaryHelperFunctions(additionalData, workflow.id),
 
 				assertBinaryData: (propertyName, inputIndex = 0) =>
 					assertBinaryData(inputData, node, itemIndex, propertyName, inputIndex),
@@ -2599,7 +3044,9 @@ export function getExecuteSingleFunctions(
 export function getCredentialTestFunctions(): ICredentialTestFunctions {
 	return {
 		helpers: {
-			request: requestPromiseWithDefaults,
+			request: async (uriOrObject: string | object, options?: object) => {
+				return proxyRequestToAxios(undefined, undefined, undefined, uriOrObject, options);
+			},
 		},
 	};
 }
@@ -2837,14 +3284,13 @@ export function getExecuteWebhookFunctions(
 					getAdditionalKeys(additionalData, mode, null),
 				),
 			getWebhookName: () => webhookData.webhookDescription.name,
-			prepareOutputData: NodeHelpers.prepareOutputData,
 			helpers: {
 				createDeferredPromise,
 				...getRequestHelperFunctions(workflow, node, additionalData),
-				...getBinaryHelperFunctions(additionalData),
+				...getBinaryHelperFunctions(additionalData, workflow.id),
 				returnJsonArray,
 			},
-			nodeHelpers: getNodeHelperFunctions(additionalData),
+			nodeHelpers: getNodeHelperFunctions(additionalData, workflow.id),
 		};
 	})(workflow, node);
 }

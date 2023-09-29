@@ -9,6 +9,7 @@ import type {
 import { connect, copyInputItems, destroy, execute } from './GenericFunctions';
 
 import snowflake from 'snowflake-sdk';
+import { getResolvables } from '@utils/utilities';
 
 export class Snowflake implements INodeType {
 	description: INodeTypeDescription = {
@@ -65,8 +66,10 @@ export class Snowflake implements INodeType {
 				displayName: 'Query',
 				name: 'query',
 				type: 'string',
+				noDataExpression: true,
 				typeOptions: {
 					editor: 'sqlEditor',
+					rows: 5,
 				},
 				displayOptions: {
 					show: {
@@ -178,7 +181,12 @@ export class Snowflake implements INodeType {
 			// ----------------------------------
 
 			for (let i = 0; i < items.length; i++) {
-				const query = this.getNodeParameter('query', i) as string;
+				let query = this.getNodeParameter('query', i) as string;
+
+				for (const resolvable of getResolvables(query)) {
+					query = query.replace(resolvable, this.evaluateExpression(resolvable, i) as string);
+				}
+
 				responseData = await execute(connection, query, []);
 				const executionData = this.helpers.constructExecutionMetaData(
 					this.helpers.returnJsonArray(responseData as IDataObject[]),
@@ -243,6 +251,6 @@ export class Snowflake implements INodeType {
 		}
 
 		await destroy(connection);
-		return this.prepareOutputData(returnData);
+		return [returnData];
 	}
 }

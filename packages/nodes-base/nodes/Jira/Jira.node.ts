@@ -1,5 +1,5 @@
 import type { Readable } from 'stream';
-import mergeWith from 'lodash.mergewith';
+import mergeWith from 'lodash/mergeWith';
 
 import type {
 	IBinaryKeyData,
@@ -793,7 +793,6 @@ export class Jira implements INodeType {
 							);
 						}
 						const executionData = this.helpers.constructExecutionMetaData(
-							// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 							this.helpers.returnJsonArray(simplifyIssueOutput(responseData)),
 							{ itemData: { item: i } },
 						);
@@ -1059,7 +1058,7 @@ export class Jira implements INodeType {
 
 					let uploadData: Buffer | Readable;
 					if (binaryData.id) {
-						uploadData = this.helpers.getBinaryStream(binaryData.id);
+						uploadData = await this.helpers.getBinaryStream(binaryData.id);
 					} else {
 						uploadData = Buffer.from(binaryData.data, BINARY_ENCODING);
 					}
@@ -1500,6 +1499,6 @@ export class Jira implements INodeType {
 			}
 		}
 
-		return this.prepareOutputData(returnData);
+		return [returnData];
 	}
 }

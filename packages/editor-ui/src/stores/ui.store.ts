@@ -5,7 +5,6 @@ import {
 } from '@/api/workflow-webhooks';
 import {
 	ABOUT_MODAL_KEY,
-	ASK_AI_MODAL_KEY,
 	CHANGE_PASSWORD_MODAL_KEY,
 	COMMUNITY_PACKAGE_CONFIRM_MODAL_KEY,
 	COMMUNITY_PACKAGE_INSTALL_MODAL_KEY,
@@ -15,11 +14,11 @@ import {
 	CREDENTIAL_SELECT_MODAL_KEY,
 	DELETE_USER_MODAL_KEY,
 	DUPLICATE_MODAL_KEY,
-	EXECUTIONS_MODAL_KEY,
 	FAKE_DOOR_FEATURES,
 	IMPORT_CURL_MODAL_KEY,
 	INVITE_USER_MODAL_KEY,
 	LOG_STREAM_MODAL_KEY,
+	MFA_SETUP_MODAL_KEY,
 	ONBOARDING_CALL_SIGNUP_MODAL_KEY,
 	PERSONALIZATION_MODAL_KEY,
 	STORES,
@@ -30,9 +29,13 @@ import {
 	WORKFLOW_ACTIVE_MODAL_KEY,
 	WORKFLOW_SETTINGS_MODAL_KEY,
 	WORKFLOW_SHARE_MODAL_KEY,
-	USER_ACTIVATION_SURVEY_MODAL,
+	EXTERNAL_SECRETS_PROVIDER_MODAL_KEY,
+	SOURCE_CONTROL_PUSH_MODAL_KEY,
+	SOURCE_CONTROL_PULL_MODAL_KEY,
+	DEBUG_PAYWALL_MODAL_KEY,
 } from '@/constants';
 import type {
+	CloudUpdateLinkSourceType,
 	CurlToJSONResponse,
 	IFakeDoorLocation,
 	IMenuItem,
@@ -40,17 +43,23 @@ import type {
 	IOnboardingCallPrompt,
 	IUser,
 	UIState,
+	UTMCampaign,
 	XYPosition,
+	Modals,
+	NewCredentialsModal,
 } from '@/Interface';
-import Vue from 'vue';
 import { defineStore } from 'pinia';
-import { useRootStore } from './n8nRoot.store';
+import { useRootStore } from '@/stores/n8nRoot.store';
 import { getCurlToJson } from '@/api/curlHelper';
-import { useWorkflowsStore } from './workflows.store';
-import { useSettingsStore } from './settings.store';
-import { useUsageStore } from './usage.store';
+import { useWorkflowsStore } from '@/stores/workflows.store';
+import { useSettingsStore } from '@/stores/settings.store';
+import { useCloudPlanStore } from '@/stores/cloudPlan.store';
 import type { BaseTextKey } from '@/plugins/i18n';
 import { i18n as locale } from '@/plugins/i18n';
+import { useTelemetryStore } from '@/stores/telemetry.store';
+import { getStyleTokenValue } from '@/utils/htmlUtils';
+import { dismissBannerPermanently } from '@/api/ui';
+import type { BannerName } from 'n8n-workflow';
 
 export const useUIStore = defineStore(STORES.UI, {
 	state: (): UIState => ({
@@ -58,9 +67,6 @@ export const useUIStore = defineStore(STORES.UI, {
 		activeCredentialType: null,
 		modals: {
 			[ABOUT_MODAL_KEY]: {
-				open: false,
-			},
-			[ASK_AI_MODAL_KEY]: {
 				open: false,
 			},
 			[CHANGE_PASSWORD_MODAL_KEY]: {
@@ -100,9 +106,6 @@ export const useUIStore = defineStore(STORES.UI, {
 			[WORKFLOW_SETTINGS_MODAL_KEY]: {
 				open: false,
 			},
-			[EXECUTIONS_MODAL_KEY]: {
-				open: false,
-			},
 			[WORKFLOW_SHARE_MODAL_KEY]: {
 				open: false,
 			},
@@ -122,6 +125,9 @@ export const useUIStore = defineStore(STORES.UI, {
 				curlCommand: '',
 				httpNodeParameters: '',
 			},
+			[MFA_SETUP_MODAL_KEY]: {
+				open: false,
+			},
 			[LOG_STREAM_MODAL_KEY]: {
 				open: false,
 				data: undefined,
@@ -132,7 +138,16 @@ export const useUIStore = defineStore(STORES.UI, {
 				activeId: null,
 				showAuthSelector: false,
 			},
-			[USER_ACTIVATION_SURVEY_MODAL]: {
+			[SOURCE_CONTROL_PUSH_MODAL_KEY]: {
+				open: false,
+			},
+			[SOURCE_CONTROL_PULL_MODAL_KEY]: {
+				open: false,
+			},
+			[EXTERNAL_SECRETS_PROVIDER_MODAL_KEY]: {
+				open: false,
+			},
+			[DEBUG_PAYWALL_MODAL_KEY]: {
 				open: false,
 			},
 		},
@@ -142,16 +157,6 @@ export const useUIStore = defineStore(STORES.UI, {
 		currentView: '',
 		mainPanelPosition: 0.5,
 		fakeDoorFeatures: [
-			{
-				id: FAKE_DOOR_FEATURES.ENVIRONMENTS,
-				featureName: 'fakeDoor.settings.environments.name',
-				icon: 'server',
-				infoText: 'fakeDoor.settings.environments.infoText',
-				actionBoxTitle: 'fakeDoor.settings.environments.actionBox.title',
-				actionBoxDescription: 'fakeDoor.settings.environments.actionBox.description',
-				linkURL: 'https://n8n-community.typeform.com/to/l7QOrERN#f=environments',
-				uiLocations: ['settings'],
-			},
 			{
 				id: FAKE_DOOR_FEATURES.SSO,
 				featureName: 'fakeDoor.settings.sso.name',
@@ -179,6 +184,8 @@ export const useUIStore = defineStore(STORES.UI, {
 		nodeViewInitialized: false,
 		addFirstStepOnLoad: false,
 		executionSidebarAutoRefresh: true,
+		bannersHeight: 0,
+		bannerStack: [],
 	}),
 	getters: {
 		contextBasedTranslationKeys() {
@@ -194,6 +201,11 @@ export const useUIStore = defineStore(STORES.UI, {
 
 			return {
 				upgradeLinkUrl: `contextual.upgradeLinkUrl${contextKey}`,
+				feature: {
+					unavailable: {
+						title: `contextual.feature.unavailable.title${contextKey}`,
+					},
+				},
 				credentials: {
 					sharing: {
 						unavailable: {
@@ -280,7 +292,9 @@ export const useUIStore = defineStore(STORES.UI, {
 				this.fakeDoorFeatures.find((fakeDoor) => fakeDoor.id.toString() === id);
 		},
 		isReadOnlyView(): boolean {
-			return ![VIEWS.WORKFLOW, VIEWS.NEW_WORKFLOW].includes(this.currentView as VIEWS);
+			return ![VIEWS.WORKFLOW, VIEWS.NEW_WORKFLOW, VIEWS.EXECUTION_DEBUG].includes(
+				this.currentView as VIEWS,
+			);
 		},
 		isNodeView(): boolean {
 			return [
@@ -316,13 +330,12 @@ export const useUIStore = defineStore(STORES.UI, {
 		},
 		upgradeLinkUrl() {
 			return (source: string, utm_campaign: string): string => {
-				const usageStore = useUsageStore();
 				const linkUrlTranslationKey = this.contextBasedTranslationKeys
 					.upgradeLinkUrl as BaseTextKey;
 				let linkUrl = locale.baseText(linkUrlTranslationKey);
 
 				if (linkUrlTranslationKey.endsWith('.upgradeLinkUrl')) {
-					linkUrl = `${usageStore.viewPlansUrl}&source=${source}`;
+					linkUrl = `${linkUrl}?ref=${source}`;
 				} else if (linkUrlTranslationKey.endsWith('.desktop')) {
 					linkUrl = `${linkUrl}&utm_campaign=${utm_campaign || source}`;
 				}
@@ -330,38 +343,62 @@ export const useUIStore = defineStore(STORES.UI, {
 				return linkUrl;
 			};
 		},
+		headerHeight() {
+			return Number(getStyleTokenValue('--header-height'));
+		},
 	},
 	actions: {
-		setMode(name: string, mode: string): void {
-			Vue.set(this.modals[name], 'mode', mode);
+		setMode(name: keyof Modals, mode: string): void {
+			this.modals[name] = {
+				...this.modals[name],
+				mode,
+			};
 		},
-		setActiveId(name: string, id: string): void {
-			Vue.set(this.modals[name], 'activeId', id);
+		setActiveId(name: keyof Modals, activeId: string): void {
+			this.modals[name] = {
+				...this.modals[name],
+				activeId,
+			};
 		},
-		setShowAuthSelector(name: string, show: boolean) {
-			Vue.set(this.modals[name], 'showAuthSelector', show);
+		setShowAuthSelector(name: keyof Modals, showAuthSelector: boolean) {
+			this.modals[name] = {
+				...this.modals[name],
+				showAuthSelector,
+			} as NewCredentialsModal;
 		},
-		setModalData(payload: { name: string; data: Record<string, unknown> }) {
-			Vue.set(this.modals[payload.name], 'data', payload.data);
+		setModalData(payload: { name: keyof Modals; data: Record<string, unknown> }) {
+			this.modals[payload.name] = {
+				...this.modals[payload.name],
+				data: payload.data,
+			};
 		},
-		openModal(name: string): void {
-			Vue.set(this.modals[name], 'open', true);
-			this.modalStack = [name].concat(this.modalStack);
+		openModal(name: keyof Modals): void {
+			this.modals[name] = {
+				...this.modals[name],
+				open: true,
+			};
+			this.modalStack = [name].concat(this.modalStack) as string[];
 		},
-		openModalWithData(payload: { name: string; data: Record<string, unknown> }): void {
+		openModalWithData(payload: { name: keyof Modals; data: Record<string, unknown> }): void {
 			this.setModalData(payload);
 			this.openModal(payload.name);
 		},
-		closeModal(name: string): void {
-			Vue.set(this.modals[name], 'open', false);
+		closeModal(name: keyof Modals): void {
+			this.modals[name] = {
+				...this.modals[name],
+				open: false,
+			};
 			this.modalStack = this.modalStack.filter((openModalName: string) => {
 				return name !== openModalName;
 			});
 		},
 		closeAllModals(): void {
-			Object.keys(this.modals).forEach((name: string) => {
+			Object.keys(this.modals).forEach((name) => {
 				if (this.modals[name].open) {
-					Vue.set(this.modals[name], 'open', false);
+					this.modals[name] = {
+						...this.modals[name],
+						open: false,
+					};
 				}
 			});
 			this.modalStack = [];
@@ -385,10 +422,16 @@ export const useUIStore = defineStore(STORES.UI, {
 			};
 		},
 		setDraggableStickyPos(position: XYPosition): void {
-			Vue.set(this.draggable, 'stickyPosition', position);
+			this.draggable = {
+				...this.draggable,
+				stickyPosition: position,
+			};
 		},
 		setDraggableCanDrop(canDrop: boolean): void {
-			Vue.set(this.draggable, 'canDrop', canDrop);
+			this.draggable = {
+				...this.draggable,
+				canDrop,
+			};
 		},
 		openDeleteUserModal(id: string): void {
 			this.setActiveId(DELETE_USER_MODAL_KEY, id);
@@ -410,21 +453,21 @@ export const useUIStore = defineStore(STORES.UI, {
 			const instanceId = rootStore.instanceId;
 			// TODO: current USER
 			const currentUser = {} as IUser;
-			return await fetchNextOnboardingPrompt(instanceId, currentUser);
+			return fetchNextOnboardingPrompt(instanceId, currentUser);
 		},
 		async applyForOnboardingCall(email: string): Promise<string> {
 			const rootStore = useRootStore();
 			const instanceId = rootStore.instanceId;
 			// TODO: current USER
 			const currentUser = {} as IUser;
-			return await applyForOnboardingCall(instanceId, currentUser, email);
+			return applyForOnboardingCall(instanceId, currentUser, email);
 		},
 		async submitContactEmail(email: string, agree: boolean): Promise<string> {
 			const rootStore = useRootStore();
 			const instanceId = rootStore.instanceId;
 			// TODO: current USER
 			const currentUser = {} as IUser;
-			return await submitEmailOnSignup(instanceId, currentUser, email || currentUser.email, agree);
+			return submitEmailOnSignup(instanceId, currentUser, email || currentUser.email, agree);
 		},
 		openCommunityPackageUninstallConfirmModal(packageName: string) {
 			this.setActiveId(COMMUNITY_PACKAGE_CONFIRM_MODAL_KEY, packageName);
@@ -460,27 +503,78 @@ export const useUIStore = defineStore(STORES.UI, {
 			}
 		},
 		resetSelectedNodes(): void {
-			Vue.set(this, 'selectedNodes', []);
+			this.selectedNodes = [];
 		},
 		addSidebarMenuItems(menuItems: IMenuItem[]) {
 			const updated = this.sidebarMenuItems.concat(menuItems);
-			Vue.set(this, 'sidebarMenuItems', updated);
+			this.sidebarMenuItems = updated;
 		},
 		setCurlCommand(payload: { name: string; command: string }): void {
-			Vue.set(this.modals[payload.name], 'curlCommand', payload.command);
+			this.modals[payload.name] = {
+				...this.modals[payload.name],
+				curlCommand: payload.command,
+			};
 		},
 		setHttpNodeParameters(payload: { name: string; parameters: string }): void {
-			Vue.set(this.modals[payload.name], 'httpNodeParameters', payload.parameters);
+			this.modals[payload.name] = {
+				...this.modals[payload.name],
+				httpNodeParameters: payload.parameters,
+			};
 		},
 		toggleSidebarMenuCollapse(): void {
 			this.sidebarMenuCollapsed = !this.sidebarMenuCollapsed;
 		},
 		async getCurlToJson(curlCommand: string): Promise<CurlToJSONResponse> {
 			const rootStore = useRootStore();
-			return await getCurlToJson(rootStore.getRestApiContext, curlCommand);
+			return getCurlToJson(rootStore.getRestApiContext, curlCommand);
 		},
-		goToUpgrade(source: string, utm_campaign: string): void {
-			window.open(this.upgradeLinkUrl(source, utm_campaign), '_blank');
+		goToUpgrade(
+			source: CloudUpdateLinkSourceType,
+			utm_campaign: UTMCampaign,
+			mode: 'open' | 'redirect' = 'open',
+		): void {
+			const { usageLeft, trialDaysLeft, userIsTrialing } = useCloudPlanStore();
+			const { executionsLeft, workflowsLeft } = usageLeft;
+			useTelemetryStore().track('User clicked upgrade CTA', {
+				source,
+				isTrial: userIsTrialing,
+				deploymentType: useSettingsStore().deploymentType,
+				trialDaysLeft,
+				executionsLeft,
+				workflowsLeft,
+			});
+			if (mode === 'open') {
+				window.open(this.upgradeLinkUrl(source, utm_campaign), '_blank');
+			} else {
+				location.href = this.upgradeLinkUrl(source, utm_campaign);
+			}
+		},
+		async dismissBanner(
+			name: BannerName,
+			type: 'temporary' | 'permanent' = 'temporary',
+		): Promise<void> {
+			if (type === 'permanent') {
+				await dismissBannerPermanently(useRootStore().getRestApiContext, {
+					bannerName: name,
+					dismissedBanners: useSettingsStore().permanentlyDismissedBanners,
+				});
+				this.removeBannerFromStack(name);
+				return;
+			}
+			this.removeBannerFromStack(name);
+		},
+		updateBannersHeight(newHeight: number): void {
+			this.bannersHeight = newHeight;
+		},
+		pushBannerToStack(name: BannerName) {
+			if (this.bannerStack.includes(name)) return;
+			this.bannerStack.push(name);
+		},
+		removeBannerFromStack(name: BannerName) {
+			this.bannerStack = this.bannerStack.filter((bannerName) => bannerName !== name);
+		},
+		clearBannerStack() {
+			this.bannerStack = [];
 		},
 	},
 });
