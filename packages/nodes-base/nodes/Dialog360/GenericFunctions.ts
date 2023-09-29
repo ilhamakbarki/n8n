@@ -1,29 +1,34 @@
-import {
-	OptionsWithUrl,
-} from 'request';
-
-import {
+import type {
 	IExecuteFunctions,
 	IExecuteSingleFunctions,
-	IHookFunctions,
 	ILoadOptionsFunctions,
-} from 'n8n-core';
-
-import {
+	IHookFunctions,
 	IDataObject,
-	NodeApiError,
 } from 'n8n-workflow';
 
-export async function dialogApiRequest(this: IExecuteFunctions | IExecuteSingleFunctions | ILoadOptionsFunctions | IHookFunctions, method: string, resource: string, apikey: string, body: any = {}, qs: IDataObject = {}, uri?: string, option: IDataObject = {}): Promise<any> { // tslint:disable-line:no-any
+import { NodeApiError } from 'n8n-workflow';
+import type { OptionsWithUrl } from 'request';
+
+export async function dialogApiRequest(
+	this: IExecuteFunctions | IExecuteSingleFunctions | ILoadOptionsFunctions | IHookFunctions,
+	method: string,
+	resource: string,
+	apikey: string,
+	body: any = {},
+	qs: IDataObject = {},
+	uri?: string,
+	option: IDataObject = {},
+): Promise<any> {
+	// tslint:disable-line:no-any
 
 	let options: OptionsWithUrl = {
 		method,
 		body,
 		qs,
-		url: uri || `https://waba.360dialog.io/${resource}`,
+		url: uri ?? `https://waba.360dialog.io/${resource}`,
 		json: true,
-		headers : {
-			"D360-API-KEY": apikey,
+		headers: {
+			'D360-API-KEY': apikey,
 		},
 	};
 

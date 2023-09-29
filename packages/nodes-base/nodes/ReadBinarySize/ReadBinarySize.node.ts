@@ -1,13 +1,10 @@
-import {
-	IExecuteFunctions,
-} from 'n8n-core';
-import {
-	IDataObject,
-	INodeExecutionData,
+import type {
 	INodeType,
 	INodeTypeDescription,
-	NodeOperationError,
+	IExecuteFunctions,
+	INodeExecutionData,
 } from 'n8n-workflow';
+import { NodeOperationError } from 'n8n-workflow';
 
 export class ReadBinarySize implements INodeType {
 	description: INodeTypeDescription = {
@@ -40,8 +37,8 @@ export class ReadBinarySize implements INodeType {
 				default: {},
 				options: [
 					{
-						name: 'typeMemory',
 						displayName: 'Types of Memory',
+						name: 'typeMemory',
 						description: 'Types of various Units of Memory',
 						type: 'options',
 						default: 'Byte',
@@ -82,58 +79,56 @@ export class ReadBinarySize implements INodeType {
 								name: '9. Yottabyte',
 								value: 'Yottabyte',
 							},
-						]
-					}
-				]
-			}
+						],
+					},
+				],
+			},
 		],
 	};
 
-
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
-
 		const items = this.getInputData();
 
 		const returnData: INodeExecutionData[] = [];
 		const length = items.length;
 		let item: INodeExecutionData;
 
-		const additionalFields = this.getNodeParameter('additionalFields', 0) as IDataObject;
-		let typeMemory = 'Byte'
-		var devide = 1
+		const additionalFields = this.getNodeParameter('additionalFields', 0);
+		let typeMemory = 'Byte';
+		let devide = 1;
 		if (typeof additionalFields.typeMemory !== 'undefined') {
-			typeMemory = additionalFields.typeMemory as string
+			typeMemory = additionalFields.typeMemory as string;
 			switch (typeMemory) {
 				case 'Kilobyte': {
-					devide = 2 ** 10
+					devide = 2 ** 10;
 					break;
 				}
 				case 'Megabyte': {
-					devide = 1024 ** 2
+					devide = 1024 ** 2;
 					break;
 				}
 				case 'Gigabyte': {
-					devide = 1024 ** 3
+					devide = 1024 ** 3;
 					break;
 				}
 				case 'Terabyte': {
-					devide = 1024 ** 4
+					devide = 1024 ** 4;
 					break;
 				}
 				case 'Petabyte': {
-					devide = 1024 ** 5
+					devide = 1024 ** 5;
 					break;
 				}
 				case 'Exabyte': {
-					devide = 1024 ** 6
+					devide = 1024 ** 6;
 					break;
 				}
 				case 'Zettabyte': {
-					devide = 1024 ** 7
+					devide = 1024 ** 7;
 					break;
 				}
 				case 'Yottabyte': {
-					devide = 1024 ** 8
+					devide = 1024 ** 8;
 					break;
 				}
 			}
@@ -141,15 +136,23 @@ export class ReadBinarySize implements INodeType {
 
 		for (let itemIndex = 0; itemIndex < length; itemIndex++) {
 			try {
-				const dataPropertyName = this.getNodeParameter('dataPropertyName', itemIndex) as string;
+				const dataPropertyName = this.getNodeParameter('dataPropertyName', itemIndex);
 				item = items[itemIndex];
 
 				if (item.binary === undefined) {
-					throw new NodeOperationError(this.getNode(), 'No binary data set. So file can not be read!', { itemIndex });
+					throw new NodeOperationError(
+						this.getNode(),
+						'No binary data set. So file can not be read!',
+						{ itemIndex },
+					);
 				}
 
 				if (item.binary[dataPropertyName] === undefined) {
-					throw new NodeOperationError(this.getNode(), `The binary property "${dataPropertyName}" does not exist. So no file can be read!`, { itemIndex });
+					throw new NodeOperationError(
+						this.getNode(),
+						`The binary property "${dataPropertyName}" does not exist. So no file can be read!`,
+						{ itemIndex },
+					);
 				}
 
 				const newItem: INodeExecutionData = {
@@ -159,13 +162,15 @@ export class ReadBinarySize implements INodeType {
 					},
 				};
 				Object.assign(newItem.json, item.json);
-				const binaryDataBuffer = await this.helpers.getBinaryDataBuffer(itemIndex, dataPropertyName);
+				const binaryDataBuffer = await this.helpers.getBinaryDataBuffer(
+					itemIndex,
+					dataPropertyName,
+				);
 
-				(newItem.json as IDataObject).length = binaryDataBuffer.length / devide;
-				(newItem.json as IDataObject).units = typeMemory;
+				newItem.json.length = binaryDataBuffer.length / devide;
+				newItem.json.units = typeMemory;
 
 				returnData.push(newItem);
-
 			} catch (error) {
 				if (this.continueOnFail()) {
 					returnData.push({
@@ -183,5 +188,4 @@ export class ReadBinarySize implements INodeType {
 		}
 		return this.prepareOutputData(returnData);
 	}
-
 }
