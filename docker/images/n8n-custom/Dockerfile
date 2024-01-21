@@ -24,6 +24,8 @@ RUN NODE_ENV=production pnpm --filter=n8n --prod --no-optional deploy /compiled
 FROM n8nio/base:${NODE_VERSION}
 ENV NODE_ENV=production
 
+RUN apk --update add imagemagick curl
+
 ARG N8N_RELEASE_TYPE=dev
 ENV N8N_RELEASE_TYPE=${N8N_RELEASE_TYPE}
 
