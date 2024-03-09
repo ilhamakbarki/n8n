@@ -4,14 +4,15 @@ import type {
 	ILoadOptionsFunctions,
 	IHookFunctions,
 	IDataObject,
+	IHttpRequestOptions,
+	IHttpRequestMethods,
 } from 'n8n-workflow';
 
 import { NodeApiError } from 'n8n-workflow';
-import type { OptionsWithUrl } from 'request';
 
 export async function dialogApiRequest(
 	this: IExecuteFunctions | IExecuteSingleFunctions | ILoadOptionsFunctions | IHookFunctions,
-	method: string,
+	method: IHttpRequestMethods,
 	resource: string,
 	apikey: string,
 	body: any = {},
@@ -21,7 +22,7 @@ export async function dialogApiRequest(
 ): Promise<any> {
 	// tslint:disable-line:no-any
 
-	let options: OptionsWithUrl = {
+	let options: IHttpRequestOptions = {
 		method,
 		body,
 		qs,
@@ -43,7 +44,7 @@ export async function dialogApiRequest(
 			delete options.qs;
 		}
 		//@ts-ignore
-		return await this.helpers.request(options);
+		return await this.helpers.httpRequest(options);
 	} catch (error) {
 		throw new NodeApiError(this.getNode(), error);
 	}

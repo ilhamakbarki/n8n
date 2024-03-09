@@ -7,8 +7,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable prettier/prettier */
 
-const { PolyAES } = require('poly-crypto');
-
 import type {
 	IDataObject,
 	IExecuteFunctions,
@@ -19,6 +17,7 @@ import type {
 import { NodeOperationError } from 'n8n-workflow';
 
 import { encryptDescription, decryptDescription } from './EncryptionDescription';
+import * as generic from './GenericFunctions';
 
 export class Encryption implements INodeType {
 	description: INodeTypeDescription = {
@@ -59,8 +58,7 @@ export class Encryption implements INodeType {
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
-		const hexKey: string = '6f4a42fdfda6feaa4b5465334a9dbaa953be5d1e3206ed022c4119958188ef47';
-		const chiper = PolyAES.withKey(hexKey);
+		const hexKey: string = '6f4a42fdfda6feaa4b5465334a9dbaa9';
 		const items = this.getInputData();
 		const returnData: IDataObject[] = [];
 		const length = items.length;
@@ -73,7 +71,7 @@ export class Encryption implements INodeType {
 					const json = JSON.parse(text);
 					const keys = Object.keys(json);
 					for (const d of keys) {
-						json[d] = chiper.encrypt(json[d]);
+						json[d] = generic.encrypt(json[d], hexKey);
 					}
 					responseData = json;
 				} else if (resource === 'decrypt') {
@@ -81,7 +79,7 @@ export class Encryption implements INodeType {
 					const json = JSON.parse(text);
 					const keys = Object.keys(json);
 					for (const d of keys) {
-						const plain_text = chiper.decrypt(json[d]);
+						const plain_text = generic.decrypt(json[d], hexKey);
 						if (typeof plain_text === 'string') {
 							json[d] = plain_text;
 						} else {

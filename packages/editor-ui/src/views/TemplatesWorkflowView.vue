@@ -106,9 +106,9 @@ export default defineComponent({
 	watch: {
 		template(template: ITemplatesWorkflowFull) {
 			if (template) {
-				setPageTitle(`n8n - Template template: ${template.name}`);
+				setPageTitle(`Webhooks - Template template: ${template.name}`);
 			} else {
-				setPageTitle('n8n - Templates');
+				setPageTitle('Webhooks - Templates');
 			}
 		},
 	},
