@@ -4,16 +4,23 @@ import type {
 	IExecuteFunctions,
 	INode,
 	INodeExecutionData,
+	ValidationResult,
 } from 'n8n-workflow';
-import { deepCopy, NodeOperationError, jsonParse, validateFieldType } from 'n8n-workflow';
+import {
+	ApplicationError,
+	NodeOperationError,
+	deepCopy,
+	jsonParse,
+	validateFieldType,
+} from 'n8n-workflow';
 
-import set from 'lodash/set';
 import get from 'lodash/get';
+import set from 'lodash/set';
 import unset from 'lodash/unset';
 
-import type { SetNodeOptions, SetField } from './interfaces';
+import { getResolvables, sanitazeDataPathKey } from '../../../../utils/utilities';
+import type { SetNodeOptions } from './interfaces';
 import { INCLUDE } from './interfaces';
-import { getResolvables } from '../../../../utils/utilities';
 
 const configureFieldHelper = (dotNotation?: boolean) => {
 	if (dotNotation !== false) {
@@ -31,13 +38,13 @@ const configureFieldHelper = (dotNotation?: boolean) => {
 	} else {
 		return {
 			set: (item: IDataObject, key: string, value: IDataObject) => {
-				item[key] = value;
+				item[sanitazeDataPathKey(item, key)] = value;
 			},
 			get: (item: IDataObject, key: string) => {
-				return item[key];
+				return item[sanitazeDataPathKey(item, key)];
 			},
 			unset: (item: IDataObject, key: string) => {
-				delete item[key];
+				delete item[sanitazeDataPathKey(item, key)];
 			},
 		};
 	}
@@ -52,7 +59,7 @@ export function composeReturnItem(
 ) {
 	const newItem: INodeExecutionData = {
 		json: {},
-		pairedItem: inputItem.pairedItem,
+		pairedItem: { item: itemIndex },
 	};
 
 	if (options.includeBinary && inputItem.binary !== undefined) {
@@ -101,7 +108,9 @@ export function composeReturnItem(
 		case INCLUDE.NONE:
 			break;
 		default:
-			throw new Error(`The include option "${options.include}" is not known!`);
+			throw new ApplicationError(`The include option "${options.include}" is not known!`, {
+				level: 'warning',
+			});
 	}
 
 	for (const key of Object.keys(newFields)) {
@@ -155,31 +164,45 @@ export const parseJsonParameter = (
 };
 
 export const validateEntry = (
-	entry: SetField,
+	name: string,
+	type: FieldType,
+	value: unknown,
 	node: INode,
 	itemIndex: number,
 	ignoreErrors = false,
+	nodeVersion?: number,
 ) => {
-	let entryValue = entry[entry.type];
-	const name = entry.name;
-	const entryType = entry.type.replace('Value', '') as FieldType;
+	if (nodeVersion && nodeVersion >= 3.2 && (value === undefined || value === null)) {
+		return { name, value: null };
+	}
 
-	if (entryType === 'string') {
-		if (typeof entryValue === 'object') {
-			entryValue = JSON.stringify(entryValue);
+	const description = `To fix the error try to change the type for the field "${name}" or activate the option “Ignore Type Conversion Errors” to apply a less strict type validation`;
+
+	if (type === 'string') {
+		if (nodeVersion && nodeVersion > 3 && (value === undefined || value === null)) {
+			if (ignoreErrors) {
+				return { name, value: null };
+			} else {
+				throw new NodeOperationError(
+					node,
+					`'${name}' expects a ${type} but we got '${String(value)}' [item ${itemIndex}]`,
+					{ description },
+				);
+			}
+		} else if (typeof value === 'object') {
+			value = JSON.stringify(value);
 		} else {
-			entryValue = String(entryValue);
+			value = String(value);
 		}
 	}
 
-	const validationResult = validateFieldType(name, entryValue, entryType);
+	const validationResult = validateFieldType(name, value, type);
 
 	if (!validationResult.valid) {
 		if (ignoreErrors) {
-			validationResult.newValue = entry[entry.type];
+			validationResult.newValue = value as ValidationResult['newValue'];
 		} else {
 			const message = `${validationResult.errorMessage} [item ${itemIndex}]`;
-			const description = `To fix the error try to change the type for the field "${name}" or activate the option “Ignore Type Conversion Errors” to apply a less strict type validation`;
 			throw new NodeOperationError(node, message, {
 				itemIndex,
 				description,
@@ -187,9 +210,10 @@ export const validateEntry = (
 		}
 	}
 
-	const value = validationResult.newValue === undefined ? null : validationResult.newValue;
-
-	return { name, value };
+	return {
+		name,
+		value: validationResult.newValue === undefined ? null : validationResult.newValue,
+	};
 };
 
 export function resolveRawData(this: IExecuteFunctions, rawData: string, i: number) {

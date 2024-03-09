@@ -1,44 +1,55 @@
 <template>
-	<div ref="htmlEditor"></div>
+	<div :class="$style.editor">
+		<div ref="htmlEditor"></div>
+		<slot name="suffix" />
+	</div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
-import { format } from 'prettier';
-import htmlParser from 'prettier/plugins/html';
-import cssParser from 'prettier/plugins/postcss';
-import jsParser from 'prettier/plugins/babel';
-import * as estree from 'prettier/plugins/estree';
-import { htmlLanguage, autoCloseTags, html } from 'codemirror-lang-html-n8n';
-import { autocompletion } from '@codemirror/autocomplete';
-import { indentWithTab, insertNewlineAndIndent, history, redo } from '@codemirror/commands';
+import { history } from '@codemirror/commands';
 import {
+	LanguageSupport,
 	bracketMatching,
 	ensureSyntaxTree,
 	foldGutter,
 	indentOnInput,
-	LanguageSupport,
 } from '@codemirror/language';
 import type { Extension } from '@codemirror/state';
-import { EditorState } from '@codemirror/state';
+import { EditorState, Prec } from '@codemirror/state';
 import type { ViewUpdate } from '@codemirror/view';
 import {
-	dropCursor,
 	EditorView,
+	dropCursor,
 	highlightActiveLine,
 	highlightActiveLineGutter,
 	keymap,
 	lineNumbers,
 } from '@codemirror/view';
+import { autoCloseTags, html, htmlLanguage } from 'codemirror-lang-html-n8n';
+import { format } from 'prettier';
+import jsParser from 'prettier/plugins/babel';
+import * as estree from 'prettier/plugins/estree';
+import htmlParser from 'prettier/plugins/html';
+import cssParser from 'prettier/plugins/postcss';
+import { defineComponent } from 'vue';
 
+import { htmlEditorEventBus } from '@/event-bus';
+import { expressionManager } from '@/mixins/expressionManager';
 import { n8nCompletionSources } from '@/plugins/codemirror/completions/addCompletions';
 import { expressionInputHandler } from '@/plugins/codemirror/inputHandlers/expression.inputHandler';
 import { highlighter } from '@/plugins/codemirror/resolvableHighlighter';
-import { htmlEditorEventBus } from '@/event-bus';
-import { expressionManager } from '@/mixins/expressionManager';
-import { theme } from './theme';
-import { nonTakenRanges } from './utils';
+import { codeNodeEditorTheme } from '../CodeNodeEditor/theme';
 import type { Range, Section } from './types';
+import { nonTakenRanges } from './utils';
+import { isEqual } from 'lodash-es';
+import {
+	autocompleteKeyMap,
+	enterKeyMap,
+	historyKeyMap,
+	tabKeyMap,
+} from '@/plugins/codemirror/keymap';
+import { n8nAutocompletion } from '@/plugins/codemirror/n8nLang';
+import { completionStatus } from '@codemirror/autocomplete';
 
 export default defineComponent({
 	name: 'HtmlEditor',
@@ -52,9 +63,13 @@ export default defineComponent({
 			type: Boolean,
 			default: false,
 		},
+		fillParent: {
+			type: Boolean,
+			default: false,
+		},
 		rows: {
 			type: Number,
-			default: -1,
+			default: 4,
 		},
 		disableExpressionColoring: {
 			type: Boolean,
@@ -67,8 +82,19 @@ export default defineComponent({
 	},
 	data() {
 		return {
-			editor: {} as EditorView,
+			editor: null as EditorView | null,
+			editorState: null as EditorState | null,
 		};
+	},
+	watch: {
+		displayableSegments(segments, newSegments) {
+			if (isEqual(segments, newSegments)) return;
+
+			highlighter.removeColor(this.editor, this.plaintextSegments);
+			highlighter.addColor(this.editor, this.resolvableSegments);
+
+			this.$emit('update:modelValue', this.editor?.state.doc.toString());
+		},
 	},
 	computed: {
 		doc(): string {
@@ -85,17 +111,21 @@ export default defineComponent({
 
 			return [
 				bracketMatching(),
-				autocompletion(),
+				n8nAutocompletion(),
 				this.disableExpressionCompletions ? html() : htmlWithCompletions(),
 				autoCloseTags,
 				expressionInputHandler(),
-				keymap.of([
-					indentWithTab,
-					{ key: 'Enter', run: insertNewlineAndIndent },
-					{ key: 'Mod-Shift-z', run: redo },
-				]),
+				Prec.highest(
+					keymap.of([...tabKeyMap(), ...enterKeyMap, ...historyKeyMap, ...autocompleteKeyMap]),
+				),
 				indentOnInput(),
-				theme,
+				codeNodeEditorTheme({
+					isReadOnly: this.isReadOnly,
+					maxHeight: this.fillParent ? '100%' : '40vh',
+					minHeight: '20vh',
+					rows: this.rows,
+					highlightColors: 'html',
+				}),
 				lineNumbers(),
 				highlightActiveLineGutter(),
 				history(),
@@ -103,17 +133,17 @@ export default defineComponent({
 				dropCursor(),
 				indentOnInput(),
 				highlightActiveLine(),
+				EditorView.editable.of(!this.isReadOnly),
 				EditorState.readOnly.of(this.isReadOnly),
 				EditorView.updateListener.of((viewUpdate: ViewUpdate) => {
+					if (!this.editor) return;
+
+					this.completionStatus = completionStatus(viewUpdate.view.state);
+
 					if (!viewUpdate.docChanged) return;
 
+					// Force segments value update by keeping track of editor state
 					this.editorState = this.editor.state;
-
-					this.getHighlighter()?.removeColor(this.editor, this.htmlSegments);
-					this.getHighlighter()?.addColor(this.editor, this.resolvableSegments);
-
-					// eslint-disable-next-line @typescript-eslint/no-base-to-string
-					this.$emit('update:modelValue', this.editor?.state.doc.toString());
 				}),
 			];
 		},
@@ -171,6 +201,27 @@ export default defineComponent({
 				(a, b) => a.range[0] - b.range[0],
 			);
 		},
+	},
+
+	mounted() {
+		htmlEditorEventBus.on('format-html', this.format);
+
+		let doc = this.modelValue;
+
+		if (this.modelValue === '' && this.rows > 0) {
+			doc = '\n'.repeat(this.rows - 1);
+		}
+
+		const state = EditorState.create({ doc, extensions: this.extensions });
+
+		this.editor = new EditorView({ parent: this.root(), state });
+		this.editorState = this.editor.state;
+
+		this.getHighlighter()?.addColor(this.editor, this.resolvableSegments);
+	},
+
+	beforeUnmount() {
+		htmlEditorEventBus.off('format-html', this.format);
 	},
 
 	methods: {
@@ -261,28 +312,15 @@ export default defineComponent({
 			return highlighter;
 		},
 	},
-
-	mounted() {
-		htmlEditorEventBus.on('format-html', this.format);
-
-		let doc = this.modelValue;
-
-		if (this.modelValue === '' && this.rows > 0) {
-			doc = '\n'.repeat(this.rows - 1);
-		}
-
-		const state = EditorState.create({ doc, extensions: this.extensions });
-
-		this.editor = new EditorView({ parent: this.root(), state });
-		this.editorState = this.editor.state;
-
-		this.getHighlighter()?.addColor(this.editor, this.resolvableSegments);
-	},
-
-	beforeUnmount() {
-		htmlEditorEventBus.off('format-html', this.format);
-	},
 });
 </script>
 
-<style lang="scss" module></style>
+<style lang="scss" module>
+.editor {
+	height: 100%;
+
+	& > div {
+		height: 100%;
+	}
+}
+</style>

@@ -4,6 +4,8 @@ import {
 	META_KEY,
 	SCHEDULE_TRIGGER_NODE_NAME,
 	EDIT_FIELDS_SET_NODE_NAME,
+	INSTANCE_MEMBERS,
+	INSTANCE_OWNER,
 } from '../constants';
 import { WorkflowPage as WorkflowPageClass } from '../pages/workflow';
 import { WorkflowsPage as WorkflowsPageClass } from '../pages/workflows';
@@ -100,6 +102,7 @@ describe('Workflow Actions', () => {
 		cy.get('body').type(META_KEY, { release: false }).type('s');
 		cy.get('body').type(META_KEY, { release: false }).type('s');
 		cy.wrap(null).then(() => expect(interceptCalledCount).to.eq(0));
+		cy.waitForLoad();
 		WorkflowPage.actions.addNodeToCanvas(SCHEDULE_TRIGGER_NODE_NAME);
 		cy.get('body').type(META_KEY, { release: false }).type('s');
 		cy.wait('@saveWorkflow');
@@ -117,10 +120,12 @@ describe('Workflow Actions', () => {
 		WorkflowPage.getters.successToast().should('exist');
 	});
 
-	it('should paste nodes', () => {
+	it('should paste nodes (both current and old node versions)', () => {
 		cy.fixture('Test_workflow-actions_paste-data.json').then((data) => {
 			cy.get('body').paste(JSON.stringify(data));
-			WorkflowPage.getters.canvasNodes().should('have.have.length', 2);
+			WorkflowPage.actions.zoomToFit();
+			WorkflowPage.getters.canvasNodes().should('have.length', 5);
+			WorkflowPage.getters.nodeConnections().should('have.length', 5);
 		});
 	});
 
@@ -144,8 +149,8 @@ describe('Workflow Actions', () => {
 			.selectFile('cypress/fixtures/Test_workflow-actions_paste-data.json', { force: true });
 		cy.waitForLoad(false);
 		WorkflowPage.actions.zoomToFit();
-		WorkflowPage.getters.canvasNodes().should('have.length', 2);
-		WorkflowPage.getters.nodeConnections().should('have.length', 1);
+		WorkflowPage.getters.canvasNodes().should('have.length', 5);
+		WorkflowPage.getters.nodeConnections().should('have.length', 5);
 	});
 
 	it('should update workflow settings', () => {
@@ -256,7 +261,7 @@ describe('Workflow Actions', () => {
 
 	it('should keep endpoint click working when switching between execution and editor tab', () => {
 		cy.intercept('GET', '/rest/executions?filter=*').as('getExecutions');
-		cy.intercept('GET', '/rest/executions-current?filter=*').as('getCurrentExecutions');
+		cy.intercept('GET', '/rest/executions/active?filter=*').as('getActiveExecutions');
 
 		WorkflowPage.actions.addInitialNodeToCanvas(MANUAL_TRIGGER_NODE_NAME);
 		WorkflowPage.actions.addNodeToCanvas(EDIT_FIELDS_SET_NODE_NAME);
@@ -267,11 +272,27 @@ describe('Workflow Actions', () => {
 		cy.get('body').type('{esc}');
 
 		executionsTab.actions.switchToExecutionsTab();
-		cy.wait(['@getExecutions', '@getCurrentExecutions']);
+		cy.wait(['@getExecutions', '@getActiveExecutions']);
 		cy.wait(500);
 		executionsTab.actions.switchToEditorTab();
 
 		WorkflowPage.getters.canvasNodePlusEndpointByName(EDIT_FIELDS_SET_NODE_NAME).click();
 		WorkflowPage.getters.nodeCreatorSearchBar().should('be.visible');
+	});
+});
+
+describe('Menu entry Push To Git', () => {
+	it('should not show up in the menu for members', () => {
+		cy.signin(INSTANCE_MEMBERS[0]);
+		cy.visit(WorkflowPages.url);
+		WorkflowPage.actions.visit();
+		WorkflowPage.getters.workflowMenuItemGitPush().should('not.exist');
+	});
+
+	it('should show up for owners', () => {
+		cy.signin(INSTANCE_OWNER);
+		cy.visit(WorkflowPages.url);
+		WorkflowPage.actions.visit();
+		WorkflowPage.getters.workflowMenuItemGitPush().should('exist');
 	});
 });

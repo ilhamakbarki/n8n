@@ -9,7 +9,10 @@ import type {
 	INodeTypeBaseDescription,
 	INodeTypeDescription,
 	IRequestOptionsSimplified,
+	PaginationOptions,
 	JsonObject,
+	IRequestOptions,
+	IHttpRequestMethods,
 } from 'n8n-workflow';
 
 import {
@@ -21,12 +24,7 @@ import {
 	sleep,
 } from 'n8n-workflow';
 
-import { keysToLowercase } from '@utils/utilities';
-
-import type { OptionsWithUri } from 'request-promise-native';
-
 import type { BodyParameter, IAuthDataSanitizeKeys } from '../GenericFunctions';
-
 import {
 	binaryContentTypes,
 	getOAuth2AdditionalParameters,
@@ -35,6 +33,8 @@ import {
 	replaceNullValues,
 	sanitizeUiMessage,
 } from '../GenericFunctions';
+import { keysToLowercase } from '@utils/utilities';
+import set from 'lodash/set';
 
 function toText<T>(data: T) {
 	if (typeof data === 'object' && data !== null) {
@@ -52,7 +52,7 @@ export class HttpRequestV3 implements INodeType {
 			version: [3, 4, 4.1],
 			defaults: {
 				name: 'HTTP Request',
-				color: '#2200DD',
+				color: '#0004F5',
 			},
 			inputs: ['main'],
 			outputs: ['main'],
@@ -373,7 +373,7 @@ export class HttpRequestV3 implements INodeType {
 						},
 						{
 							// eslint-disable-next-line n8n-nodes-base/node-param-display-name-miscased
-							name: 'n8n Binary Data',
+							name: 'n8n Binary File',
 							value: 'binaryData',
 						},
 						{
@@ -503,7 +503,7 @@ export class HttpRequestV3 implements INodeType {
 									options: [
 										{
 											// eslint-disable-next-line n8n-nodes-base/node-param-display-name-miscased
-											name: 'n8n Binary Data',
+											name: 'n8n Binary File',
 											value: 'formBinaryData',
 										},
 										{
@@ -537,7 +537,6 @@ export class HttpRequestV3 implements INodeType {
 									displayName: 'Input Data Field Name',
 									name: 'inputDataFieldName',
 									type: 'string',
-									noDataExpression: true,
 									displayOptions: {
 										show: {
 											parameterType: ['formBinaryData'],
@@ -637,7 +636,6 @@ export class HttpRequestV3 implements INodeType {
 					displayName: 'Input Data Field Name',
 					name: 'inputDataFieldName',
 					type: 'string',
-					noDataExpression: true,
 					displayOptions: {
 						show: {
 							sendBody: [true],
@@ -929,6 +927,247 @@ export class HttpRequestV3 implements INodeType {
 							],
 						},
 						{
+							displayName: 'Pagination',
+							name: 'pagination',
+							placeholder: 'Add pagination',
+							type: 'fixedCollection',
+							typeOptions: {
+								multipleValues: false,
+							},
+							default: {
+								pagination: {},
+							},
+							options: [
+								{
+									displayName: 'Pagination',
+									name: 'pagination',
+									values: [
+										{
+											displayName: 'Pagination Mode',
+											name: 'paginationMode',
+											type: 'options',
+											typeOptions: {
+												noDataExpression: true,
+											},
+											options: [
+												{
+													name: 'Off',
+													value: 'off',
+												},
+												{
+													name: 'Update a Parameter in Each Request',
+													value: 'updateAParameterInEachRequest',
+												},
+												{
+													name: 'Response Contains Next URL',
+													value: 'responseContainsNextURL',
+												},
+											],
+											default: 'updateAParameterInEachRequest',
+											description: 'If pagination should be used',
+										},
+										{
+											displayName:
+												'Use the $response variables to access the data of the previous response. <a href="https://docs.n8n.io/code/builtin/http-node-variables/?utm_source=n8n_app&utm_medium=node_settings_modal-credential_link&utm_campaign=n8n-nodes-base.httpRequest" target="_blank">More info</a>',
+											name: 'webhookNotice',
+											displayOptions: {
+												hide: {
+													paginationMode: ['off'],
+												},
+											},
+											type: 'notice',
+											default: '',
+										},
+										{
+											displayName: 'Next URL',
+											name: 'nextURL',
+											type: 'string',
+											displayOptions: {
+												show: {
+													paginationMode: ['responseContainsNextURL'],
+												},
+											},
+											default: '',
+											description:
+												'Should evaluate to the URL of the next page. <a href="https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.httprequest/#pagination" target="_blank">More info</a>.',
+										},
+										{
+											displayName: 'Parameters',
+											name: 'parameters',
+											type: 'fixedCollection',
+											displayOptions: {
+												show: {
+													paginationMode: ['updateAParameterInEachRequest'],
+												},
+											},
+											typeOptions: {
+												multipleValues: true,
+												noExpression: true,
+											},
+											placeholder: 'Add Parameter',
+											default: {
+												parameters: [
+													{
+														type: 'qs',
+														name: '',
+														value: '',
+													},
+												],
+											},
+											options: [
+												{
+													name: 'parameters',
+													displayName: 'Parameter',
+													values: [
+														{
+															displayName: 'Type',
+															name: 'type',
+															type: 'options',
+															options: [
+																{
+																	name: 'Body',
+																	value: 'body',
+																},
+																{
+																	name: 'Header',
+																	value: 'headers',
+																},
+																{
+																	name: 'Query',
+																	value: 'qs',
+																},
+															],
+															default: 'qs',
+															description: 'Where the parameter should be set',
+														},
+														{
+															displayName: 'Name',
+															name: 'name',
+															type: 'string',
+															default: '',
+															placeholder: 'e.g page',
+														},
+														{
+															displayName: 'Value',
+															name: 'value',
+															type: 'string',
+															default: '',
+															hint: 'Use expression mode and $response to access response data',
+														},
+													],
+												},
+											],
+										},
+										{
+											displayName: 'Pagination Complete When',
+											name: 'paginationCompleteWhen',
+											type: 'options',
+											typeOptions: {
+												noDataExpression: true,
+											},
+											displayOptions: {
+												hide: {
+													paginationMode: ['off'],
+												},
+											},
+											options: [
+												{
+													name: 'Response Is Empty',
+													value: 'responseIsEmpty',
+												},
+												{
+													name: 'Receive Specific Status Code(s)',
+													value: 'receiveSpecificStatusCodes',
+												},
+												{
+													name: 'Other',
+													value: 'other',
+												},
+											],
+											default: 'responseIsEmpty',
+											description: 'When should no further requests be made?',
+										},
+										{
+											displayName: 'Status Code(s) when Complete',
+											name: 'statusCodesWhenComplete',
+											type: 'string',
+											typeOptions: {
+												noDataExpression: true,
+											},
+											displayOptions: {
+												show: {
+													paginationCompleteWhen: ['receiveSpecificStatusCodes'],
+												},
+											},
+											default: '',
+											description: 'Accepts comma-separated values',
+										},
+										{
+											displayName: 'Complete Expression',
+											name: 'completeExpression',
+											type: 'string',
+											displayOptions: {
+												show: {
+													paginationCompleteWhen: ['other'],
+												},
+											},
+											default: '',
+											description:
+												'Should evaluate to true when pagination is complete. <a href="https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.httprequest/#pagination" target="_blank">More info</a>.',
+										},
+										{
+											displayName: 'Limit Pages Fetched',
+											name: 'limitPagesFetched',
+											type: 'boolean',
+											typeOptions: {
+												noDataExpression: true,
+											},
+											displayOptions: {
+												hide: {
+													paginationMode: ['off'],
+												},
+											},
+											default: false,
+											noDataExpression: true,
+											description: 'Whether the number of requests should be limited',
+										},
+										{
+											displayName: 'Max Pages',
+											name: 'maxRequests',
+											type: 'number',
+											typeOptions: {
+												noDataExpression: true,
+											},
+											displayOptions: {
+												show: {
+													limitPagesFetched: [true],
+												},
+											},
+											default: 100,
+											description: 'Maximum amount of request to be make',
+										},
+										{
+											// eslint-disable-next-line n8n-nodes-base/node-param-display-name-miscased
+											displayName: 'Interval Between Requests (ms)',
+											name: 'requestInterval',
+											type: 'number',
+											displayOptions: {
+												hide: {
+													paginationMode: ['off'],
+												},
+											},
+											default: 0,
+											description: 'Time in milliseconds to wait between requests',
+											hint: 'At 0 no delay will be added',
+											typeOptions: {
+												minValue: 0,
+											},
+										},
+									],
+								},
+							],
+						},
+						{
 							displayName: 'Proxy',
 							name: 'proxy',
 							type: 'string',
@@ -982,48 +1221,10 @@ export class HttpRequestV3 implements INodeType {
 		let httpCustomAuth;
 		let oAuth1Api;
 		let oAuth2Api;
-		let nodeCredentialType;
+		let nodeCredentialType: string | undefined;
+		let genericCredentialType: string | undefined;
 
-		if (authentication === 'genericCredentialType') {
-			const genericAuthType = this.getNodeParameter('genericAuthType', 0) as string;
-
-			if (genericAuthType === 'httpBasicAuth') {
-				try {
-					httpBasicAuth = await this.getCredentials('httpBasicAuth');
-				} catch {}
-			} else if (genericAuthType === 'httpDigestAuth') {
-				try {
-					httpDigestAuth = await this.getCredentials('httpDigestAuth');
-				} catch {}
-			} else if (genericAuthType === 'httpHeaderAuth') {
-				try {
-					httpHeaderAuth = await this.getCredentials('httpHeaderAuth');
-				} catch {}
-			} else if (genericAuthType === 'httpQueryAuth') {
-				try {
-					httpQueryAuth = await this.getCredentials('httpQueryAuth');
-				} catch {}
-			} else if (genericAuthType === 'httpCustomAuth') {
-				try {
-					httpCustomAuth = await this.getCredentials('httpCustomAuth');
-				} catch {}
-			} else if (genericAuthType === 'oAuth1Api') {
-				try {
-					oAuth1Api = await this.getCredentials('oAuth1Api');
-				} catch {}
-			} else if (genericAuthType === 'oAuth2Api') {
-				try {
-					oAuth2Api = await this.getCredentials('oAuth2Api');
-				} catch {}
-			}
-		} else if (authentication === 'predefinedCredentialType') {
-			try {
-				nodeCredentialType = this.getNodeParameter('nodeCredentialType', 0) as string;
-			} catch {}
-		}
-
-		type RequestOptions = OptionsWithUri & { useStream?: boolean };
-		let requestOptions: RequestOptions = {
+		let requestOptions: IRequestOptions = {
 			uri: '',
 		};
 
@@ -1034,8 +1235,52 @@ export class HttpRequestV3 implements INodeType {
 
 		let autoDetectResponseFormat = false;
 
+		// Can not be defined on a per item level
+		const pagination = this.getNodeParameter('options.pagination.pagination', 0, null, {
+			rawExpressions: true,
+		}) as {
+			paginationMode: 'off' | 'updateAParameterInEachRequest' | 'responseContainsNextURL';
+			nextURL?: string;
+			parameters: {
+				parameters: Array<{
+					type: 'body' | 'headers' | 'qs';
+					name: string;
+					value: string;
+				}>;
+			};
+			paginationCompleteWhen: 'responseIsEmpty' | 'receiveSpecificStatusCodes' | 'other';
+			statusCodesWhenComplete: string;
+			completeExpression: string;
+			limitPagesFetched: boolean;
+			maxRequests: number;
+			requestInterval: number;
+		};
+
+		const sanitazedRequests: IDataObject[] = [];
 		for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
-			const requestMethod = this.getNodeParameter('method', itemIndex) as string;
+			if (authentication === 'genericCredentialType') {
+				genericCredentialType = this.getNodeParameter('genericAuthType', 0) as string;
+
+				if (genericCredentialType === 'httpBasicAuth') {
+					httpBasicAuth = await this.getCredentials('httpBasicAuth', itemIndex);
+				} else if (genericCredentialType === 'httpDigestAuth') {
+					httpDigestAuth = await this.getCredentials('httpDigestAuth', itemIndex);
+				} else if (genericCredentialType === 'httpHeaderAuth') {
+					httpHeaderAuth = await this.getCredentials('httpHeaderAuth', itemIndex);
+				} else if (genericCredentialType === 'httpQueryAuth') {
+					httpQueryAuth = await this.getCredentials('httpQueryAuth', itemIndex);
+				} else if (genericCredentialType === 'httpCustomAuth') {
+					httpCustomAuth = await this.getCredentials('httpCustomAuth', itemIndex);
+				} else if (genericCredentialType === 'oAuth1Api') {
+					oAuth1Api = await this.getCredentials('oAuth1Api', itemIndex);
+				} else if (genericCredentialType === 'oAuth2Api') {
+					oAuth2Api = await this.getCredentials('oAuth2Api', itemIndex);
+				}
+			} else if (authentication === 'predefinedCredentialType') {
+				nodeCredentialType = this.getNodeParameter('nodeCredentialType', itemIndex) as string;
+			}
+
+			const requestMethod = this.getNodeParameter('method', itemIndex) as IHttpRequestMethods;
 
 			const sendQuery = this.getNodeParameter('sendQuery', itemIndex, false) as boolean;
 			const queryParameters = this.getNodeParameter(
@@ -1118,14 +1363,8 @@ export class HttpRequestV3 implements INodeType {
 				gzip: true,
 				rejectUnauthorized: !allowUnauthorizedCerts || false,
 				followRedirect: false,
+				resolveWithFullResponse: true,
 			};
-
-			// When response format is set to auto-detect,
-			// we need to access to response header content-type
-			// and the only way is using "resolveWithFullResponse"
-			if (autoDetectResponseFormat || fullResponse) {
-				requestOptions.resolveWithFullResponse = true;
-			}
 
 			if (requestOptions.method !== 'GET' && nodeVersion >= 4.1) {
 				requestOptions = { ...requestOptions, followAllRedirects: false };
@@ -1227,10 +1466,10 @@ export class HttpRequestV3 implements INodeType {
 			// Change the way data get send in case a different content-type than JSON got selected
 			if (sendBody && ['PATCH', 'POST', 'PUT', 'GET'].includes(requestMethod)) {
 				if (bodyContentType === 'multipart-form-data') {
-					requestOptions.formData = requestOptions.body;
+					requestOptions.formData = requestOptions.body as IDataObject;
 					delete requestOptions.body;
 				} else if (bodyContentType === 'form-urlencoded') {
-					requestOptions.form = requestOptions.body;
+					requestOptions.form = requestOptions.body as IDataObject;
 					delete requestOptions.body;
 				} else if (bodyContentType === 'binaryData') {
 					const inputDataFieldName = this.getNodeParameter(
@@ -1322,7 +1561,7 @@ export class HttpRequestV3 implements INodeType {
 				requestOptions.json = true;
 			}
 
-			// // Add Content Type if any are set
+			// Add Content Type if any are set
 			if (bodyContentType === 'raw') {
 				if (requestOptions.headers === undefined) {
 					requestOptions.headers = {};
@@ -1370,7 +1609,7 @@ export class HttpRequestV3 implements INodeType {
 					authDataKeys.headers = Object.keys(customAuth.headers);
 				}
 				if (customAuth.body) {
-					requestOptions.body = { ...requestOptions.body, ...customAuth.body };
+					requestOptions.body = { ...(requestOptions.body as IDataObject), ...customAuth.body };
 					authDataKeys.body = Object.keys(customAuth.body);
 				}
 				if (customAuth.qs) {
@@ -1390,10 +1629,106 @@ export class HttpRequestV3 implements INodeType {
 						'application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7';
 				}
 			}
+
 			try {
-				this.sendMessageToUI(sanitizeUiMessage(requestOptions, authDataKeys));
+				const sanitazedRequestOptions = sanitizeUiMessage(requestOptions, authDataKeys);
+				this.sendMessageToUI(sanitazedRequestOptions);
+				sanitazedRequests.push(sanitazedRequestOptions);
 			} catch (e) {}
-			if (authentication === 'genericCredentialType' || authentication === 'none') {
+
+			if (pagination && pagination.paginationMode !== 'off') {
+				let continueExpression = '={{false}}';
+				if (pagination.paginationCompleteWhen === 'receiveSpecificStatusCodes') {
+					// Split out comma separated list of status codes into array
+					const statusCodesWhenCompleted = pagination.statusCodesWhenComplete
+						.split(',')
+						.map((item) => parseInt(item.trim()));
+
+					continueExpression = `={{ !${JSON.stringify(
+						statusCodesWhenCompleted,
+					)}.includes($response.statusCode) }}`;
+				} else if (pagination.paginationCompleteWhen === 'responseIsEmpty') {
+					continueExpression =
+						'={{ Array.isArray($response.body) ? $response.body.length : !!$response.body }}';
+				} else {
+					// Other
+					if (!pagination.completeExpression.length || pagination.completeExpression[0] !== '=') {
+						throw new NodeOperationError(this.getNode(), 'Invalid or empty Complete Expression');
+					}
+					continueExpression = `={{ !(${pagination.completeExpression.trim().slice(3, -2)}) }}`;
+				}
+
+				const paginationData: PaginationOptions = {
+					continue: continueExpression,
+					request: {},
+					requestInterval: pagination.requestInterval,
+				};
+
+				if (pagination.paginationMode === 'updateAParameterInEachRequest') {
+					// Iterate over all parameters and add them to the request
+					paginationData.request = {};
+					const { parameters } = pagination.parameters;
+					if (parameters.length === 1 && parameters[0].name === '' && parameters[0].value === '') {
+						throw new NodeOperationError(
+							this.getNode(),
+							"At least one entry with 'Name' and 'Value' filled must be included in 'Parameters' to use 'Update a Parameter in Each Request' mode ",
+						);
+					}
+					pagination.parameters.parameters.forEach((parameter, index) => {
+						if (!paginationData.request[parameter.type]) {
+							paginationData.request[parameter.type] = {};
+						}
+						const parameterName = parameter.name;
+						if (parameterName === '') {
+							throw new NodeOperationError(
+								this.getNode(),
+								`Parameter name must be set for parameter [${index + 1}] in pagination settings`,
+							);
+						}
+						const parameterValue = parameter.value;
+						if (parameterValue === '') {
+							throw new NodeOperationError(
+								this.getNode(),
+								`Some value must be provided for parameter [${
+									index + 1
+								}] in pagination settings, omitting it will result in an infinite loop`,
+							);
+						}
+						paginationData.request[parameter.type]![parameterName] = parameterValue;
+					});
+				} else if (pagination.paginationMode === 'responseContainsNextURL') {
+					paginationData.request.url = pagination.nextURL;
+				}
+
+				if (pagination.limitPagesFetched) {
+					paginationData.maxRequests = pagination.maxRequests;
+				}
+
+				if (responseFormat === 'file') {
+					paginationData.binaryResult = true;
+				}
+
+				const requestPromise = this.helpers.requestWithAuthenticationPaginated
+					.call(
+						this,
+						requestOptions,
+						itemIndex,
+						paginationData,
+						nodeCredentialType ?? genericCredentialType,
+					)
+					.catch((error) => {
+						if (error instanceof NodeOperationError && error.type === 'invalid_url') {
+							const urlParameterName =
+								pagination.paginationMode === 'responseContainsNextURL' ? 'Next URL' : 'URL';
+							throw new NodeOperationError(this.getNode(), error.message, {
+								description: `Make sure the "${urlParameterName}" parameter evaluates to a valid URL.`,
+							});
+						}
+
+						throw error;
+					});
+				requestPromises.push(requestPromise);
+			} else if (authentication === 'genericCredentialType' || authentication === 'none') {
 				if (oAuth1Api) {
 					const requestOAuth1 = this.helpers.requestOAuth1.call(this, 'oAuth1Api', requestOptions);
 					requestOAuth1.catch(() => {});
@@ -1420,6 +1755,7 @@ export class HttpRequestV3 implements INodeType {
 					nodeCredentialType,
 					requestOptions,
 					additionalOAuth2Options && { oauth2: additionalOAuth2Options },
+					itemIndex,
 				);
 				requestWithAuthentication.catch(() => {});
 				requestPromises.push(requestWithAuthentication);
@@ -1427,25 +1763,27 @@ export class HttpRequestV3 implements INodeType {
 		}
 		const promisesResponses = await Promise.allSettled(requestPromises);
 
-		let response: any;
+		let responseData: any;
 		for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
-			response = promisesResponses.shift();
-			if (response!.status !== 'fulfilled') {
-				if (response.reason.statusCode === 429) {
-					response.reason.message =
+			responseData = promisesResponses.shift();
+			if (responseData!.status !== 'fulfilled') {
+				if (responseData.reason.statusCode === 429) {
+					responseData.reason.message =
 						"Try spacing your requests out using the batching settings under 'Options'";
 				}
 				if (!this.continueOnFail()) {
-					if (autoDetectResponseFormat && response.reason.error instanceof Buffer) {
-						response.reason.error = Buffer.from(response.reason.error as Buffer).toString();
+					if (autoDetectResponseFormat && responseData.reason.error instanceof Buffer) {
+						responseData.reason.error = Buffer.from(responseData.reason.error as Buffer).toString();
 					}
-					throw new NodeApiError(this.getNode(), response as JsonObject, { itemIndex });
+					const error = new NodeApiError(this.getNode(), responseData as JsonObject, { itemIndex });
+					set(error, 'context.request', sanitazedRequests[itemIndex]);
+					throw error;
 				} else {
-					removeCircularRefs(response.reason as JsonObject);
+					removeCircularRefs(responseData.reason as JsonObject);
 					// Return the actual reason as error
 					returnItems.push({
 						json: {
-							error: response.reason,
+							error: responseData.reason,
 						},
 						pairedItem: {
 							item: itemIndex,
@@ -1455,7 +1793,12 @@ export class HttpRequestV3 implements INodeType {
 				}
 			}
 
-			response = response.value;
+			let responses: any[];
+			if (Array.isArray(responseData.value)) {
+				responses = responseData.value;
+			} else {
+				responses = [responseData.value];
+			}
 
 			let responseFormat = this.getNodeParameter(
 				'options.response.response.responseFormat',
@@ -1469,172 +1812,211 @@ export class HttpRequestV3 implements INodeType {
 				false,
 			) as boolean;
 
-			if (autoDetectResponseFormat) {
-				const responseContentType = response.headers['content-type'] ?? '';
-				if (responseContentType.includes('application/json')) {
-					responseFormat = 'json';
-					const neverError = this.getNodeParameter(
-						'options.response.response.neverError',
-						0,
-						false,
-					) as boolean;
+			// eslint-disable-next-line prefer-const
+			for (let [index, response] of Object.entries(responses)) {
+				if (response?.request?.constructor.name === 'ClientRequest') delete response.request;
 
-					const data = await this.helpers
-						.binaryToBuffer(response.body as Buffer | Readable)
-						.then((body) => body.toString());
-					response.body = jsonParse(data, {
-						...(neverError
-							? { fallbackValue: {} }
-							: { errorMessage: 'Invalid JSON in response body' }),
-					});
-				} else if (binaryContentTypes.some((e) => responseContentType.includes(e))) {
-					responseFormat = 'file';
-				} else {
-					responseFormat = 'text';
-					const data = await this.helpers
-						.binaryToBuffer(response.body as Buffer | Readable)
-						.then((body) => body.toString());
-					response.body = !data ? undefined : data;
-				}
-			}
-
-			if (autoDetectResponseFormat && !fullResponse) {
-				delete response.headers;
-				delete response.statusCode;
-				delete response.statusMessage;
-				response = response.body;
-				requestOptions.resolveWithFullResponse = false;
-			}
-
-			if (responseFormat === 'file') {
-				const outputPropertyName = this.getNodeParameter(
-					'options.response.response.outputPropertyName',
-					0,
-					'data',
-				) as string;
-
-				const newItem: INodeExecutionData = {
-					json: {},
-					binary: {},
-					pairedItem: {
-						item: itemIndex,
-					},
-				};
-
-				if (items[itemIndex].binary !== undefined) {
-					// Create a shallow copy of the binary data so that the old
-					// data references which do not get changed still stay behind
-					// but the incoming data does not get changed.
-					Object.assign(newItem.binary as IBinaryKeyData, items[itemIndex].binary);
-				}
-
-				let binaryData: Buffer | Readable;
-				if (fullResponse) {
-					const returnItem: IDataObject = {};
-					for (const property of fullResponseProperties) {
-						if (property === 'body') {
-							continue;
-						}
-						returnItem[property] = response![property];
-					}
-
-					newItem.json = returnItem;
-					binaryData = response!.body;
-				} else {
-					newItem.json = items[itemIndex].json;
-					binaryData = response;
-				}
-				newItem.binary![outputPropertyName] = await this.helpers.prepareBinaryData(binaryData);
-
-				returnItems.push(newItem);
-			} else if (responseFormat === 'text') {
-				const outputPropertyName = this.getNodeParameter(
-					'options.response.response.outputPropertyName',
-					0,
-					'data',
-				) as string;
-				if (fullResponse) {
-					const returnItem: IDataObject = {};
-					for (const property of fullResponseProperties) {
-						if (property === 'body') {
-							returnItem[outputPropertyName] = toText(response![property]);
-							continue;
-						}
-
-						returnItem[property] = response![property];
-					}
-					returnItems.push({
-						json: returnItem,
-						pairedItem: {
-							item: itemIndex,
-						},
-					});
-				} else {
-					returnItems.push({
-						json: {
-							[outputPropertyName]: toText(response),
-						},
-						pairedItem: {
-							item: itemIndex,
-						},
-					});
-				}
-			} else {
-				// responseFormat: 'json'
-				if (requestOptions.resolveWithFullResponse === true) {
-					const returnItem: IDataObject = {};
-					for (const property of fullResponseProperties) {
-						returnItem[property] = response![property];
-					}
-
-					if (responseFormat === 'json' && typeof returnItem.body === 'string') {
-						try {
-							returnItem.body = JSON.parse(returnItem.body);
-						} catch (error) {
-							throw new NodeOperationError(
-								this.getNode(),
-								'Response body is not valid JSON. Change "Response Format" to "Text"',
-								{ itemIndex },
-							);
-						}
-					}
-
-					returnItems.push({
-						json: returnItem,
-						pairedItem: {
-							item: itemIndex,
-						},
-					});
-				} else {
-					if (responseFormat === 'json' && typeof response === 'string') {
-						try {
-							response = JSON.parse(response);
-						} catch (error) {
-							throw new NodeOperationError(
-								this.getNode(),
-								'Response body is not valid JSON. Change "Response Format" to "Text"',
-								{ itemIndex },
-							);
-						}
-					}
-
-					if (Array.isArray(response)) {
-						// eslint-disable-next-line @typescript-eslint/no-loop-func
-						response.forEach((item) =>
-							returnItems.push({
-								json: item,
-								pairedItem: {
-									item: itemIndex,
-								},
-							}),
-						);
+				if (this.getMode() === 'manual' && index === '0') {
+					// For manual executions save the first response in the context
+					// so that we can use it in the frontend and so make it easier for
+					// the users to create the required pagination expressions
+					const nodeContext = this.getContext('node');
+					if (pagination && pagination.paginationMode !== 'off') {
+						nodeContext.response = responseData.value[0];
 					} else {
+						nodeContext.response = responseData.value;
+					}
+				}
+
+				const responseContentType = response.headers['content-type'] ?? '';
+				if (autoDetectResponseFormat) {
+					if (responseContentType.includes('application/json')) {
+						responseFormat = 'json';
+						if (!response.__bodyResolved) {
+							const neverError = this.getNodeParameter(
+								'options.response.response.neverError',
+								0,
+								false,
+							) as boolean;
+
+							const data = await this.helpers
+								.binaryToBuffer(response.body as Buffer | Readable)
+								.then((body) => body.toString());
+							response.body = jsonParse(data, {
+								...(neverError
+									? { fallbackValue: {} }
+									: { errorMessage: 'Invalid JSON in response body' }),
+							});
+						}
+					} else if (binaryContentTypes.some((e) => responseContentType.includes(e))) {
+						responseFormat = 'file';
+					} else {
+						responseFormat = 'text';
+						if (!response.__bodyResolved) {
+							const data = await this.helpers
+								.binaryToBuffer(response.body as Buffer | Readable)
+								.then((body) => body.toString());
+							response.body = !data ? undefined : data;
+						}
+					}
+				}
+
+				if (autoDetectResponseFormat && !fullResponse) {
+					delete response.headers;
+					delete response.statusCode;
+					delete response.statusMessage;
+				}
+				if (!fullResponse) {
+					response = response.body;
+				}
+
+				if (responseFormat === 'file') {
+					const outputPropertyName = this.getNodeParameter(
+						'options.response.response.outputPropertyName',
+						0,
+						'data',
+					) as string;
+
+					const newItem: INodeExecutionData = {
+						json: {},
+						binary: {},
+						pairedItem: {
+							item: itemIndex,
+						},
+					};
+
+					if (items[itemIndex].binary !== undefined) {
+						// Create a shallow copy of the binary data so that the old
+						// data references which do not get changed still stay behind
+						// but the incoming data does not get changed.
+						Object.assign(newItem.binary as IBinaryKeyData, items[itemIndex].binary);
+					}
+
+					let binaryData: Buffer | Readable;
+					if (fullResponse) {
+						const returnItem: IDataObject = {};
+						for (const property of fullResponseProperties) {
+							if (property === 'body') {
+								continue;
+							}
+							returnItem[property] = response[property];
+						}
+
+						newItem.json = returnItem;
+						binaryData = response?.body;
+					} else {
+						newItem.json = items[itemIndex].json;
+						binaryData = response;
+					}
+					const preparedBinaryData = await this.helpers.prepareBinaryData(
+						binaryData,
+						undefined,
+						responseContentType || undefined,
+					);
+
+					if (
+						!preparedBinaryData.fileName &&
+						preparedBinaryData.fileExtension &&
+						typeof requestOptions.uri === 'string' &&
+						requestOptions.uri.endsWith(preparedBinaryData.fileExtension)
+					) {
+						preparedBinaryData.fileName = requestOptions.uri.split('/').pop();
+					}
+
+					newItem.binary![outputPropertyName] = preparedBinaryData;
+
+					returnItems.push(newItem);
+				} else if (responseFormat === 'text') {
+					const outputPropertyName = this.getNodeParameter(
+						'options.response.response.outputPropertyName',
+						0,
+						'data',
+					) as string;
+					if (fullResponse) {
+						const returnItem: IDataObject = {};
+						for (const property of fullResponseProperties) {
+							if (property === 'body') {
+								returnItem[outputPropertyName] = toText(response[property]);
+								continue;
+							}
+
+							returnItem[property] = response[property];
+						}
 						returnItems.push({
-							json: response,
+							json: returnItem,
 							pairedItem: {
 								item: itemIndex,
 							},
 						});
+					} else {
+						returnItems.push({
+							json: {
+								[outputPropertyName]: toText(response),
+							},
+							pairedItem: {
+								item: itemIndex,
+							},
+						});
+					}
+				} else {
+					// responseFormat: 'json'
+					if (fullResponse) {
+						const returnItem: IDataObject = {};
+						for (const property of fullResponseProperties) {
+							returnItem[property] = response[property];
+						}
+
+						if (responseFormat === 'json' && typeof returnItem.body === 'string') {
+							try {
+								returnItem.body = JSON.parse(returnItem.body);
+							} catch (error) {
+								throw new NodeOperationError(
+									this.getNode(),
+									'Response body is not valid JSON. Change "Response Format" to "Text"',
+									{ itemIndex },
+								);
+							}
+						}
+
+						returnItems.push({
+							json: returnItem,
+							pairedItem: {
+								item: itemIndex,
+							},
+						});
+					} else {
+						if (responseFormat === 'json' && typeof response === 'string') {
+							try {
+								if (typeof response !== 'object') {
+									response = JSON.parse(response);
+								}
+							} catch (error) {
+								throw new NodeOperationError(
+									this.getNode(),
+									'Response body is not valid JSON. Change "Response Format" to "Text"',
+									{ itemIndex },
+								);
+							}
+						}
+
+						if (Array.isArray(response)) {
+							// eslint-disable-next-line @typescript-eslint/no-loop-func
+							response.forEach((item) =>
+								returnItems.push({
+									json: item,
+									pairedItem: {
+										item: itemIndex,
+									},
+								}),
+							);
+						} else {
+							returnItems.push({
+								json: response,
+								pairedItem: {
+									item: itemIndex,
+								},
+							});
+						}
 					}
 				}
 			}

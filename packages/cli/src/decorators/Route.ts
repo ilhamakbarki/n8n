@@ -4,9 +4,11 @@ import type { Method, RouteMetadata } from './types';
 
 interface RouteOptions {
 	middlewares?: RequestHandler[];
+	usesTemplates?: boolean;
+	/** When this flag is set to true, auth cookie isn't validated, and req.user will not be set */
+	skipAuth?: boolean;
 }
 
-/* eslint-disable @typescript-eslint/naming-convention */
 const RouteFactory =
 	(method: Method) =>
 	(path: `/${string}`, options: RouteOptions = {}): MethodDecorator =>
@@ -19,6 +21,8 @@ const RouteFactory =
 			path,
 			middlewares: options.middlewares ?? [],
 			handlerName: String(handlerName),
+			usesTemplates: options.usesTemplates ?? false,
+			skipAuth: options.skipAuth ?? false,
 		});
 		Reflect.defineMetadata(CONTROLLER_ROUTES, routes, controllerClass);
 	};

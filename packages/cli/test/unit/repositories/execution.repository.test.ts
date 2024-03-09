@@ -1,83 +1,52 @@
-import { Container } from 'typedi';
-import { DataSource, EntityManager } from 'typeorm';
 import { mock } from 'jest-mock-extended';
-import { mockInstance } from '../../integration/shared/utils/';
-import { ExecutionRepository } from '@/databases/repositories';
+import Container from 'typedi';
+import type { EntityMetadata } from '@n8n/typeorm';
+import { EntityManager, DataSource, Not, LessThanOrEqual } from '@n8n/typeorm';
+
 import config from '@/config';
-import { LoggerProxy } from 'n8n-workflow';
-import { getLogger } from '@/Logger';
-import { TIME } from '@/constants';
-import { DateUtils } from 'typeorm/util/DateUtils';
+import { ExecutionEntity } from '@db/entities/ExecutionEntity';
+import { ExecutionRepository } from '@db/repositories/execution.repository';
 
-jest.mock('typeorm/util/DateUtils');
-
-LoggerProxy.init(getLogger());
-
-const { objectContaining } = expect;
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const qb: any = {
-	update: jest.fn().mockReturnThis(),
-	set: jest.fn().mockReturnThis(),
-	where: jest.fn().mockReturnThis(),
-	execute: jest.fn().mockReturnThis(),
-};
+import { mockInstance } from '../../shared/mocking';
 
 describe('ExecutionRepository', () => {
 	const entityManager = mockInstance(EntityManager);
 	const dataSource = mockInstance(DataSource, { manager: entityManager });
-	dataSource.getMetadata.mockReturnValue(mock());
+	dataSource.getMetadata.mockReturnValue(mock<EntityMetadata>({ target: ExecutionEntity }));
 	Object.assign(entityManager, { connection: dataSource });
 
 	const executionRepository = Container.get(ExecutionRepository);
+	const mockDate = new Date('2023-12-28 12:34:56.789Z');
 
 	beforeAll(() => {
-		Container.set(ExecutionRepository, executionRepository);
-		LoggerProxy.init(getLogger());
-	});
-
-	beforeEach(() => {
-		config.load(config.default);
-
 		jest.clearAllMocks();
+		jest.useFakeTimers().setSystemTime(mockDate);
 	});
 
-	describe('pruneBySoftDeleting()', () => {
-		test('should limit pruning based on EXECUTIONS_DATA_PRUNE_MAX_COUNT', async () => {
-			const maxCount = 1;
+	afterAll(() => jest.useRealTimers());
 
-			config.set('executions.pruneDataMaxCount', maxCount);
+	describe('getWaitingExecutions()', () => {
+		test.each(['sqlite', 'postgres'])(
+			'on %s, should be called with expected args',
+			async (dbType) => {
+				jest.spyOn(config, 'getEnv').mockReturnValueOnce(dbType);
+				entityManager.find.mockResolvedValueOnce([]);
 
-			const find = jest.spyOn(ExecutionRepository.prototype, 'find');
-			entityManager.find.mockResolvedValue([]);
+				await executionRepository.getWaitingExecutions();
 
-			jest.spyOn(ExecutionRepository.prototype, 'createQueryBuilder').mockReturnValueOnce(qb);
-
-			await executionRepository.prune();
-
-			expect(find.mock.calls[0][0]).toEqual(objectContaining({ skip: maxCount }));
-		});
-
-		test('should limit pruning based on EXECUTIONS_DATA_MAX_AGE', async () => {
-			const maxAge = 5; // hours
-
-			config.set('executions.pruneDataMaxCount', 0); // disable prune-by-count path
-			config.set('executions.pruneDataMaxAge', 5);
-
-			entityManager.find.mockResolvedValue([]);
-
-			jest.spyOn(ExecutionRepository.prototype, 'createQueryBuilder').mockReturnValueOnce(qb);
-
-			const dateFormat = jest.spyOn(DateUtils, 'mixedDateToUtcDatetimeString');
-
-			const now = Date.now();
-
-			await executionRepository.prune();
-
-			const argDate = dateFormat.mock.calls[0][0];
-			const difference = now - argDate.valueOf();
-
-			expect(Math.round(difference / TIME.HOUR)).toBe(maxAge);
-		});
+				expect(entityManager.find).toHaveBeenCalledWith(ExecutionEntity, {
+					order: { waitTill: 'ASC' },
+					select: ['id', 'waitTill'],
+					where: {
+						status: Not('crashed'),
+						waitTill: LessThanOrEqual(
+							dbType === 'sqlite'
+								? '2023-12-28 12:36:06.789'
+								: new Date('2023-12-28T12:36:06.789Z'),
+						),
+					},
+				});
+			},
+		);
 	});
 });

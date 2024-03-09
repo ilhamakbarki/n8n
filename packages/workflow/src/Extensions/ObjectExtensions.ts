@@ -1,4 +1,4 @@
-import { ExpressionExtensionError } from '../ExpressionError';
+import { ExpressionExtensionError } from '../errors/expression-extension.error';
 import type { ExtensionMap } from './Extensions';
 
 function isEmpty(value: object): boolean {
@@ -7,6 +7,14 @@ function isEmpty(value: object): boolean {
 
 function isNotEmpty(value: object): boolean {
 	return !isEmpty(value);
+}
+
+function keys(value: object): string[] {
+	return Object.keys(value);
+}
+
+function values(value: object): unknown[] {
+	return Object.values(value);
 }
 
 function hasField(value: object, extraArgs: string[]): boolean {
@@ -84,8 +92,7 @@ isEmpty.doc = {
 	name: 'isEmpty',
 	description: 'Checks if the Object has no key-value pairs.',
 	returnType: 'boolean',
-	docURL:
-		'https://docs.n8n.io/code-examples/expressions/data-transformation-functions/objects/#object-isEmpty',
+	docURL: 'https://docs.n8n.io/code/builtin/data-transformation-functions/objects/#object-isEmpty',
 };
 
 isNotEmpty.doc = {
@@ -93,15 +100,14 @@ isNotEmpty.doc = {
 	description: 'Checks if the Object has key-value pairs.',
 	returnType: 'boolean',
 	docURL:
-		'https://docs.n8n.io/code-examples/expressions/data-transformation-functions/objects/#object-isNotEmpty',
+		'https://docs.n8n.io/code/builtin/data-transformation-functions/objects/#object-isNotEmpty',
 };
 
 compact.doc = {
 	name: 'compact',
 	description: 'Removes empty values from an Object.',
 	returnType: 'boolean',
-	docURL:
-		'https://docs.n8n.io/code-examples/expressions/data-transformation-functions/objects/#object-compact',
+	docURL: 'https://docs.n8n.io/code/builtin/data-transformation-functions/objects/#object-compact',
 };
 
 urlEncode.doc = {
@@ -109,7 +115,7 @@ urlEncode.doc = {
 	description: 'Transforms an Object into a URL parameter list. Only top-level keys are supported.',
 	returnType: 'string',
 	docURL:
-		'https://docs.n8n.io/code-examples/expressions/data-transformation-functions/objects/#object-urlEncode',
+		'https://docs.n8n.io/code/builtin/data-transformation-functions/objects/#object-urlEncode',
 };
 
 hasField.doc = {
@@ -117,8 +123,7 @@ hasField.doc = {
 	description: 'Checks if the Object has a given field. Only top-level keys are supported.',
 	returnType: 'boolean',
 	args: [{ name: 'fieldName', type: 'string' }],
-	docURL:
-		'https://docs.n8n.io/code-examples/expressions/data-transformation-functions/objects/#object-hasField',
+	docURL: 'https://docs.n8n.io/code/builtin/data-transformation-functions/objects/#object-hasField',
 };
 
 removeField.doc = {
@@ -127,7 +132,7 @@ removeField.doc = {
 	returnType: 'object',
 	args: [{ name: 'key', type: 'string' }],
 	docURL:
-		'https://docs.n8n.io/code-examples/expressions/data-transformation-functions/objects/#object-removeField',
+		'https://docs.n8n.io/code/builtin/data-transformation-functions/objects/#object-removeField',
 };
 
 removeFieldsContaining.doc = {
@@ -137,7 +142,7 @@ removeFieldsContaining.doc = {
 	returnType: 'object',
 	args: [{ name: 'value', type: 'string' }],
 	docURL:
-		'https://docs.n8n.io/code-examples/expressions/data-transformation-functions/objects/#object-removeFieldsContaining',
+		'https://docs.n8n.io/code/builtin/data-transformation-functions/objects/#object-removeFieldsContaining',
 };
 
 keepFieldsContaining.doc = {
@@ -146,7 +151,21 @@ keepFieldsContaining.doc = {
 	returnType: 'object',
 	args: [{ name: 'value', type: 'string' }],
 	docURL:
-		'https://docs.n8n.io/code-examples/expressions/data-transformation-functions/objects/#object-keepFieldsContaining',
+		'https://docs.n8n.io/code/builtin/data-transformation-functions/objects/#object-keepFieldsContaining',
+};
+
+keys.doc = {
+	name: 'keys',
+	description: "Returns an array of a given object's own enumerable string-keyed property names.",
+	docURL: 'https://docs.n8n.io/code/builtin/data-transformation-functions/objects/#object-keys',
+	returnType: 'Array',
+};
+
+values.doc = {
+	name: 'values',
+	description: "Returns an array of a given object's own enumerable string-keyed property values.",
+	docURL: 'https://docs.n8n.io/code/builtin/data-transformation-functions/objects/#object-values',
+	returnType: 'Array',
 };
 
 export const objectExtensions: ExtensionMap = {
@@ -160,5 +179,7 @@ export const objectExtensions: ExtensionMap = {
 		keepFieldsContaining,
 		compact,
 		urlEncode,
+		keys,
+		values,
 	},
 };

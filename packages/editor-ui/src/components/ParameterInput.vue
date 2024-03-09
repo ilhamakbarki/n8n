@@ -1,8 +1,8 @@
 <template>
-	<div @keydown.stop :class="parameterInputClasses">
-		<expression-edit
-			:dialogVisible="expressionEditDialogVisible"
-			:modelValue="
+	<div :class="parameterInputClasses" @keydown.stop>
+		<ExpressionEdit
+			:dialog-visible="expressionEditDialogVisible"
+			:model-value="
 				isResourceLocatorParameter && typeof modelValue !== 'string'
 					? modelValue
 						? modelValue.value
@@ -11,30 +11,30 @@
 			"
 			:parameter="parameter"
 			:path="path"
-			:eventSource="eventSource || 'ndv'"
-			:isReadOnly="isReadOnly"
-			:redactValues="shouldRedactValue"
+			:event-source="eventSource || 'ndv'"
+			:is-read-only="isReadOnly"
+			:redact-values="shouldRedactValue"
 			@closeDialog="closeExpressionEditDialog"
-			@update:modelValue="expressionUpdated"
-		></expression-edit>
+			@update:model-value="expressionUpdated"
+		></ExpressionEdit>
 		<div class="parameter-input ignore-key-press" :style="parameterInputWrapperStyle">
-			<resource-locator
+			<ResourceLocator
 				v-if="isResourceLocatorParameter"
 				ref="resourceLocator"
 				:parameter="parameter"
-				:modelValue="modelValue"
-				:dependentParametersValues="dependentParametersValues"
-				:displayTitle="displayTitle"
-				:expressionDisplayValue="expressionDisplayValue"
-				:expressionComputedValue="expressionEvaluated"
-				:isValueExpression="isValueExpression"
-				:isReadOnly="isReadOnly"
-				:parameterIssues="getIssues"
+				:model-value="modelValue"
+				:dependent-parameters-values="dependentParametersValues"
+				:display-title="displayTitle"
+				:expression-display-value="expressionDisplayValue"
+				:expression-computed-value="expressionEvaluated"
+				:is-value-expression="isValueExpression"
+				:is-read-only="isReadOnly"
+				:parameter-issues="getIssues"
 				:droppable="droppable"
 				:node="node"
 				:path="path"
 				:event-bus="eventBus"
-				@update:modelValue="valueChanged"
+				@update:model-value="valueChanged"
 				@modalOpenerClick="openExpressionEditorModal"
 				@focus="setFocus"
 				@blur="onBlur"
@@ -42,17 +42,19 @@
 			/>
 			<ExpressionParameterInput
 				v-else-if="isValueExpression || forceShowExpression"
-				:modelValue="expressionDisplayValue"
+				ref="inputField"
+				:model-value="expressionDisplayValue"
 				:title="displayTitle"
-				:isReadOnly="isReadOnly"
+				:is-read-only="isReadOnly"
+				:rows="rows"
+				:is-assignment="isAssignment"
 				:path="path"
 				:additional-expression-data="additionalExpressionData"
 				:class="{ 'ph-no-capture': shouldRedactValue }"
-				@update:modelValue="expressionUpdated"
+				@update:model-value="expressionUpdated"
 				@modalOpenerClick="openExpressionEditorModal"
 				@focus="setFocus"
 				@blur="onBlur"
-				ref="inputField"
 			/>
 			<div
 				v-else-if="
@@ -61,105 +63,206 @@
 				"
 			>
 				<el-dialog
-					v-if="codeEditDialogVisible"
-					:modelValue="true"
+					:model-value="codeEditDialogVisible"
 					append-to-body
-					:close-on-click-modal="false"
 					width="80%"
 					:title="`${i18n.baseText('codeEdit.edit')} ${$locale
 						.nodeText()
 						.inputLabelDisplayName(parameter, path)}`"
 					:before-close="closeCodeEditDialog"
+					data-test-id="code-editor-fullscreen"
 				>
-					<div class="ignore-key-press">
-						<code-node-editor
-							:modelValue="modelValue"
-							:defaultValue="parameter.default"
+					<div :key="codeEditDialogVisible" class="ignore-key-press code-edit-dialog">
+						<CodeNodeEditor
+							v-if="editorType === 'codeNodeEditor'"
+							:model-value="modelValue"
+							:default-value="parameter.default"
 							:language="editorLanguage"
-							:isReadOnly="isReadOnly"
-							@update:modelValue="expressionUpdated"
+							:is-read-only="isReadOnly"
+							fill-parent
+							@update:model-value="valueChangedDebounced"
+						/>
+						<HtmlEditor
+							v-else-if="editorType === 'htmlEditor'"
+							:model-value="modelValue"
+							:is-read-only="isReadOnly"
+							:rows="getArgument('rows')"
+							:disable-expression-coloring="!isHtmlNode(node)"
+							:disable-expression-completions="!isHtmlNode(node)"
+							fill-parent
+							@update:model-value="valueChangedDebounced"
+						/>
+						<SqlEditor
+							v-else-if="editorType === 'sqlEditor'"
+							:model-value="modelValue"
+							:dialect="getArgument('sqlDialect')"
+							:is-read-only="isReadOnly"
+							:rows="getArgument('rows')"
+							fill-parent
+							@update:model-value="valueChangedDebounced"
+						/>
+						<JsEditor
+							v-else-if="editorType === 'jsEditor'"
+							:model-value="modelValue"
+							:is-read-only="isReadOnly"
+							:rows="getArgument('rows')"
+							fill-parent
+							@update:model-value="valueChangedDebounced"
+						/>
+
+						<JsonEditor
+							v-else-if="parameter.type === 'json'"
+							:model-value="modelValue"
+							:is-read-only="isReadOnly"
+							:rows="getArgument('rows')"
+							fill-parent
+							@update:model-value="valueChangedDebounced"
 						/>
 					</div>
 				</el-dialog>
 
-				<text-edit
-					:dialogVisible="textEditDialogVisible"
-					:modelValue="modelValue"
+				<TextEdit
+					:dialog-visible="textEditDialogVisible"
+					:model-value="modelValue"
 					:parameter="parameter"
 					:path="path"
-					:isReadOnly="isReadOnly"
+					:is-read-only="isReadOnly"
 					@closeDialog="closeTextEditDialog"
-					@update:modelValue="expressionUpdated"
-				></text-edit>
+					@update:model-value="expressionUpdated"
+				></TextEdit>
 
-				<code-node-editor
+				<CodeNodeEditor
 					v-if="editorType === 'codeNodeEditor' && isCodeNode(node)"
+					:key="codeEditDialogVisible"
 					:mode="node.parameters.mode"
-					:modelValue="modelValue"
-					:defaultValue="parameter.default"
+					:model-value="modelValue"
+					:default-value="parameter.default"
 					:language="editorLanguage"
-					:isReadOnly="isReadOnly"
+					:is-read-only="isReadOnly"
 					:rows="getArgument('rows')"
-					:aiButtonEnabled="settingsStore.isCloudDeployment"
-					@update:modelValue="valueChangedDebounced"
-				/>
+					:ai-button-enabled="settingsStore.isCloudDeployment"
+					@update:model-value="valueChangedDebounced"
+				>
+					<template #suffix>
+						<n8n-icon
+							data-test-id="code-editor-fullscreen-button"
+							icon="external-link-alt"
+							size="xsmall"
+							class="textarea-modal-opener"
+							:title="$locale.baseText('parameterInput.openEditWindow')"
+							@click="displayEditDialog()"
+						/>
+					</template>
+				</CodeNodeEditor>
 
-				<html-editor
+				<HtmlEditor
 					v-else-if="editorType === 'htmlEditor'"
-					:modelValue="modelValue"
-					:isReadOnly="isReadOnly"
+					:key="codeEditDialogVisible"
+					:model-value="modelValue"
+					:is-read-only="isReadOnly"
 					:rows="getArgument('rows')"
-					:disableExpressionColoring="!isHtmlNode(node)"
-					:disableExpressionCompletions="!isHtmlNode(node)"
-					@update:modelValue="valueChangedDebounced"
-				/>
+					:disable-expression-coloring="!isHtmlNode(node)"
+					:disable-expression-completions="!isHtmlNode(node)"
+					@update:model-value="valueChangedDebounced"
+				>
+					<template #suffix>
+						<n8n-icon
+							data-test-id="code-editor-fullscreen-button"
+							icon="external-link-alt"
+							size="xsmall"
+							class="textarea-modal-opener"
+							:title="$locale.baseText('parameterInput.openEditWindow')"
+							@click="displayEditDialog()"
+						/>
+					</template>
+				</HtmlEditor>
 
-				<sql-editor
+				<SqlEditor
 					v-else-if="editorType === 'sqlEditor'"
-					:modelValue="modelValue"
+					:key="codeEditDialogVisible"
+					:model-value="modelValue"
 					:dialect="getArgument('sqlDialect')"
-					:isReadOnly="isReadOnly"
+					:is-read-only="isReadOnly"
 					:rows="getArgument('rows')"
-					@update:modelValue="valueChangedDebounced"
-				/>
+					@update:model-value="valueChangedDebounced"
+				>
+					<template #suffix>
+						<n8n-icon
+							data-test-id="code-editor-fullscreen-button"
+							icon="external-link-alt"
+							size="xsmall"
+							class="textarea-modal-opener"
+							:title="$locale.baseText('parameterInput.openEditWindow')"
+							@click="displayEditDialog()"
+						/>
+					</template>
+				</SqlEditor>
 
-				<code-node-editor
-					v-else-if="editorType === 'json' && !isExecuteWorkflowNode(node)"
-					:mode="node.parameters.mode"
-					:modelValue="modelValue"
-					:defaultValue="parameter.default"
-					:language="editorLanguage"
-					:isReadOnly="isReadOnly"
-					:aiButtonEnabled="false"
-					@update:modelValue="valueChangedDebounced"
+				<JsEditor
+					v-else-if="editorType === 'jsEditor'"
+					:key="codeEditDialogVisible"
+					:model-value="modelValue"
+					:is-read-only="isReadOnly"
 					:rows="getArgument('rows')"
-				/>
+					@update:model-value="valueChangedDebounced"
+				>
+					<template #suffix>
+						<n8n-icon
+							data-test-id="code-editor-fullscreen-button"
+							icon="external-link-alt"
+							size="xsmall"
+							class="textarea-modal-opener"
+							:title="$locale.baseText('parameterInput.openEditWindow')"
+							@click="displayEditDialog()"
+						/>
+					</template>
+				</JsEditor>
+
+				<JsonEditor
+					v-else-if="parameter.type === 'json'"
+					:key="codeEditDialogVisible"
+					:model-value="modelValue"
+					:is-read-only="isReadOnly"
+					:rows="getArgument('rows')"
+					@update:model-value="valueChangedDebounced"
+				>
+					<template #suffix>
+						<n8n-icon
+							data-test-id="code-editor-fullscreen-button"
+							icon="external-link-alt"
+							size="xsmall"
+							class="textarea-modal-opener"
+							:title="$locale.baseText('parameterInput.openEditWindow')"
+							@click="displayEditDialog()"
+						/>
+					</template>
+				</JsonEditor>
 
 				<div v-else-if="editorType" class="readonly-code clickable" @click="displayEditDialog()">
-					<code-node-editor
+					<CodeNodeEditor
 						v-if="!codeEditDialogVisible"
-						:modelValue="modelValue"
+						:model-value="modelValue"
 						:language="editorLanguage"
-						:isReadOnly="true"
+						:is-read-only="true"
 						:rows="getArgument('rows')"
 					/>
 				</div>
 
 				<n8n-input
 					v-else
-					v-model="tempValue"
 					ref="inputField"
+					v-model="tempValue"
 					:class="{ 'input-with-opener': true, 'ph-no-capture': shouldRedactValue }"
 					:size="inputSize"
 					:type="getStringInputType"
 					:rows="getArgument('rows')"
 					:disabled="isReadOnly"
-					@update:modelValue="valueChanged($event) && onUpdateTextInput($event)"
+					:title="displayTitle"
+					:placeholder="getPlaceholder()"
+					@update:model-value="valueChanged($event) && onUpdateTextInput($event)"
 					@keydown.stop
 					@focus="setFocus"
 					@blur="onBlur"
-					:title="displayTitle"
-					:placeholder="getPlaceholder()"
 				>
 					<template #suffix>
 						<n8n-icon
@@ -183,34 +286,35 @@
 				<el-color-picker
 					size="small"
 					class="color-picker"
-					:modelValue="displayValue"
+					:model-value="displayValue"
 					:disabled="isReadOnly"
-					@focus="setFocus"
-					@blur="onBlur"
-					@update:modelValue="valueChanged"
 					:title="displayTitle"
 					:show-alpha="getArgument('showAlpha')"
+					@focus="setFocus"
+					@blur="onBlur"
+					@update:model-value="valueChanged"
 				/>
 				<n8n-input
 					v-model="tempValue"
 					:size="inputSize"
 					type="text"
 					:disabled="isReadOnly"
-					@update:modelValue="valueChanged"
+					:title="displayTitle"
+					@update:model-value="valueChanged"
 					@keydown.stop
 					@focus="setFocus"
 					@blur="onBlur"
-					:title="displayTitle"
 				/>
 			</div>
 
 			<el-date-picker
 				v-else-if="parameter.type === 'dateTime'"
-				v-model="tempValue"
 				ref="inputField"
+				v-model="tempValue"
 				type="datetime"
+				value-format="YYYY-MM-DDTHH:mm:ss"
 				:size="inputSize"
-				:modelValue="displayValue"
+				:model-value="displayValue"
 				:title="displayTitle"
 				:disabled="isReadOnly"
 				:placeholder="
@@ -220,7 +324,7 @@
 				"
 				:picker-options="dateTimePickerOptions"
 				:class="{ 'ph-no-capture': shouldRedactValue }"
-				@update:modelValue="valueChanged"
+				@update:model-value="valueChanged"
 				@focus="setFocus"
 				@blur="onBlur"
 				@keydown.stop
@@ -230,62 +334,62 @@
 				v-else-if="parameter.type === 'number'"
 				ref="inputField"
 				:size="inputSize"
-				:modelValue="displayValue"
+				:model-value="displayValue"
 				:controls="false"
 				:max="getArgument('maxValue')"
 				:min="getArgument('minValue')"
 				:precision="getArgument('numberPrecision')"
 				:disabled="isReadOnly"
 				:class="{ 'ph-no-capture': shouldRedactValue }"
-				@update:modelValue="onUpdateTextInput"
+				:title="displayTitle"
+				:placeholder="parameter.placeholder"
+				@update:model-value="onUpdateTextInput"
 				@focus="setFocus"
 				@blur="onBlur"
 				@keydown.stop
-				:title="displayTitle"
-				:placeholder="parameter.placeholder"
 			/>
 
-			<credentials-select
+			<CredentialsSelect
 				v-else-if="parameter.type === 'credentialsSelect' || parameter.name === 'genericAuthType'"
 				ref="inputField"
 				:parameter="parameter"
 				:node="node"
-				:activeCredentialType="activeCredentialType"
-				:inputSize="inputSize"
-				:displayValue="displayValue"
-				:isReadOnly="isReadOnly"
-				:displayTitle="displayTitle"
+				:active-credential-type="activeCredentialType"
+				:input-size="inputSize"
+				:display-value="displayValue"
+				:is-read-only="isReadOnly"
+				:display-title="displayTitle"
 				@credentialSelected="credentialSelected"
-				@update:modelValue="valueChanged"
+				@update:model-value="valueChanged"
 				@setFocus="setFocus"
 				@onBlur="onBlur"
 			>
 				<template #issues-and-options>
-					<parameter-issues :issues="getIssues" />
+					<ParameterIssues :issues="getIssues" />
 				</template>
-			</credentials-select>
+			</CredentialsSelect>
 
 			<n8n-select
 				v-else-if="parameter.type === 'options'"
 				ref="inputField"
 				:size="inputSize"
 				filterable
-				:modelValue="displayValue"
+				:model-value="displayValue"
 				:placeholder="
 					parameter.placeholder ? getPlaceholder() : i18n.baseText('parameterInput.select')
 				"
 				:loading="remoteParameterOptionsLoading"
 				:disabled="isReadOnly || remoteParameterOptionsLoading"
 				:title="displayTitle"
-				@update:modelValue="valueChanged"
+				@update:model-value="valueChanged"
 				@keydown.stop
 				@focus="setFocus"
 				@blur="onBlur"
 			>
 				<n8n-option
 					v-for="option in parameterOptions"
-					:value="option.value"
 					:key="option.value"
+					:value="option.value"
 					:label="getOptionsOptionDisplayName(option)"
 				>
 					<div class="list-option">
@@ -310,20 +414,20 @@
 				:size="inputSize"
 				filterable
 				multiple
-				:modelValue="displayValue"
+				:model-value="displayValue"
 				:loading="remoteParameterOptionsLoading"
 				:disabled="isReadOnly || remoteParameterOptionsLoading"
 				:title="displayTitle"
 				:placeholder="i18n.baseText('parameterInput.select')"
-				@update:modelValue="valueChanged"
+				@update:model-value="valueChanged"
 				@keydown.stop
 				@focus="setFocus"
 				@blur="onBlur"
 			>
 				<n8n-option
 					v-for="option in parameterOptions"
-					:value="option.value"
 					:key="option.value"
+					:value="option.value"
 					:label="getOptionsOptionDisplayName(option)"
 				>
 					<div class="list-option">
@@ -341,22 +445,22 @@
 			<n8n-input
 				v-else-if="parameter.type === 'boolean' && droppable"
 				:size="inputSize"
-				:modelValue="JSON.stringify(displayValue)"
+				:model-value="JSON.stringify(displayValue)"
 				:disabled="isReadOnly"
 				:title="displayTitle"
 			/>
 			<el-switch
 				v-else-if="parameter.type === 'boolean'"
-				:class="{ 'switch-input': true, 'ph-no-capture': shouldRedactValue }"
 				ref="inputField"
+				:class="{ 'switch-input': true, 'ph-no-capture': shouldRedactValue }"
 				active-color="#13ce66"
-				:modelValue="displayValue"
+				:model-value="displayValue"
 				:disabled="isReadOnly"
-				@update:modelValue="valueChanged"
+				@update:model-value="valueChanged"
 			/>
 		</div>
 
-		<parameter-issues
+		<ParameterIssues
 			v-if="parameter.type !== 'credentialsSelect' && !isResourceLocatorParameter"
 			:issues="getIssues"
 		/>
@@ -394,21 +498,16 @@ import ExpressionParameterInput from '@/components/ExpressionParameterInput.vue'
 import TextEdit from '@/components/TextEdit.vue';
 import CodeNodeEditor from '@/components/CodeNodeEditor/CodeNodeEditor.vue';
 import HtmlEditor from '@/components/HtmlEditor/HtmlEditor.vue';
+import JsEditor from '@/components/JsEditor/JsEditor.vue';
+import JsonEditor from '@/components/JsonEditor/JsonEditor.vue';
 import SqlEditor from '@/components/SqlEditor/SqlEditor.vue';
-import { externalHooks } from '@/mixins/externalHooks';
-import { nodeHelpers } from '@/mixins/nodeHelpers';
-import { workflowHelpers } from '@/mixins/workflowHelpers';
-import { hasExpressionMapping, isValueExpression, isResourceLocatorValue } from '@/utils';
 
-import {
-	CODE_NODE_TYPE,
-	CUSTOM_API_CALL_KEY,
-	EXECUTE_WORKFLOW_NODE_TYPE,
-	HTML_NODE_TYPE,
-} from '@/constants';
+import { hasExpressionMapping, isValueExpression } from '@/utils/nodeTypesUtils';
+import { isResourceLocatorValue } from '@/utils/typeGuards';
+
+import { CUSTOM_API_CALL_KEY, HTML_NODE_TYPE, NODES_USING_CODE_NODE_EDITOR } from '@/constants';
 
 import type { PropType } from 'vue';
-import { debounceHelper } from '@/mixins/debounce';
 import { useWorkflowsStore } from '@/stores/workflows.store';
 import { useNDVStore } from '@/stores/ndv.store';
 import { useNodeTypesStore } from '@/stores/nodeTypes.store';
@@ -417,15 +516,24 @@ import { useSettingsStore } from '@/stores/settings.store';
 import { htmlEditorEventBus } from '@/event-bus';
 import type { EventBus } from 'n8n-design-system/utils';
 import { createEventBus } from 'n8n-design-system/utils';
-import { useI18n } from '@/composables';
+import { useNodeHelpers } from '@/composables/useNodeHelpers';
+import { useI18n } from '@/composables/useI18n';
 import type { N8nInput } from 'n8n-design-system';
+import { isCredentialOnlyNodeType } from '@/utils/credentialOnlyNodes';
+import { useExternalHooks } from '@/composables/useExternalHooks';
+import { useDebounce } from '@/composables/useDebounce';
+import { useWorkflowHelpers } from '@/composables/useWorkflowHelpers';
+import { useRouter } from 'vue-router';
+
+type Picker = { $emit: (arg0: string, arg1: Date) => void };
 
 export default defineComponent({
-	name: 'parameter-input',
-	mixins: [externalHooks, nodeHelpers, workflowHelpers, debounceHelper],
+	name: 'ParameterInput',
 	components: {
 		CodeNodeEditor,
 		HtmlEditor,
+		JsEditor,
+		JsonEditor,
 		SqlEditor,
 		ExpressionEdit,
 		ExpressionParameterInput,
@@ -440,6 +548,13 @@ export default defineComponent({
 			default: () => ({}),
 		},
 		isReadOnly: {
+			type: Boolean,
+		},
+		rows: {
+			type: Number,
+			default: 5,
+		},
+		isAssignment: {
 			type: Boolean,
 		},
 		parameter: {
@@ -499,10 +614,19 @@ export default defineComponent({
 		},
 	},
 	setup() {
+		const externalHooks = useExternalHooks();
 		const i18n = useI18n();
+		const nodeHelpers = useNodeHelpers();
+		const { callDebounced } = useDebounce();
+		const router = useRouter();
+		const workflowHelpers = useWorkflowHelpers({ router });
 
 		return {
+			externalHooks,
 			i18n,
+			nodeHelpers,
+			workflowHelpers,
+			callDebounced,
 		};
 	},
 	data() {
@@ -524,14 +648,14 @@ export default defineComponent({
 					{
 						text: 'Today', // TODO
 
-						onClick(picker: any) {
+						onClick(picker: Picker) {
 							picker.$emit('pick', new Date());
 						},
 					},
 					{
 						text: 'Yesterday', // TODO
 
-						onClick(picker: any) {
+						onClick(picker: Picker) {
 							const date = new Date();
 							date.setTime(date.getTime() - 3600 * 1000 * 24);
 							picker.$emit('pick', date);
@@ -540,7 +664,7 @@ export default defineComponent({
 					{
 						text: 'A week ago', // TODO
 
-						onClick(picker: any) {
+						onClick(picker: Picker) {
 							const date = new Date();
 							date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
 							picker.$emit('pick', date);
@@ -603,7 +727,7 @@ export default defineComponent({
 			// Get the resolved parameter values of the current node
 			const currentNodeParameters = this.ndvStore.activeNode?.parameters;
 			try {
-				const resolvedNodeParameters = this.resolveParameter(currentNodeParameters);
+				const resolvedNodeParameters = this.workflowHelpers.resolveParameter(currentNodeParameters);
 
 				const returnValues: string[] = [];
 				for (const parameterPath of loadOptionsDependsOn) {
@@ -632,7 +756,7 @@ export default defineComponent({
 			return this.i18n.baseText('parameterInput.parameter', interpolation);
 		},
 		displayValue(): string | number | boolean | null {
-			if (this.remoteParameterOptionsLoading === true) {
+			if (this.remoteParameterOptionsLoading) {
 				// If it is loading options from server display
 				// to user that the data is loading. If not it would
 				// display the user the key instead of the value it
@@ -646,7 +770,7 @@ export default defineComponent({
 			}
 
 			let returnValue;
-			if (this.isValueExpression === false) {
+			if (!this.isValueExpression) {
 				returnValue = this.isResourceLocatorParameter
 					? isResourceLocatorValue(this.modelValue)
 						? this.modelValue.value
@@ -706,7 +830,7 @@ export default defineComponent({
 			return 'text';
 		},
 		getIssues(): string[] {
-			if (this.hideIssues === true || this.node === null) {
+			if (this.hideIssues || this.node === null) {
 				return [];
 			}
 
@@ -728,7 +852,7 @@ export default defineComponent({
 				issues.parameters[this.parameter.name] = [issue];
 			} else if (
 				['options', 'multiOptions'].includes(this.parameter.type) &&
-				this.remoteParameterOptionsLoading === false &&
+				!this.remoteParameterOptionsLoading &&
 				this.remoteParameterOptionsLoadingIssues === null &&
 				this.parameterOptions
 			) {
@@ -772,11 +896,7 @@ export default defineComponent({
 				];
 			}
 
-			if (
-				issues !== undefined &&
-				issues.parameters !== undefined &&
-				issues.parameters[this.parameter.name] !== undefined
-			) {
+			if (issues?.parameters?.[this.parameter.name] !== undefined) {
 				return issues.parameters[this.parameter.name];
 			}
 
@@ -792,7 +912,7 @@ export default defineComponent({
 		parameterOptions():
 			| Array<INodePropertyOptions | INodeProperties | INodePropertyCollection>
 			| undefined {
-			if (this.hasRemoteMethod === false) {
+			if (!this.hasRemoteMethod) {
 				// Options are already given
 				return this.parameter.options;
 			}
@@ -852,7 +972,7 @@ export default defineComponent({
 			return shortPath.join('.');
 		},
 		workflow(): Workflow {
-			return this.getCurrentWorkflow();
+			return this.workflowHelpers.getCurrentWorkflow();
 		},
 		isResourceLocatorParameter(): boolean {
 			return this.parameter.type === 'resourceLocator';
@@ -867,6 +987,58 @@ export default defineComponent({
 			return this.getStringInputType === 'password' || this.isForCredential;
 		},
 	},
+	async updated() {
+		await this.$nextTick();
+		const remoteParameterOptions = this.$el.querySelectorAll('.remote-parameter-option');
+
+		if (remoteParameterOptions.length > 0) {
+			void this.externalHooks.run('parameterInput.updated', { remoteParameterOptions });
+		}
+	},
+	mounted() {
+		this.eventBus.on('optionSelected', this.optionSelected);
+
+		this.tempValue = this.displayValue as string;
+		if (this.node !== null) {
+			this.nodeName = this.node.name;
+		}
+
+		if (this.node && this.node.parameters.authentication === 'predefinedCredentialType') {
+			this.activeCredentialType = this.node.parameters.nodeCredentialType as string;
+		}
+
+		if (
+			this.parameter.type === 'color' &&
+			this.getArgument('showAlpha') === true &&
+			this.displayValue !== null &&
+			this.displayValue.toString().charAt(0) !== '#'
+		) {
+			const newValue = this.rgbaToHex(this.displayValue as string);
+			if (newValue !== null) {
+				this.tempValue = newValue;
+			}
+		}
+
+		if (this.hasRemoteMethod && this.node !== null) {
+			// Make sure to load the parameter options
+			// directly and whenever the credentials change
+			this.$watch(
+				() => this.node?.credentials,
+				() => {
+					void this.loadRemoteParameterOptions();
+				},
+				{ immediate: true },
+			);
+		}
+
+		void this.externalHooks.run('parameterInput.mount', {
+			parameter: this.parameter,
+			inputFieldRef: this.$refs.inputField as InstanceType<typeof N8nInput>,
+		});
+	},
+	beforeUnmount() {
+		this.eventBus.off('optionSelected', this.optionSelected);
+	},
 	methods: {
 		isRemoteParameterOption(option: INodePropertyOptions) {
 			return this.remoteParameterOptionsKeys.includes(option.name);
@@ -879,10 +1051,10 @@ export default defineComponent({
 
 			if (node) {
 				// Update the issues
-				this.updateNodeCredentialIssues(node);
+				this.nodeHelpers.updateNodeCredentialIssues(node);
 			}
 
-			void this.$externalHooks().run('nodeSettings.credentialSelected', { updateInformation });
+			void this.externalHooks.run('nodeSettings.credentialSelected', { updateInformation });
 		},
 		/**
 		 * Check whether a param value must be skipped when collecting node param issues for validation.
@@ -909,7 +1081,7 @@ export default defineComponent({
 		async loadRemoteParameterOptions() {
 			if (
 				this.node === null ||
-				this.hasRemoteMethod === false ||
+				!this.hasRemoteMethod ||
 				this.remoteParameterOptionsLoading ||
 				!this.parameter
 			) {
@@ -923,7 +1095,7 @@ export default defineComponent({
 
 			try {
 				const currentNodeParameters = (this.ndvStore.activeNode as INodeUi).parameters;
-				const resolvedNodeParameters = this.resolveRequiredParameters(
+				const resolvedNodeParameters = this.workflowHelpers.resolveRequiredParameters(
 					this.parameter,
 					currentNodeParameters,
 				) as INodeParameters;
@@ -965,7 +1137,7 @@ export default defineComponent({
 				return;
 			}
 
-			if ((this.node.type as string).startsWith('n8n-nodes-base')) {
+			if (this.node.type.startsWith('n8n-nodes-base') || isCredentialOnlyNodeType(this.node.type)) {
 				this.$telemetry.track('User opened Expression Editor', {
 					node_type: this.node.type,
 					parameter_name: this.parameter.displayName,
@@ -991,7 +1163,7 @@ export default defineComponent({
 				return;
 			}
 
-			if (this.editorType) {
+			if (this.editorType || this.parameter.type === 'json') {
 				this.codeEditDialogVisible = true;
 			} else {
 				this.textEditDialogVisible = true;
@@ -1052,19 +1224,14 @@ export default defineComponent({
 			this.$emit('focus');
 		},
 		isCodeNode(node: INodeUi): boolean {
-			return node.type === CODE_NODE_TYPE;
+			return NODES_USING_CODE_NODE_EDITOR.includes(node.type);
 		},
 		isHtmlNode(node: INodeUi): boolean {
 			return node.type === HTML_NODE_TYPE;
 		},
-		isExecuteWorkflowNode(node: INodeUi): boolean {
-			return node.type === EXECUTE_WORKFLOW_NODE_TYPE;
-		},
 		rgbaToHex(value: string): string | null {
 			// Convert rgba to hex from: https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
-			const valueMatch = (value as string).match(
-				/^rgba\((\d+),\s*(\d+),\s*(\d+),\s*(\d+(\.\d+)?)\)$/,
-			);
+			const valueMatch = value.match(/^rgba\((\d+),\s*(\d+),\s*(\d+),\s*(\d+(\.\d+)?)\)$/);
 			if (valueMatch === null) {
 				// TODO: Display something if value is not valid
 				return null;
@@ -1086,7 +1253,7 @@ export default defineComponent({
 			this.$emit('textInput', parameterData);
 		},
 		valueChangedDebounced(value: NodeParameterValueType | {} | Date) {
-			void this.callDebounced('valueChanged', { debounceTime: 100 }, value);
+			void this.callDebounced(this.valueChanged, { debounceTime: 100 }, value);
 		},
 		onUpdateTextInput(value: string) {
 			this.valueChanged(value);
@@ -1155,7 +1322,11 @@ export default defineComponent({
 					(!this.modelValue || this.modelValue === '[Object: null]')
 				) {
 					this.valueChanged('={{ 0 }}');
-				} else if (this.parameter.type === 'number' || this.parameter.type === 'boolean') {
+				} else if (
+					this.parameter.type === 'number' ||
+					this.parameter.type === 'boolean' ||
+					typeof this.modelValue !== 'string'
+				) {
 					this.valueChanged(`={{ ${this.modelValue} }}`);
 				} else {
 					this.valueChanged(`=${this.modelValue}`);
@@ -1186,7 +1357,6 @@ export default defineComponent({
 						// Strip the '=' from the beginning
 						newValue = this.modelValue ? this.modelValue.toString().substring(1) : null;
 					}
-
 					this.valueChanged(newValue);
 				}
 			} else if (command === 'refreshOptions') {
@@ -1209,61 +1379,9 @@ export default defineComponent({
 					had_parameter: typeof prevValue === 'string' && prevValue.includes('$parameter'),
 				};
 				this.$telemetry.track('User switched parameter mode', telemetryPayload);
-				void this.$externalHooks().run('parameterInput.modeSwitch', telemetryPayload);
+				void this.externalHooks.run('parameterInput.modeSwitch', telemetryPayload);
 			}
 		},
-	},
-	async updated() {
-		await this.$nextTick();
-		const remoteParameterOptions = this.$el.querySelectorAll('.remote-parameter-option');
-
-		if (remoteParameterOptions.length > 0) {
-			void this.$externalHooks().run('parameterInput.updated', { remoteParameterOptions });
-		}
-	},
-	mounted() {
-		this.eventBus.on('optionSelected', this.optionSelected);
-
-		this.tempValue = this.displayValue as string;
-		if (this.node !== null) {
-			this.nodeName = this.node.name;
-		}
-
-		if (this.node && this.node.parameters.authentication === 'predefinedCredentialType') {
-			this.activeCredentialType = this.node.parameters.nodeCredentialType as string;
-		}
-
-		if (
-			this.parameter.type === 'color' &&
-			this.getArgument('showAlpha') === true &&
-			this.displayValue !== null &&
-			this.displayValue.toString().charAt(0) !== '#'
-		) {
-			const newValue = this.rgbaToHex(this.displayValue as string);
-			if (newValue !== null) {
-				this.tempValue = newValue;
-			}
-		}
-
-		if (this.hasRemoteMethod === true && this.node !== null) {
-			// Make sure to load the parameter options
-			// directly and whenever the credentials change
-			this.$watch(
-				() => this.node?.credentials,
-				() => {
-					void this.loadRemoteParameterOptions();
-				},
-				{ deep: true, immediate: true },
-			);
-		}
-
-		void this.$externalHooks().run('parameterInput.mount', {
-			parameter: this.parameter,
-			inputFieldRef: this.$refs['inputField'],
-		});
-	},
-	beforeUnmount() {
-		this.eventBus.off('optionSelected', this.optionSelected);
 	},
 });
 </script>
@@ -1308,7 +1426,8 @@ export default defineComponent({
 }
 
 .droppable {
-	--input-border-color: var(--color-secondary);
+	--input-border-color: var(--color-ndv-droppable-parameter);
+	--input-border-right-color: var(--color-ndv-droppable-parameter);
 	--input-border-style: dashed;
 
 	textarea,
@@ -1320,6 +1439,7 @@ export default defineComponent({
 
 .activeDrop {
 	--input-border-color: var(--color-success);
+	--input-border-right-color: var(--color-success);
 	--input-background-color: var(--color-foreground-xlight);
 	--input-border-style: solid;
 
@@ -1376,11 +1496,15 @@ export default defineComponent({
 	right: 0;
 }
 
+.el-input--suffix .el-input__inner {
+	padding-right: 0;
+}
+
 .textarea-modal-opener {
 	position: absolute;
 	right: 0;
 	bottom: 0;
-	background-color: white;
+	background-color: var(--color-code-background);
 	padding: 3px;
 	line-height: 9px;
 	border: var(--border-base);
@@ -1405,5 +1529,13 @@ export default defineComponent({
 
 .invalid {
 	border-color: var(--color-danger);
+}
+
+.code-edit-dialog {
+	height: 70vh;
+
+	.code-node-editor {
+		height: 100%;
+	}
 }
 </style>

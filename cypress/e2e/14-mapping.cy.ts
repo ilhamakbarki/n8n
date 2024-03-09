@@ -80,14 +80,14 @@ describe('Data mapping', () => {
 			.parameterExpressionPreview('value')
 			.should('include.text', '0')
 			.invoke('css', 'color')
-			.should('equal', 'rgb(125, 125, 135)');
+			.should('equal', 'rgb(113, 116, 122)');
 
 		ndv.getters.inputTbodyCell(2, 0).realHover();
 		ndv.getters
 			.parameterExpressionPreview('value')
 			.should('include.text', '1')
 			.invoke('css', 'color')
-			.should('equal', 'rgb(125, 125, 135)');
+			.should('equal', 'rgb(113, 116, 122)');
 
 		ndv.actions.execute();
 
@@ -96,14 +96,14 @@ describe('Data mapping', () => {
 			.parameterExpressionPreview('value')
 			.should('include.text', '0')
 			.invoke('css', 'color')
-			.should('equal', 'rgb(125, 125, 135)'); // todo update color
+			.should('equal', 'rgb(113, 116, 122)'); // todo update color
 
 		ndv.getters.outputTbodyCell(2, 0).realHover();
 		ndv.getters
 			.parameterExpressionPreview('value')
 			.should('include.text', '1')
 			.invoke('css', 'color')
-			.should('equal', 'rgb(125, 125, 135)');
+			.should('equal', 'rgb(113, 116, 122)');
 	});
 
 	it('maps expressions from json view', () => {
@@ -181,11 +181,6 @@ describe('Data mapping', () => {
 		ndv.getters
 			.inlineExpressionEditorInput()
 			.should('have.text', `{{ $('${SCHEDULE_TRIGGER_NODE_NAME}').item.json.input[0].count }}`);
-		ndv.getters
-			.parameterExpressionPreview('value')
-			.invoke('text')
-			.invoke('replace', /\u00a0/g, ' ')
-			.should('equal', '[ERROR: no data, execute "Schedule Trigger" node first]');
 
 		ndv.actions.switchInputMode('Table');
 		ndv.actions.mapDataFromHeader(1, 'value');
@@ -195,7 +190,6 @@ describe('Data mapping', () => {
 				'have.text',
 				`{{ $('${SCHEDULE_TRIGGER_NODE_NAME}').item.json.input[0].count }} {{ $('${SCHEDULE_TRIGGER_NODE_NAME}').item.json.input }}`,
 			);
-		ndv.actions.validateExpressionPreview('value', ' ');
 
 		ndv.actions.selectInputNode('Set');
 
@@ -235,11 +229,8 @@ describe('Data mapping', () => {
 
 		ndv.actions.close();
 
-		workflowPage.actions.addNodeToCanvas('Item Lists');
-		workflowPage.actions.openNode('Item Lists');
-
-		ndv.getters.parameterInput('operation').click();
-		getVisibleSelect().find('li').contains('Sort').click();
+		workflowPage.actions.addNodeToCanvas('Sort');
+		workflowPage.actions.openNode('Sort');
 
 		ndv.getters.nodeParameters().find('button').contains('Add Field To Sort By').click();
 
@@ -294,8 +285,8 @@ describe('Data mapping', () => {
 		ndv.actions.clearParameterInput('value');
 		cy.get('body').type('{esc}');
 
-		ndv.getters.parameterInput('keepOnlySet').find('input[type="checkbox"]').should('exist');
-		ndv.getters.parameterInput('keepOnlySet').find('input[type="text"]').should('not.exist');
+		ndv.getters.parameterInput('includeOtherFields').find('input[type="checkbox"]').should('exist');
+		ndv.getters.parameterInput('includeOtherFields').find('input[type="text"]').should('not.exist');
 		ndv.getters
 			.inputDataContainer()
 			.should('exist')
@@ -305,9 +296,12 @@ describe('Data mapping', () => {
 			.realMouseMove(100, 100);
 		cy.wait(50);
 
-		ndv.getters.parameterInput('keepOnlySet').find('input[type="checkbox"]').should('not.exist');
 		ndv.getters
-			.parameterInput('keepOnlySet')
+			.parameterInput('includeOtherFields')
+			.find('input[type="checkbox"]')
+			.should('not.exist');
+		ndv.getters
+			.parameterInput('includeOtherFields')
 			.find('input[type="text"]')
 			.should('exist')
 			.invoke('css', 'border')

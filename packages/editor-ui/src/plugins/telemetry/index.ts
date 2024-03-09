@@ -4,12 +4,18 @@ import type { RouteLocation } from 'vue-router';
 
 import type { INodeCreateElement, IUpdateInformation } from '@/Interface';
 import type { IUserNodesPanelSession } from './telemetry.types';
-import { useSettingsStore } from '@/stores/settings.store';
+import {
+	APPEND_ATTRIBUTION_DEFAULT_PATH,
+	MICROSOFT_TEAMS_NODE_TYPE,
+	SLACK_NODE_TYPE,
+	TELEGRAM_NODE_TYPE,
+} from '@/constants';
 import { useRootStore } from '@/stores/n8nRoot.store';
-import { useTelemetryStore } from '@/stores/telemetry.store';
-import { SLACK_NODE_TYPE } from '@/constants';
+import { useNDVStore } from '@/stores/ndv.store';
 import { usePostHog } from '@/stores/posthog.store';
-import { useNDVStore } from '@/stores';
+import { useSettingsStore } from '@/stores/settings.store';
+import { useTelemetryStore } from '@/stores/telemetry.store';
+import { useUIStore } from '@/stores/ui.store';
 
 export class Telemetry {
 	private pageEventQueue: Array<{ route: RouteLocation }>;
@@ -93,7 +99,7 @@ export class Telemetry {
 	track(
 		event: string,
 		properties?: ITelemetryTrackProperties,
-		{ withPostHog } = { withPostHog: false },
+		options: { withPostHog?: boolean } = {},
 	) {
 		if (!this.rudderStack) return;
 
@@ -104,7 +110,7 @@ export class Telemetry {
 
 		this.rudderStack.track(event, updatedProperties);
 
-		if (withPostHog) {
+		if (options.withPostHog) {
 			usePostHog().capture(event, updatedProperties);
 		}
 	}
@@ -122,6 +128,8 @@ export class Telemetry {
 			if (route.meta?.telemetry && typeof route.meta.telemetry.getProperties === 'function') {
 				properties = route.meta.telemetry.getProperties(route);
 			}
+
+			properties.theme = useUIStore().appliedTheme;
 
 			const category = route.meta?.telemetry?.pageCategory || 'Editor';
 			this.rudderStack.page(category, pageName, properties);
@@ -230,22 +238,21 @@ export class Telemetry {
 	// so we are using this method as centralized way to track node parameters changes
 	trackNodeParametersValuesChange(nodeType: string, change: IUpdateInformation) {
 		if (this.rudderStack) {
-			switch (nodeType) {
-				case SLACK_NODE_TYPE:
-					if (change.name === 'parameters.otherOptions.includeLinkToWorkflow') {
-						this.track(
-							'User toggled n8n reference option',
-							{
-								node: nodeType,
-								toValue: change.value,
-							},
-							{ withPostHog: true },
-						);
-					}
-					break;
-
-				default:
-					break;
+			const changeNameMap: { [key: string]: string } = {
+				[SLACK_NODE_TYPE]: 'parameters.otherOptions.includeLinkToWorkflow',
+				[MICROSOFT_TEAMS_NODE_TYPE]: 'parameters.options.includeLinkToWorkflow',
+				[TELEGRAM_NODE_TYPE]: 'parameters.additionalFields.appendAttribution',
+			};
+			const changeName = changeNameMap[nodeType] || APPEND_ATTRIBUTION_DEFAULT_PATH;
+			if (change.name === changeName) {
+				this.track(
+					'User toggled n8n reference option',
+					{
+						node: nodeType,
+						toValue: change.value,
+					},
+					{ withPostHog: true },
+				);
 			}
 		}
 	}

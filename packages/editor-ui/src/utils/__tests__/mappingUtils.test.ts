@@ -1,5 +1,5 @@
 import type { INodeProperties } from 'n8n-workflow';
-import { getMappedResult, getMappedExpression } from '../mappingUtils';
+import { getMappedResult, getMappedExpression, escapeMappingString } from '../mappingUtils';
 
 const RLC_PARAM: INodeProperties = {
 	displayName: 'Base',
@@ -68,10 +68,6 @@ const JSON_PARAM: INodeProperties = {
 	displayName: 'JSON Payload',
 	name: 'payloadJson',
 	type: 'json',
-	typeOptions: {
-		alwaysOpenEditWindow: true,
-		editor: 'code',
-	},
 	default: '',
 };
 
@@ -275,6 +271,14 @@ describe('Mapping Utils', () => {
 			expect(result).toBe(
 				"{{ $json.propertyName.capitalizedName.stringVal['some-value'].capitalizedProp }}",
 			);
+		});
+	});
+	describe('escapeMappingString', () => {
+		test.each([
+			{ input: 'Normal node name (here)', output: 'Normal node name (here)' },
+			{ input: "'Should es'ape quotes here'", output: "\\'Should es\\'ape quotes here\\'" },
+		])('should escape "$input" to "$output"', ({ input, output }) => {
+			expect(escapeMappingString(input)).toEqual(output);
 		});
 	});
 });

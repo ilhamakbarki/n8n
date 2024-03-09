@@ -1,4 +1,6 @@
-import { Authorized, Get, Post, Patch, RestController } from '@/decorators';
+import type { PullResult } from 'simple-git';
+import express from 'express';
+import { Get, Post, Patch, RestController, GlobalScope } from '@/decorators';
 import {
 	sourceControlLicensedMiddleware,
 	sourceControlLicensedAndEnabledMiddleware,
@@ -8,33 +10,29 @@ import { SourceControlRequest } from './types/requests';
 import { SourceControlPreferencesService } from './sourceControlPreferences.service.ee';
 import type { SourceControlPreferences } from './types/sourceControlPreferences';
 import type { SourceControlledFile } from './types/sourceControlledFile';
-import { SOURCE_CONTROL_API_ROOT, SOURCE_CONTROL_DEFAULT_BRANCH } from './constants';
-import { BadRequestError } from '@/ResponseHelper';
-import type { PullResult } from 'simple-git';
-import express from 'express';
+import { SOURCE_CONTROL_DEFAULT_BRANCH } from './constants';
 import type { ImportResult } from './types/importResult';
-import Container, { Service } from 'typedi';
-import { InternalHooks } from '../../InternalHooks';
+import { InternalHooks } from '@/InternalHooks';
 import { getRepoType } from './sourceControlHelper.ee';
 import { SourceControlGetStatus } from './types/sourceControlGetStatus';
+import { BadRequestError } from '@/errors/response-errors/bad-request.error';
 
-@Service()
-@RestController(`/${SOURCE_CONTROL_API_ROOT}`)
+@RestController('/source-control')
 export class SourceControlController {
 	constructor(
-		private sourceControlService: SourceControlService,
-		private sourceControlPreferencesService: SourceControlPreferencesService,
+		private readonly sourceControlService: SourceControlService,
+		private readonly sourceControlPreferencesService: SourceControlPreferencesService,
+		private readonly internalHooks: InternalHooks,
 	) {}
 
-	@Authorized('none')
-	@Get('/preferences', { middlewares: [sourceControlLicensedMiddleware] })
+	@Get('/preferences', { middlewares: [sourceControlLicensedMiddleware], skipAuth: true })
 	async getPreferences(): Promise<SourceControlPreferences> {
 		// returns the settings with the privateKey property redacted
 		return this.sourceControlPreferencesService.getPreferences();
 	}
 
-	@Authorized(['global', 'owner'])
 	@Post('/preferences', { middlewares: [sourceControlLicensedMiddleware] })
+	@GlobalScope('sourceControl:manage')
 	async setPreferences(req: SourceControlRequest.UpdatePreferences) {
 		if (
 			req.body.branchReadOnly === undefined &&
@@ -84,7 +82,7 @@ export class SourceControlController {
 			const resultingPreferences = this.sourceControlPreferencesService.getPreferences();
 			// #region Tracking Information
 			// located in controller so as to not call this multiple times when updating preferences
-			void Container.get(InternalHooks).onSourceControlSettingsUpdated({
+			void this.internalHooks.onSourceControlSettingsUpdated({
 				branch_name: resultingPreferences.branchName,
 				connected: resultingPreferences.connected,
 				read_only_instance: resultingPreferences.branchReadOnly,
@@ -97,8 +95,8 @@ export class SourceControlController {
 		}
 	}
 
-	@Authorized(['global', 'owner'])
 	@Patch('/preferences', { middlewares: [sourceControlLicensedMiddleware] })
+	@GlobalScope('sourceControl:manage')
 	async updatePreferences(req: SourceControlRequest.UpdatePreferences) {
 		try {
 			const sanitizedPreferences: Partial<SourceControlPreferences> = {
@@ -129,7 +127,7 @@ export class SourceControlController {
 			}
 			await this.sourceControlService.init();
 			const resultingPreferences = this.sourceControlPreferencesService.getPreferences();
-			void Container.get(InternalHooks).onSourceControlSettingsUpdated({
+			void this.internalHooks.onSourceControlSettingsUpdated({
 				branch_name: resultingPreferences.branchName,
 				connected: resultingPreferences.connected,
 				read_only_instance: resultingPreferences.branchReadOnly,
@@ -141,8 +139,8 @@ export class SourceControlController {
 		}
 	}
 
-	@Authorized(['global', 'owner'])
 	@Post('/disconnect', { middlewares: [sourceControlLicensedMiddleware] })
+	@GlobalScope('sourceControl:manage')
 	async disconnect(req: SourceControlRequest.Disconnect) {
 		try {
 			return await this.sourceControlService.disconnect(req.body);
@@ -151,7 +149,6 @@ export class SourceControlController {
 		}
 	}
 
-	@Authorized('any')
 	@Get('/get-branches', { middlewares: [sourceControlLicensedMiddleware] })
 	async getBranches() {
 		try {
@@ -161,8 +158,8 @@ export class SourceControlController {
 		}
 	}
 
-	@Authorized(['global', 'owner'])
 	@Post('/push-workfolder', { middlewares: [sourceControlLicensedAndEnabledMiddleware] })
+	@GlobalScope('sourceControl:push')
 	async pushWorkfolder(
 		req: SourceControlRequest.PushWorkFolder,
 		res: express.Response,
@@ -183,8 +180,8 @@ export class SourceControlController {
 		}
 	}
 
-	@Authorized(['global', 'owner'])
 	@Post('/pull-workfolder', { middlewares: [sourceControlLicensedAndEnabledMiddleware] })
+	@GlobalScope('sourceControl:pull')
 	async pullWorkfolder(
 		req: SourceControlRequest.PullWorkFolder,
 		res: express.Response,
@@ -202,8 +199,8 @@ export class SourceControlController {
 		}
 	}
 
-	@Authorized(['global', 'owner'])
 	@Get('/reset-workfolder', { middlewares: [sourceControlLicensedAndEnabledMiddleware] })
+	@GlobalScope('sourceControl:manage')
 	async resetWorkfolder(): Promise<ImportResult | undefined> {
 		try {
 			return await this.sourceControlService.resetWorkfolder();
@@ -212,7 +209,6 @@ export class SourceControlController {
 		}
 	}
 
-	@Authorized('any')
 	@Get('/get-status', { middlewares: [sourceControlLicensedAndEnabledMiddleware] })
 	async getStatus(req: SourceControlRequest.GetStatus) {
 		try {
@@ -225,7 +221,6 @@ export class SourceControlController {
 		}
 	}
 
-	@Authorized('any')
 	@Get('/status', { middlewares: [sourceControlLicensedMiddleware] })
 	async status(req: SourceControlRequest.GetStatus) {
 		try {
@@ -235,8 +230,8 @@ export class SourceControlController {
 		}
 	}
 
-	@Authorized(['global', 'owner'])
 	@Post('/generate-key-pair', { middlewares: [sourceControlLicensedMiddleware] })
+	@GlobalScope('sourceControl:manage')
 	async generateKeyPair(
 		req: SourceControlRequest.GenerateKeyPair,
 	): Promise<SourceControlPreferences> {

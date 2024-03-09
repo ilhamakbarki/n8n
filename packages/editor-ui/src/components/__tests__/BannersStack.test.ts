@@ -6,14 +6,13 @@ import { STORES } from '@/constants';
 
 import { createTestingPinia } from '@pinia/testing';
 import BannerStack from '@/components/banners/BannerStack.vue';
-import { useUIStore } from '@/stores/ui.store';
-import { useUsersStore } from '@/stores/users.store';
 import type { RenderOptions } from '@/__tests__/render';
 import { createComponentRenderer } from '@/__tests__/render';
 import { waitFor } from '@testing-library/vue';
+import { useUIStore } from '@/stores/ui.store';
+import { useUsersStore } from '@/stores/users.store';
 
 let uiStore: ReturnType<typeof useUIStore>;
-let usersStore: ReturnType<typeof useUsersStore>;
 
 const initialState = {
 	[STORES.SETTINGS]: {
@@ -27,20 +26,11 @@ const initialState = {
 		users: {
 			'aaa-bbb': {
 				id: 'aaa-bbb',
-				globalRole: {
-					id: '1',
-					name: 'owner',
-					scope: 'global',
-				},
+				role: 'global:owner',
 			},
 			'bbb-bbb': {
 				id: 'bbb-bbb',
-				globalRoleId: 2,
-				globalRole: {
-					id: '2',
-					name: 'member',
-					scope: 'global',
-				},
+				role: 'global:member',
 			},
 		},
 	},
@@ -55,7 +45,6 @@ const renderComponent = createComponentRenderer(BannerStack, defaultRenderOption
 describe('BannerStack', () => {
 	beforeEach(() => {
 		uiStore = useUIStore();
-		usersStore = useUsersStore();
 	});
 
 	afterEach(() => {
@@ -75,7 +64,7 @@ describe('BannerStack', () => {
 	it('should dismiss banner on click', async () => {
 		const { getByTestId } = renderComponent();
 		const dismissBannerSpy = vi
-			.spyOn(useUIStore(), 'dismissBanner')
+			.spyOn(uiStore, 'dismissBanner')
 			.mockImplementation(async (banner, mode) => {});
 		expect(getByTestId('banners-V1')).toBeInTheDocument();
 		const closeTrialBannerButton = getByTestId('banner-V1-close');
@@ -87,7 +76,7 @@ describe('BannerStack', () => {
 	it('should permanently dismiss banner on click', async () => {
 		const { getByTestId } = renderComponent();
 		const dismissBannerSpy = vi
-			.spyOn(useUIStore(), 'dismissBanner')
+			.spyOn(uiStore, 'dismissBanner')
 			.mockImplementation(async (banner, mode) => {});
 
 		const permanentlyDismissBannerLink = getByTestId('banner-confirm-v1');

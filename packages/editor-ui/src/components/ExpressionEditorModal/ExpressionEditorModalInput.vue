@@ -1,37 +1,45 @@
 <template>
-	<div ref="root" @keydown.stop></div>
+	<div ref="root" :class="$style.editor" @keydown.stop></div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { EditorView, keymap } from '@codemirror/view';
 import { EditorState, Prec } from '@codemirror/state';
-import { history, redo } from '@codemirror/commands';
+import { history } from '@codemirror/commands';
 
-import { workflowHelpers } from '@/mixins/workflowHelpers';
 import { expressionManager } from '@/mixins/expressionManager';
 import { completionManager } from '@/mixins/completionManager';
 import { expressionInputHandler } from '@/plugins/codemirror/inputHandlers/expression.inputHandler';
-import { n8nLang } from '@/plugins/codemirror/n8nLang';
+import { n8nAutocompletion, n8nLang } from '@/plugins/codemirror/n8nLang';
 import { highlighter } from '@/plugins/codemirror/resolvableHighlighter';
 import { inputTheme } from './theme';
 import { forceParse } from '@/utils/forceParse';
-import { acceptCompletion, autocompletion } from '@codemirror/autocomplete';
+import { completionStatus } from '@codemirror/autocomplete';
 
 import type { IVariableItemSelected } from '@/Interface';
+import {
+	autocompleteKeyMap,
+	enterKeyMap,
+	historyKeyMap,
+	tabKeyMap,
+} from '@/plugins/codemirror/keymap';
 
 export default defineComponent({
 	name: 'ExpressionEditorModalInput',
-	mixins: [expressionManager, completionManager, workflowHelpers],
+	mixins: [expressionManager, completionManager],
 	props: {
 		modelValue: {
 			type: String,
+			required: true,
 		},
 		path: {
 			type: String,
+			required: true,
 		},
 		isReadOnly: {
 			type: Boolean,
+			default: false,
 		},
 	},
 	data() {
@@ -42,13 +50,15 @@ export default defineComponent({
 	mounted() {
 		const extensions = [
 			inputTheme(),
-			autocompletion(),
 			Prec.highest(
 				keymap.of([
-					{ key: 'Tab', run: acceptCompletion },
+					...tabKeyMap(),
+					...historyKeyMap,
+					...enterKeyMap,
+					...autocompleteKeyMap,
 					{
-						any: (_: EditorView, event: KeyboardEvent) => {
-							if (event.key === 'Escape') {
+						any: (view, event) => {
+							if (event.key === 'Escape' && completionStatus(view.state) === null) {
 								event.stopPropagation();
 								this.$emit('close');
 							}
@@ -56,18 +66,23 @@ export default defineComponent({
 							return false;
 						},
 					},
-					{ key: 'Mod-Shift-z', run: redo },
 				]),
 			),
 			n8nLang(),
+			n8nAutocompletion(),
 			history(),
 			expressionInputHandler(),
 			EditorView.lineWrapping,
+			EditorView.editable.of(!this.isReadOnly),
 			EditorState.readOnly.of(this.isReadOnly),
 			EditorView.contentAttributes.of({ 'data-gramm': 'false' }), // disable grammarly
 			EditorView.domEventHandlers({ scroll: forceParse }),
 			EditorView.updateListener.of((viewUpdate) => {
-				if (!this.editor || !viewUpdate.docChanged) return;
+				if (!this.editor) return;
+
+				this.completionStatus = completionStatus(viewUpdate.view.state);
+
+				if (!viewUpdate.docChanged) return;
 
 				this.editorState = this.editor.state;
 
@@ -142,4 +157,14 @@ export default defineComponent({
 });
 </script>
 
-<style lang="scss"></style>
+<style lang="scss" module>
+.editor div[contenteditable='false'] {
+	background-color: var(--disabled-fill, var(--color-background-light));
+	cursor: not-allowed;
+}
+</style>
+<style lang="scss" scoped>
+:deep(.cm-content) {
+	border-radius: var(--border-radius-base);
+}
+</style>

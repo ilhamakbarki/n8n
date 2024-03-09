@@ -1,22 +1,23 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import express from 'express';
+import type { IRunExecutionData } from 'n8n-workflow';
+import { EventMessageTypeNames } from 'n8n-workflow';
+
+import { RestController, Get, Post, GlobalScope } from '@/decorators';
+import { BadRequestError } from '@/errors/response-errors/bad-request.error';
+
 import { isEventMessageOptions } from './EventMessageClasses/AbstractEventMessage';
 import { EventMessageGeneric } from './EventMessageClasses/EventMessageGeneric';
 import type { EventMessageWorkflowOptions } from './EventMessageClasses/EventMessageWorkflow';
 import { EventMessageWorkflow } from './EventMessageClasses/EventMessageWorkflow';
 import type { EventMessageReturnMode } from './MessageEventBus/MessageEventBus';
-import { eventBus } from './MessageEventBus/MessageEventBus';
+import { MessageEventBus } from './MessageEventBus/MessageEventBus';
 import type { EventMessageTypes, FailedEventSummary } from './EventMessageClasses';
 import { eventNamesAll } from './EventMessageClasses';
 import type { EventMessageAuditOptions } from './EventMessageClasses/EventMessageAudit';
 import { EventMessageAudit } from './EventMessageClasses/EventMessageAudit';
-import { BadRequestError } from '@/ResponseHelper';
-import type { IRunExecutionData } from 'n8n-workflow';
-import { EventMessageTypeNames } from 'n8n-workflow';
 import type { EventMessageNodeOptions } from './EventMessageClasses/EventMessageNode';
 import { EventMessageNode } from './EventMessageClasses/EventMessageNode';
-import { recoverExecutionDataFromEventLogMessages } from './MessageEventBus/recoverEvents';
-import { RestController, Get, Post, Authorized } from '@/decorators';
+import { ExecutionDataRecoveryService } from './executionDataRecovery.service';
 
 // ----------------------------------------
 // TypeGuards
@@ -32,68 +33,75 @@ const isWithQueryString = (candidate: unknown): candidate is { query: string } =
 // Controller
 // ----------------------------------------
 
-@Authorized()
 @RestController('/eventbus')
 export class EventBusController {
+	constructor(
+		private readonly eventBus: MessageEventBus,
+		private readonly recoveryService: ExecutionDataRecoveryService,
+	) {}
+
 	// ----------------------------------------
 	// Events
 	// ----------------------------------------
-	@Authorized(['global', 'owner'])
 	@Get('/event')
+	@GlobalScope('eventBusEvent:query')
 	async getEvents(
 		req: express.Request,
 	): Promise<EventMessageTypes[] | Record<string, EventMessageTypes[]>> {
 		if (isWithQueryString(req.query)) {
 			switch (req.query.query as EventMessageReturnMode) {
 				case 'sent':
-					return eventBus.getEventsSent();
+					return await this.eventBus.getEventsSent();
 				case 'unsent':
-					return eventBus.getEventsUnsent();
+					return await this.eventBus.getEventsUnsent();
 				case 'unfinished':
-					return eventBus.getUnfinishedExecutions();
+					return await this.eventBus.getUnfinishedExecutions();
 				case 'all':
 				default:
-					return eventBus.getEventsAll();
+					return await this.eventBus.getEventsAll();
 			}
 		} else {
-			return eventBus.getEventsAll();
+			return await this.eventBus.getEventsAll();
 		}
 	}
 
 	@Get('/failed')
+	@GlobalScope('eventBusEvent:list')
 	async getFailedEvents(req: express.Request): Promise<FailedEventSummary[]> {
 		const amount = parseInt(req.query?.amount as string) ?? 5;
-		return eventBus.getEventsFailed(amount);
+		return await this.eventBus.getEventsFailed(amount);
 	}
 
 	@Get('/execution/:id')
+	@GlobalScope('eventBusEvent:read')
 	async getEventForExecutionId(req: express.Request): Promise<EventMessageTypes[] | undefined> {
 		if (req.params?.id) {
 			let logHistory;
 			if (req.query?.logHistory) {
 				logHistory = parseInt(req.query.logHistory as string, 10);
 			}
-			return eventBus.getEventsByExecutionId(req.params.id, logHistory);
+			return await this.eventBus.getEventsByExecutionId(req.params.id, logHistory);
 		}
 		return;
 	}
 
 	@Get('/execution-recover/:id')
+	@GlobalScope('eventBusEvent:read')
 	async getRecoveryForExecutionId(req: express.Request): Promise<IRunExecutionData | undefined> {
 		const { id } = req.params;
 		if (req.params?.id) {
 			const logHistory = parseInt(req.query.logHistory as string, 10) || undefined;
 			const applyToDb = req.query.applyToDb !== undefined ? !!req.query.applyToDb : true;
-			const messages = await eventBus.getEventsByExecutionId(id, logHistory);
+			const messages = await this.eventBus.getEventsByExecutionId(id, logHistory);
 			if (messages.length > 0) {
-				return recoverExecutionDataFromEventLogMessages(id, messages, applyToDb);
+				return await this.recoveryService.recoverExecutionData(id, messages, applyToDb);
 			}
 		}
 		return;
 	}
 
-	@Authorized(['global', 'owner'])
 	@Post('/event')
+	@GlobalScope('eventBusEvent:create')
 	async postEvent(req: express.Request): Promise<EventMessageTypes | undefined> {
 		let msg: EventMessageTypes | undefined;
 		if (isEventMessageOptions(req.body)) {
@@ -111,7 +119,7 @@ export class EventBusController {
 				default:
 					msg = new EventMessageGeneric(req.body);
 			}
-			await eventBus.send(msg);
+			await this.eventBus.send(msg);
 		} else {
 			throw new BadRequestError(
 				'Body is not a serialized EventMessage or eventName does not match format {namespace}.{domain}.{event}',
